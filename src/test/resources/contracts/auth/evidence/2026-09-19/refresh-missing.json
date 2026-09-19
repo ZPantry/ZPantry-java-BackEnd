@@ -1,0 +1,21 @@
+{
+  "case": "refresh-missing",
+  "request": {
+    "path": "/api/Auth/refresh-token",
+    "body": {},
+    "authenticated": false
+  },
+  "response": {
+    "status": 401,
+    "contentType": "application/json; charset=utf-8",
+    "body": {
+      "success": false,
+      "message": "Refresh token is required.",
+      "data": null,
+      "errors": null,
+      "traceId": "0HNOLUB9FMAQV:00000001",
+      "timestamp": "2026-09-19T02:08:56.1864712Z"
+    }
+  }
+}
+

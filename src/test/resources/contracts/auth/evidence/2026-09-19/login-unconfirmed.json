@@ -1,0 +1,24 @@
+{
+  "case": "login-unconfirmed",
+  "request": {
+    "path": "/api/Auth/login",
+    "body": {
+      "email": "otp-wrong@test.local",
+      "password": "<redacted-test-password>"
+    },
+    "authenticated": false
+  },
+  "response": {
+    "status": 401,
+    "contentType": "application/json; charset=utf-8",
+    "body": {
+      "success": false,
+      "message": "Account is not verified yet.",
+      "data": null,
+      "errors": null,
+      "traceId": "0HNOLUB9FMAQN:00000001",
+      "timestamp": "2026-09-19T02:08:55.4334652Z"
+    }
+  }
+}
+

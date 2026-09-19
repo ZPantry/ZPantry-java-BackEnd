@@ -1,0 +1,11 @@
+{
+  "method": "PUT",
+  "path": "/api/users/9a833dce-849f-43ee-aa6e-6760ffcf3e54",
+  "headers": {
+    "Authorization": "Bearer <redacted>",
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "fullName": "Claims Diagnostic Owner"
+  }
+}

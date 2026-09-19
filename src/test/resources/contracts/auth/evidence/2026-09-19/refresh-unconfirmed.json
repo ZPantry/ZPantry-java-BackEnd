@@ -1,0 +1,23 @@
+{
+  "case": "refresh-unconfirmed",
+  "request": {
+    "path": "/api/Auth/refresh-token",
+    "body": {
+      "refreshToken": "<redacted-token>"
+    },
+    "authenticated": false
+  },
+  "response": {
+    "status": 401,
+    "contentType": "application/json; charset=utf-8",
+    "body": {
+      "success": false,
+      "message": "Account is not allowed to refresh token.",
+      "data": null,
+      "errors": null,
+      "traceId": "0HNOLUB9FMAR4:00000001",
+      "timestamp": "2026-09-19T02:08:57.3156521Z"
+    }
+  }
+}
+

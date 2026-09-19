@@ -1,0 +1,12 @@
+{
+  "sub": "owner@test.local",
+  "email": "owner@test.local",
+  "jti": "<redacted:32-hex-jti>",
+  "userId": "9a833dce-849f-43ee-aa6e-6760ffcf3e54",
+  "nameid": "9a833dce-849f-43ee-aa6e-6760ffcf3e54",
+  "role": "user",
+  "nbf": 1789781336,
+  "exp": 1789784936,
+  "iss": "zpantry-contract-test",
+  "aud": "zpantry-contract-test-client"
+}

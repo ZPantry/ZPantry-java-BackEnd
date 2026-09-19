@@ -1,0 +1,27 @@
+{
+  "legacyCommit": "a010fdc5894176596bb195e4fef66db2c09496f1",
+  "capturedAtUtc": "2026-09-19T01:28:56.2627999Z",
+  "environment": "Disposable instrumented .NET 10 legacy image + pgvector/pgvector:0.8.2-pg16",
+  "packageVersions": {
+    "Microsoft.AspNetCore.Authentication.JwtBearer": "10.0.9",
+    "Microsoft.IdentityModel.JsonWebTokens": "8.0.1",
+    "System.IdentityModel.Tokens.Jwt": "8.0.1"
+  },
+  "database": "zpantry_contract",
+  "account": {
+    "email": "owner@test.local",
+    "id": "9a833dce-849f-43ee-aa6e-6760ffcf3e54",
+    "role": "user"
+  },
+  "loginToken": {
+    "source": "POST /api/Auth/login",
+    "ownerPutStatus": 403
+  },
+  "signedToken": {
+    "source": "Locally HS256-signed equivalent using configured disposable key",
+    "rawOwnerClaim": "nameid",
+    "ownerPutStatus": 403
+  },
+  "diagnosticInstrumentation": "Temporary legacy copy only; not present in repository production code",
+  "dataPolicy": "Synthetic account only; bearer/refresh tokens and signing key not persisted; JTI values redacted"
+}

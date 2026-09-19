@@ -1,0 +1,14 @@
+{
+  "case": "logout-token-after-revocation",
+  "request": {
+    "path": "/api/users",
+    "body": null,
+    "authenticated": true
+  },
+  "response": {
+    "status": 401,
+    "contentType": null,
+    "body": null
+  }
+}
+

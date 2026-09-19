@@ -1,0 +1,115 @@
+{
+  "case": "logout-revocation-after-process-restart",
+  "request": {
+    "path": "/api/users",
+    "authenticated": true,
+    "token": "<redacted-token-issued-before-logout-and-restart>"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "pageIndex": 1,
+      "pageSize": 10,
+      "totalItems": 8,
+      "totalPages": 1,
+      "hasNextPage": false,
+      "hasPreviousPage": false,
+      "success": true,
+      "message": "",
+      "data": [
+        {
+          "id": "d67ccafa-3492-4f3f-ae84-2b404d857b4e",
+          "fullName": "",
+          "email": "",
+          "avatarUrl": null,
+          "isEmailConfirmed": false,
+          "isActive": true,
+          "role": "user",
+          "createdAt": "2026-09-19T02:08:58.346422Z",
+          "updatedAt": null
+        },
+        {
+          "id": "6b472752-a902-4f4f-833b-622829af7137",
+          "fullName": "Contract Admin",
+          "email": "admin@test.local",
+          "avatarUrl": null,
+          "isEmailConfirmed": true,
+          "isActive": true,
+          "role": "admin",
+          "createdAt": "2026-09-19T02:07:41.36465Z",
+          "updatedAt": "2026-09-19T02:08:58.082418Z"
+        },
+        {
+          "id": "a0fe7714-d472-439f-81c9-e9758027a75a",
+          "fullName": "Contract Other User",
+          "email": "other-user@test.local",
+          "avatarUrl": null,
+          "isEmailConfirmed": true,
+          "isActive": false,
+          "role": "user",
+          "createdAt": "2026-09-19T02:07:41.529205Z",
+          "updatedAt": "2026-09-19T02:07:41.530102Z"
+        },
+        {
+          "id": "61133bc8-c576-42c1-94c9-e515334392db",
+          "fullName": "Synthetic User",
+          "email": "otp-correct@test.local",
+          "avatarUrl": null,
+          "isEmailConfirmed": true,
+          "isActive": true,
+          "role": "user",
+          "createdAt": "2026-09-19T02:08:53.828882Z",
+          "updatedAt": "2026-09-19T02:08:54.975058Z"
+        },
+        {
+          "id": "d663a468-f61d-4a28-ab2c-8446d920d73b",
+          "fullName": "Synthetic User",
+          "email": "otp-expired@test.local",
+          "avatarUrl": null,
+          "isEmailConfirmed": false,
+          "isActive": true,
+          "role": "user",
+          "createdAt": "2026-09-19T02:08:53.845464Z",
+          "updatedAt": null
+        },
+        {
+          "id": "f4ff60a7-e888-4d88-a8b0-d2808e789c56",
+          "fullName": "Synthetic User",
+          "email": "otp-wrong@test.local",
+          "avatarUrl": null,
+          "isEmailConfirmed": false,
+          "isActive": true,
+          "role": "user",
+          "createdAt": "2026-09-19T02:08:53.836236Z",
+          "updatedAt": null
+        },
+        {
+          "id": "2ab60651-25ba-4c42-9ec3-2a7dc10813f6",
+          "fullName": "Contract Owner",
+          "email": "owner@test.local",
+          "avatarUrl": null,
+          "isEmailConfirmed": true,
+          "isActive": true,
+          "role": "user",
+          "createdAt": "2026-09-19T02:07:41.521933Z",
+          "updatedAt": "2026-09-19T02:08:57.548081Z"
+        },
+        {
+          "id": "c5498dbc-818a-41eb-a258-0369835d758c",
+          "fullName": "Synthetic User",
+          "email": "register-success@test.local",
+          "avatarUrl": null,
+          "isEmailConfirmed": false,
+          "isActive": true,
+          "role": "user",
+          "createdAt": "2026-09-19T02:08:53.30866Z",
+          "updatedAt": null
+        }
+      ],
+      "errors": null,
+      "traceId": "",
+      "timestamp": "2026-09-19T02:09:16.5302958Z"
+    }
+  }
+}
+

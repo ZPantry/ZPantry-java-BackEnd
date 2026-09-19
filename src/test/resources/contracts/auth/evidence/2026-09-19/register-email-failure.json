@@ -1,0 +1,25 @@
+{
+  "case": "register-email-failure",
+  "request": {
+    "path": "/api/Auth/register",
+    "body": {
+      "fullName": "Synthetic User",
+      "email": "delivery-fail@test.local",
+      "password": "<redacted-test-password>"
+    },
+    "authenticated": false
+  },
+  "response": {
+    "status": 500,
+    "contentType": "application/json; charset=utf-8",
+    "body": {
+      "success": false,
+      "message": "Could not send OTP email. Details: Synthetic intercepted email failure.",
+      "data": null,
+      "errors": null,
+      "traceId": "0HNOLUB9FMAQB:00000001",
+      "timestamp": "2026-09-19T02:08:53.6034231Z"
+    }
+  }
+}
+

@@ -1,0 +1,264 @@
+{
+  "legacyCommit": "a010fdc5894176596bb195e4fef66db2c09496f1",
+  "capturedAtUtc": "2026-09-18T07:33:27.5756698Z",
+  "environment": "Disposable Docker: official .NET 10 legacy image + pgvector/pgvector:0.8.2-pg16",
+  "databaseContainer": "zpantry-contract-pg-20260918",
+  "database": "zpantry_contract",
+  "dataPolicy": "Synthetic test accounts only; no real credentials/data; bearer tokens not persisted",
+  "accounts": [
+    {
+      "email": "admin@test.local",
+      "id": "eb8ffbe9-8334-49d7-ab82-45c097b6f523",
+      "role": "admin",
+      "active": true,
+      "confirmed": true
+    },
+    {
+      "email": "owner@test.local",
+      "id": "45d99c19-64b9-456d-a1e8-aec4d667c53f",
+      "role": "user",
+      "active": true,
+      "confirmed": true
+    },
+    {
+      "email": "other-user@test.local",
+      "id": "96de117a-65a9-4ae5-abb9-d228103eab80",
+      "role": "user",
+      "active": true,
+      "confirmed": true
+    }
+  ],
+  "accountCreation": "Legacy EnsureDemoAccountsAsync bootstrap; actual Microsoft.AspNet.Identity.PasswordHasher",
+  "cases": [
+    {
+      "name": "get-list-admin-default",
+      "method": "GET",
+      "endpoint": "/api/users",
+      "actor": "admin",
+      "requestBody": null,
+      "status": 200,
+      "bodyFixture": "get-list-admin-default.body.json",
+      "headersFixture": "get-list-admin-default.headers.txt"
+    },
+    {
+      "name": "get-list-admin-explicit-page",
+      "method": "GET",
+      "endpoint": "/api/users?pageIndex=2&pageSize=1",
+      "actor": "admin",
+      "requestBody": null,
+      "status": 200,
+      "bodyFixture": "get-list-admin-explicit-page.body.json",
+      "headersFixture": "get-list-admin-explicit-page.headers.txt"
+    },
+    {
+      "name": "get-list-admin-zero-boundary",
+      "method": "GET",
+      "endpoint": "/api/users?pageIndex=0&pageSize=0",
+      "actor": "admin",
+      "requestBody": null,
+      "status": 200,
+      "bodyFixture": "get-list-admin-zero-boundary.body.json",
+      "headersFixture": "get-list-admin-zero-boundary.headers.txt"
+    },
+    {
+      "name": "get-list-admin-size-over-max",
+      "method": "GET",
+      "endpoint": "/api/users?pageIndex=1&pageSize=101",
+      "actor": "admin",
+      "requestBody": null,
+      "status": 200,
+      "bodyFixture": "get-list-admin-size-over-max.body.json",
+      "headersFixture": "get-list-admin-size-over-max.headers.txt"
+    },
+    {
+      "name": "get-list-unauthenticated",
+      "method": "GET",
+      "endpoint": "/api/users",
+      "actor": "anonymous",
+      "requestBody": null,
+      "status": 401,
+      "bodyFixture": "get-list-unauthenticated.body.json",
+      "headersFixture": "get-list-unauthenticated.headers.txt"
+    },
+    {
+      "name": "get-list-normal-user",
+      "method": "GET",
+      "endpoint": "/api/users",
+      "actor": "owner",
+      "requestBody": null,
+      "status": 403,
+      "bodyFixture": "get-list-normal-user.body.json",
+      "headersFixture": "get-list-normal-user.headers.txt"
+    },
+    {
+      "name": "get-detail-admin-existing",
+      "method": "GET",
+      "endpoint": "/api/users/45d99c19-64b9-456d-a1e8-aec4d667c53f",
+      "actor": "admin",
+      "requestBody": null,
+      "status": 200,
+      "bodyFixture": "get-detail-admin-existing.body.json",
+      "headersFixture": "get-detail-admin-existing.headers.txt"
+    },
+    {
+      "name": "get-detail-admin-missing",
+      "method": "GET",
+      "endpoint": "/api/users/00000000-0000-0000-0000-000000000099",
+      "actor": "admin",
+      "requestBody": null,
+      "status": 200,
+      "bodyFixture": "get-detail-admin-missing.body.json",
+      "headersFixture": "get-detail-admin-missing.headers.txt"
+    },
+    {
+      "name": "get-detail-unauthenticated",
+      "method": "GET",
+      "endpoint": "/api/users/45d99c19-64b9-456d-a1e8-aec4d667c53f",
+      "actor": "anonymous",
+      "requestBody": null,
+      "status": 401,
+      "bodyFixture": "get-detail-unauthenticated.body.json",
+      "headersFixture": "get-detail-unauthenticated.headers.txt"
+    },
+    {
+      "name": "get-detail-normal-user",
+      "method": "GET",
+      "endpoint": "/api/users/45d99c19-64b9-456d-a1e8-aec4d667c53f",
+      "actor": "owner",
+      "requestBody": null,
+      "status": 403,
+      "bodyFixture": "get-detail-normal-user.body.json",
+      "headersFixture": "get-detail-normal-user.headers.txt"
+    },
+    {
+      "name": "put-owner-partial",
+      "method": "PUT",
+      "endpoint": "/api/users/45d99c19-64b9-456d-a1e8-aec4d667c53f",
+      "actor": "owner",
+      "requestBody": "{\"fullName\":\"Contract Owner Updated\"}",
+      "status": 403,
+      "bodyFixture": "put-owner-partial.body.json",
+      "headersFixture": "put-owner-partial.headers.txt"
+    },
+    {
+      "name": "put-owner-empty-object",
+      "method": "PUT",
+      "endpoint": "/api/users/45d99c19-64b9-456d-a1e8-aec4d667c53f",
+      "actor": "owner",
+      "requestBody": "{}",
+      "status": 403,
+      "bodyFixture": "put-owner-empty-object.body.json",
+      "headersFixture": "put-owner-empty-object.headers.txt"
+    },
+    {
+      "name": "put-owner-empty-strings",
+      "method": "PUT",
+      "endpoint": "/api/users/45d99c19-64b9-456d-a1e8-aec4d667c53f",
+      "actor": "owner",
+      "requestBody": "{\"fullName\":\"\",\"avatarUrl\":\"\"}",
+      "status": 403,
+      "bodyFixture": "put-owner-empty-strings.body.json",
+      "headersFixture": "put-owner-empty-strings.headers.txt"
+    },
+    {
+      "name": "put-owner-password",
+      "method": "PUT",
+      "endpoint": "/api/users/45d99c19-64b9-456d-a1e8-aec4d667c53f",
+      "actor": "owner",
+      "requestBody": "{\"password\":\"Owner-Contract-Updated-2026!\"}",
+      "status": 403,
+      "bodyFixture": "put-owner-password.body.json",
+      "headersFixture": "put-owner-password.headers.txt"
+    },
+    {
+      "name": "put-wrong-owner",
+      "method": "PUT",
+      "endpoint": "/api/users/96de117a-65a9-4ae5-abb9-d228103eab80",
+      "actor": "owner",
+      "requestBody": "{\"fullName\":\"Forbidden\"}",
+      "status": 403,
+      "bodyFixture": "put-wrong-owner.body.json",
+      "headersFixture": "put-wrong-owner.headers.txt"
+    },
+    {
+      "name": "put-admin-other-user",
+      "method": "PUT",
+      "endpoint": "/api/users/45d99c19-64b9-456d-a1e8-aec4d667c53f",
+      "actor": "admin",
+      "requestBody": "{\"fullName\":\"Forbidden Admin Update\"}",
+      "status": 403,
+      "bodyFixture": "put-admin-other-user.body.json",
+      "headersFixture": "put-admin-other-user.headers.txt"
+    },
+    {
+      "name": "put-unauthenticated",
+      "method": "PUT",
+      "endpoint": "/api/users/45d99c19-64b9-456d-a1e8-aec4d667c53f",
+      "actor": "anonymous",
+      "requestBody": "{\"fullName\":\"Unauthenticated\"}",
+      "status": 401,
+      "bodyFixture": "put-unauthenticated.body.json",
+      "headersFixture": "put-unauthenticated.headers.txt"
+    },
+    {
+      "name": "delete-normal-user",
+      "method": "DELETE",
+      "endpoint": "/api/users/45d99c19-64b9-456d-a1e8-aec4d667c53f",
+      "actor": "other-user",
+      "requestBody": null,
+      "status": 403,
+      "bodyFixture": "delete-normal-user.body.json",
+      "headersFixture": "delete-normal-user.headers.txt"
+    },
+    {
+      "name": "delete-unauthenticated",
+      "method": "DELETE",
+      "endpoint": "/api/users/45d99c19-64b9-456d-a1e8-aec4d667c53f",
+      "actor": "anonymous",
+      "requestBody": null,
+      "status": 401,
+      "bodyFixture": "delete-unauthenticated.body.json",
+      "headersFixture": "delete-unauthenticated.headers.txt"
+    },
+    {
+      "name": "delete-admin-success",
+      "method": "DELETE",
+      "endpoint": "/api/users/45d99c19-64b9-456d-a1e8-aec4d667c53f",
+      "actor": "admin",
+      "requestBody": null,
+      "status": 200,
+      "bodyFixture": "delete-admin-success.body.json",
+      "headersFixture": "delete-admin-success.headers.txt"
+    },
+    {
+      "name": "get-detail-admin-after-delete",
+      "method": "GET",
+      "endpoint": "/api/users/45d99c19-64b9-456d-a1e8-aec4d667c53f",
+      "actor": "admin",
+      "requestBody": null,
+      "status": 200,
+      "bodyFixture": "get-detail-admin-after-delete.body.json",
+      "headersFixture": "get-detail-admin-after-delete.headers.txt"
+    },
+    {
+      "name": "put-owner-after-delete",
+      "method": "PUT",
+      "endpoint": "/api/users/45d99c19-64b9-456d-a1e8-aec4d667c53f",
+      "actor": "owner",
+      "requestBody": "{}",
+      "status": 403,
+      "bodyFixture": "put-owner-after-delete.body.json",
+      "headersFixture": "put-owner-after-delete.headers.txt"
+    },
+    {
+      "name": "delete-admin-missing",
+      "method": "DELETE",
+      "endpoint": "/api/users/45d99c19-64b9-456d-a1e8-aec4d667c53f",
+      "actor": "admin",
+      "requestBody": null,
+      "status": 200,
+      "bodyFixture": "delete-admin-missing.body.json",
+      "headersFixture": "delete-admin-missing.headers.txt"
+    }
+  ]
+}

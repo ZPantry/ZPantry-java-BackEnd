@@ -1,0 +1,24 @@
+{
+  "case": "login-nonexistent",
+  "request": {
+    "path": "/api/Auth/login",
+    "body": {
+      "email": "absent@test.local",
+      "password": "<redacted-test-password>"
+    },
+    "authenticated": false
+  },
+  "response": {
+    "status": 401,
+    "contentType": "application/json; charset=utf-8",
+    "body": {
+      "success": false,
+      "message": "Invalid email or password.",
+      "data": null,
+      "errors": null,
+      "traceId": "0HNOLUB9FMAQM:00000001",
+      "timestamp": "2026-09-19T02:08:55.4297504Z"
+    }
+  }
+}
+

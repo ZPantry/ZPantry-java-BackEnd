@@ -1,0 +1,24 @@
+{
+  "case": "verify-otp-success",
+  "request": {
+    "path": "/api/Auth/verify-otp",
+    "body": {
+      "email": "otp-correct@test.local",
+      "otpCode": "904502"
+    },
+    "authenticated": false
+  },
+  "response": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8",
+    "body": {
+      "success": true,
+      "message": "Xác thực tài khoản thành công! Bạn hiện đã có thể đăng nhập.",
+      "data": null,
+      "errors": null,
+      "traceId": "0HNOLUB9FMAQJ:00000001",
+      "timestamp": "2026-09-19T02:08:54.977933Z"
+    }
+  }
+}
+

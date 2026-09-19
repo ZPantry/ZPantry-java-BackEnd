@@ -1,0 +1,13 @@
+This pack is an ADD-ON for your existing Java repository.
+
+KEEP your existing:
+- .agents/skills/
+- API_MIGRATION.md
+
+Copy/merge:
+- AGENTS.md
+- PROJECT_CONVENTIONS.md
+- README_FIRST.md
+- docs/
+
+Do not create a duplicate API migration file.

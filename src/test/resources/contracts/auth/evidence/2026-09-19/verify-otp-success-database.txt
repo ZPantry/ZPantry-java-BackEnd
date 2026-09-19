@@ -1,0 +1,2 @@
+columns=id|email|password_hashed|created_at|updated_at|deleted_at|is_deleted|otp_code|otp_expired_at|otp_retry_count|is_email_confirmed|is_active|role|refresh_token_hash|refresh_token_expires_at
+61133bc8-c576-42c1-94c9-e515334392db|otp-correct@test.local|<redacted-password-hash; prefix=ACO>|2026-09-19 02:08:53.828882+00|2026-09-19 02:08:54.975058+00||f|<redacted-otp; present=false>||0|t|t|user|<redacted-refresh-hash; present=false>|

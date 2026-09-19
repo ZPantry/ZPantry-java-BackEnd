@@ -1,0 +1,25 @@
+{
+  "case": "register-duplicate",
+  "request": {
+    "path": "/api/Auth/register",
+    "body": {
+      "fullName": "Synthetic User",
+      "email": "register-success@test.local",
+      "password": "<redacted-test-password>"
+    },
+    "authenticated": false
+  },
+  "response": {
+    "status": 500,
+    "contentType": "application/json; charset=utf-8",
+    "body": {
+      "success": false,
+      "message": "Email already exists.",
+      "data": null,
+      "errors": null,
+      "traceId": "0HNOLUB9FMAQA:00000001",
+      "timestamp": "2026-09-19T02:08:53.597779Z"
+    }
+  }
+}
+

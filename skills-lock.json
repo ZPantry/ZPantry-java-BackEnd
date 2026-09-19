@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "skills": {
+    "121-java-object-oriented-design": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/121-java-object-oriented-design/SKILL.md",
+      "computedHash": "b88f50bc608fd3a0ebbec4a66bf788aed20540ce3a45a09c5f649cb0854b75fc"
+    },
+    "122-java-type-design": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/122-java-type-design/SKILL.md",
+      "computedHash": "63235864df2ecc578487001d1af1c0149d07ea8cc25e8eaf305c0c68f7180198"
+    },
+    "124-java-secure-coding": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/124-java-secure-coding/SKILL.md",
+      "computedHash": "cb596a5b47db9a1f16edbc9fe8f2f421c0b88be98712554b93c1618be3d70105"
+    },
+    "131-java-testing-unit-testing": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/131-java-testing-unit-testing/SKILL.md",
+      "computedHash": "c355b474ccb10cafb382c09e3cae37323020fa5b334c0e5a880b86a4333872fe"
+    },
+    "301-frameworks-spring-boot-core": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/301-frameworks-spring-boot-core/SKILL.md",
+      "computedHash": "7f998d1cd1282408eb496bb5bb459dcdd4fa7177713e3b84ebb7159fdb923ddd"
+    },
+    "302-frameworks-spring-boot-rest": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/302-frameworks-spring-boot-rest/SKILL.md",
+      "computedHash": "fb6fe4415f61f1757f1891eeabb40ba030a14d3f3c1daf5ae3fb26f52098405d"
+    },
+    "303-frameworks-spring-boot-validation": {
+      "source": "jabrena/plinth",
+      "sourceType": "github",
+      "skillPath": "skills/303-frameworks-spring-boot-validation/SKILL.md",
+      "computedHash": "025743fa2367dc48180373c2bfc10df3176b23cc183de6c025769e5737700375"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "case": "logout-repeat",
+  "request": {
+    "path": "/api/Auth/logout",
+    "body": {},
+    "authenticated": true
+  },
+  "response": {
+    "status": 401,
+    "contentType": null,
+    "body": null
+  }
+}
+

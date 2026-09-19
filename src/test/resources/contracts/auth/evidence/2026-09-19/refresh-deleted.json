@@ -1,0 +1,23 @@
+{
+  "case": "refresh-deleted",
+  "request": {
+    "path": "/api/Auth/refresh-token",
+    "body": {
+      "refreshToken": "<redacted-token>"
+    },
+    "authenticated": false
+  },
+  "response": {
+    "status": 401,
+    "contentType": "application/json; charset=utf-8",
+    "body": {
+      "success": false,
+      "message": "Invalid refresh token.",
+      "data": null,
+      "errors": null,
+      "traceId": "0HNOLUB9FMAR6:00000001",
+      "timestamp": "2026-09-19T02:08:57.7843798Z"
+    }
+  }
+}
+

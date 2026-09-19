@@ -1,0 +1,31 @@
+{
+  "case": "login-success",
+  "request": {
+    "path": "/api/Auth/login",
+    "body": {
+      "email": "owner@test.local",
+      "password": "<redacted-test-password>"
+    },
+    "authenticated": false
+  },
+  "response": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8",
+    "body": {
+      "success": true,
+      "message": "",
+      "data": {
+        "accessToken": "<redacted-token>",
+        "expiresAt": "2026-09-19T03:08:55.2012323Z",
+        "fullName": "Contract Owner",
+        "email": "owner@test.local",
+        "refreshToken": "<redacted-token>",
+        "role": "user"
+      },
+      "errors": null,
+      "traceId": "0HNOLUB9FMAQK:00000001",
+      "timestamp": "2026-09-19T02:08:55.2012617Z"
+    }
+  }
+}
+

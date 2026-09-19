@@ -31,3 +31,31 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Private runtime configuration
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Developer-specific Spring overrides. The repository-owned local profile below
+# contains synthetic Docker-only values and must remain versioned.
+application-local.properties
+application-local.yml
+application-local.yaml
+!src/main/resources/application-local.properties
+application-private.properties
+application-private.yml
+application-private.yaml
+application-secrets.properties
+application-secrets.yml
+application-secrets.yaml
+
+# Local secret stores and signing material
+secrets/
+*.jks
+*.p12
+*.pfx
+*.pem

@@ -1,0 +1,45 @@
+{
+  "header": {
+    "alg": "HS256",
+    "typ": "JWT"
+  },
+  "claimNames": [
+    "sub",
+    "email",
+    "jti",
+    "userId",
+    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
+    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+    "fullName",
+    "isEmailConfirmed",
+    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+    "role",
+    "nbf",
+    "exp",
+    "iss",
+    "aud"
+  ],
+  "claims": {
+    "sub": "<redacted>",
+    "email": "<redacted>",
+    "jti": "<redacted>",
+    "userId": "<redacted>",
+    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier": "<redacted>",
+    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name": "<redacted>",
+    "fullName": "<redacted>",
+    "isEmailConfirmed": "true",
+    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "user",
+    "role": "user",
+    "nbf": 1789783735,
+    "exp": 1789787335,
+    "iss": "zpantry-contract-test",
+    "aud": "zpantry-contract-test-client"
+  },
+  "accessLifetimeSeconds": 3600,
+  "refreshToken": {
+    "decodedRandomByteLength": 64,
+    "encodedLength": 86,
+    "urlSafeUnpadded": true
+  }
+}
+

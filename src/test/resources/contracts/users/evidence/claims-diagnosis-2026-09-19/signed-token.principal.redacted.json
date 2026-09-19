@@ -1,0 +1,94 @@
+{
+  "identity": {
+    "name": null,
+    "isAuthenticated": true,
+    "authenticationType": "AuthenticationTypes.Federation",
+    "nameClaimType": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+    "roleClaimType": "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+  },
+  "claims": [
+    {
+      "type": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
+      "value": "owner@test.local",
+      "valueType": "http://www.w3.org/2001/XMLSchema#string",
+      "issuer": "zpantry-contract-test"
+    },
+    {
+      "type": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+      "value": "owner@test.local",
+      "valueType": "http://www.w3.org/2001/XMLSchema#string",
+      "issuer": "zpantry-contract-test"
+    },
+    {
+      "type": "jti",
+      "value": "<redacted:32-hex-jti>",
+      "valueType": "http://www.w3.org/2001/XMLSchema#string",
+      "issuer": "zpantry-contract-test"
+    },
+    {
+      "type": "userId",
+      "value": "9a833dce-849f-43ee-aa6e-6760ffcf3e54",
+      "valueType": "http://www.w3.org/2001/XMLSchema#string",
+      "issuer": "zpantry-contract-test"
+    },
+    {
+      "type": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
+      "value": "9a833dce-849f-43ee-aa6e-6760ffcf3e54",
+      "valueType": "http://www.w3.org/2001/XMLSchema#string",
+      "issuer": "zpantry-contract-test"
+    },
+    {
+      "type": "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+      "value": "user",
+      "valueType": "http://www.w3.org/2001/XMLSchema#string",
+      "issuer": "zpantry-contract-test"
+    },
+    {
+      "type": "nbf",
+      "value": "1789781336",
+      "valueType": "http://www.w3.org/2001/XMLSchema#integer64",
+      "issuer": "zpantry-contract-test"
+    },
+    {
+      "type": "exp",
+      "value": "1789784936",
+      "valueType": "http://www.w3.org/2001/XMLSchema#integer64",
+      "issuer": "zpantry-contract-test"
+    },
+    {
+      "type": "iss",
+      "value": "zpantry-contract-test",
+      "valueType": "http://www.w3.org/2001/XMLSchema#string",
+      "issuer": "zpantry-contract-test"
+    },
+    {
+      "type": "aud",
+      "value": "zpantry-contract-test-client",
+      "valueType": "http://www.w3.org/2001/XMLSchema#string",
+      "issuer": "zpantry-contract-test"
+    }
+  ],
+  "ownerLookup": {
+    "requestedClaimType": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
+    "resolvedValue": "owner@test.local",
+    "guidTryParse": false,
+    "parsedUserId": null,
+    "routeId": "9a833dce-849f-43ee-aa6e-6760ffcf3e54",
+    "equality": false,
+    "controllerRejects": true
+  },
+  "jwtBearer": {
+    "mapInboundClaims": true,
+    "tokenHandlers": [
+      {
+        "type": "Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler",
+        "mapInboundClaims": true
+      }
+    ],
+    "nameClaimType": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+    "roleClaimType": "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+    "jwtSecurityTokenHandlerDefaultInboundMapCount": 0,
+    "jwtSecurityTokenHandlerDefaultOutboundMapCount": 0,
+    "jsonWebTokenHandlerDefaultInboundMapCount": 73
+  }
+}

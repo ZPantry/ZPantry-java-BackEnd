@@ -1,0 +1,25 @@
+{
+  "case": "register-otp-expired",
+  "request": {
+    "path": "/api/Auth/register",
+    "body": {
+      "fullName": "Synthetic User",
+      "email": "otp-expired@test.local",
+      "password": "<redacted-test-password>"
+    },
+    "authenticated": false
+  },
+  "response": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8",
+    "body": {
+      "success": true,
+      "message": "Đăng ký thành công! Vui lòng kiểm tra Gmail để nhận mã OTP xác thực.",
+      "data": null,
+      "errors": null,
+      "traceId": "0HNOLUB9FMAQE:00000001",
+      "timestamp": "2026-09-19T02:08:53.848195Z"
+    }
+  }
+}
+

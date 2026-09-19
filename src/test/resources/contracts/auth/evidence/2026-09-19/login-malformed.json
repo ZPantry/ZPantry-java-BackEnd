@@ -1,0 +1,27 @@
+{
+  "case": "login-malformed",
+  "request": {
+    "path": "/api/Auth/login",
+    "body": "<malformed-json>",
+    "authenticated": false
+  },
+  "response": {
+    "status": 400,
+    "contentType": "application/problem+json; charset=utf-8",
+    "body": {
+      "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+      "title": "One or more validation errors occurred.",
+      "status": 400,
+      "errors": {
+        "$": [
+          "Expected depth to be zero at the end of the JSON payload. There is an open JSON object or array that should be closed. Path: $ | LineNumber: 0 | BytePositionInLine: 1."
+        ],
+        "request": [
+          "The request field is required."
+        ]
+      },
+      "traceId": "00-2cfa82dbefb7df1ca703ef4cfada1d30-be5d484fb58054f8-00"
+    }
+  }
+}
+

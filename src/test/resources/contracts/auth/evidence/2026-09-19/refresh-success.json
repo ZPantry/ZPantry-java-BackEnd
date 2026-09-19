@@ -1,0 +1,30 @@
+{
+  "case": "refresh-success",
+  "request": {
+    "path": "/api/Auth/refresh-token",
+    "body": {
+      "refreshToken": "<redacted-token>"
+    },
+    "authenticated": false
+  },
+  "response": {
+    "status": 200,
+    "contentType": "application/json; charset=utf-8",
+    "body": {
+      "success": true,
+      "message": "",
+      "data": {
+        "accessToken": "<redacted-token>",
+        "expiresAt": "2026-09-19T03:08:56.1761707Z",
+        "fullName": "Contract Owner",
+        "email": "owner@test.local",
+        "refreshToken": "<redacted-token>",
+        "role": "user"
+      },
+      "errors": null,
+      "traceId": "0HNOLUB9FMAQS:00000001",
+      "timestamp": "2026-09-19T02:08:56.1764338Z"
+    }
+  }
+}
+

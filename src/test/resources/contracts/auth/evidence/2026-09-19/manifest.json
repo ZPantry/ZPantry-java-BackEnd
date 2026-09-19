@@ -1,0 +1,27 @@
+{
+  "capturedAt": "2026-09-19",
+  "legacyCommit": "a010fdc5894176596bb195e4fef66db2c09496f1",
+  "runtime": ".NET 10",
+  "database": "disposable PostgreSQL 16 with pgvector",
+  "actors": "synthetic @test.local accounts only",
+  "emailDelivery": "intercepted at the disposable EmailService provider boundary",
+  "redactions": [
+    "password",
+    "password hash",
+    "OTP value",
+    "access token",
+    "refresh token",
+    "refresh-token hash",
+    "JWT signing key",
+    "database credential",
+    "email credential"
+  ],
+  "cases": {
+    "register": ["success", "duplicate", "email failure", "empty object", "malformed JSON"],
+    "verifyOtp": ["success", "wrong", "expired", "nonexistent", "already confirmed"],
+    "login": ["success", "wrong password", "nonexistent", "unconfirmed", "inactive", "deleted", "empty object", "malformed JSON"],
+    "refresh": ["success", "rotated old token", "invalid", "expired", "inactive", "unconfirmed", "deleted", "missing"],
+    "logout": ["success", "repeated", "post-revocation use", "post-process-restart use"]
+  }
+}
+
