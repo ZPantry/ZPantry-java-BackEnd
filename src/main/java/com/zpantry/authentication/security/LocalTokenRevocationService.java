@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.stereotype.Service;
 
 @Service
-@ConditionalOnMissingBean(TokenRevocationChecker.class)
 public class LocalTokenRevocationService implements TokenRevocationChecker {
     private final ConcurrentHashMap<String, Instant> revoked = new ConcurrentHashMap<>();
     @Override public boolean isRevoked(String jti) {

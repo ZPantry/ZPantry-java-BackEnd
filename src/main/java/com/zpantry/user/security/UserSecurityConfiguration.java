@@ -30,7 +30,8 @@ public class UserSecurityConfiguration {
     @ConditionalOnProperty(name = "zpantry.security.jwt.enabled", havingValue = "true")
     SecurityFilterChain legacyJwtUserSecurity(HttpSecurity http, LegacyJwtAuthenticationConverter converter)
             throws Exception {
-        http.csrf(csrf -> csrf.disable())
+        http.cors(org.springframework.security.config.Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/Auth/register", "/api/Auth/verify-otp", "/api/Auth/login", "/api/Auth/refresh-token").permitAll()
                         .requestMatchers("/api/Auth/logout", "/api/me/**", "/api/recommendations/**").authenticated()
@@ -46,7 +47,8 @@ public class UserSecurityConfiguration {
     @Order(1)
     @ConditionalOnProperty(name = "zpantry.security.jwt.enabled", havingValue = "false", matchIfMissing = true)
     SecurityFilterChain failClosedUserSecurity(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+        http.cors(org.springframework.security.config.Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/Auth/register", "/api/Auth/verify-otp", "/api/Auth/login", "/api/Auth/refresh-token").permitAll()
                         .requestMatchers("/api/Auth/logout", "/api/me/**", "/api/recommendations/**").denyAll()
@@ -83,5 +85,18 @@ public class UserSecurityConfiguration {
         });
         decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(validators));
         return decoder;
+    }
+    @Bean
+    org.springframework.web.filter.CorsFilter corsFilter(@Value("${zpantry.cors.allowed-origins:*}") String[] allowedOrigins) {
+        org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
+        for (String origin : allowedOrigins) {
+            configuration.addAllowedOriginPattern(origin);
+        }
+        configuration.addAllowedMethod("*");
+        configuration.addAllowedHeader("*");
+        configuration.setAllowCredentials(true);
+        org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return new org.springframework.web.filter.CorsFilter(source);
     }
 }
