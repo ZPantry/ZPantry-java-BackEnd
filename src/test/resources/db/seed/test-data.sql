@@ -4,15 +4,15 @@
 INSERT INTO users (id, created_at, full_name, email, password_hashed,
                    is_email_confirmed, is_active, role)
 VALUES
-('00000000-0000-0000-0000-000000000101', '2026-01-01T00:00:00Z', 'Test Admin', 'admin@test.local',
+('00000000-0000-0000-0000-000000000101', '2026-01-01T00:00:00Z', 'Test Admin', 'admin@test.dev',
  'AIAxJyUGQQCIG+pquXusORUfScFNRqux2b91Uv/6ymchMc0X0P5lIjEpcO9ZMz2Puw==', true, true, 'admin'),
-('00000000-0000-0000-0000-000000000102', '2026-01-01T00:00:00Z', 'Test Owner', 'owner@test.local',
+('00000000-0000-0000-0000-000000000102', '2026-01-01T00:00:00Z', 'Test Owner', 'owner@test.dev',
  'AIAxJyUGQQCIG+pquXusORUfScFNRqux2b91Uv/6ymchMc0X0P5lIjEpcO9ZMz2Puw==', true, true, 'user'),
-('00000000-0000-0000-0000-000000000103', '2026-01-01T00:00:00Z', 'Test Other', 'other@test.local',
+('00000000-0000-0000-0000-000000000103', '2026-01-01T00:00:00Z', 'Test Other', 'other@test.dev',
  'AIAxJyUGQQCIG+pquXusORUfScFNRqux2b91Uv/6ymchMc0X0P5lIjEpcO9ZMz2Puw==', true, true, 'user'),
-('00000000-0000-0000-0000-000000000104', '2026-01-01T00:00:00Z', 'Test Inactive', 'inactive@test.local',
+('00000000-0000-0000-0000-000000000104', '2026-01-01T00:00:00Z', 'Test Inactive', 'inactive@test.dev',
  'AIAxJyUGQQCIG+pquXusORUfScFNRqux2b91Uv/6ymchMc0X0P5lIjEpcO9ZMz2Puw==', true, false, 'user'),
-('00000000-0000-0000-0000-000000000105', '2026-01-01T00:00:00Z', 'Test Unconfirmed', 'unconfirmed@test.local',
+('00000000-0000-0000-0000-000000000105', '2026-01-01T00:00:00Z', 'Test Unconfirmed', 'unconfirmed@test.dev',
  'AIAxJyUGQQCIG+pquXusORUfScFNRqux2b91Uv/6ymchMc0X0P5lIjEpcO9ZMz2Puw==', false, true, 'user');
 
 INSERT INTO ingredients (id, created_at, name, normalized_name, category, unit,

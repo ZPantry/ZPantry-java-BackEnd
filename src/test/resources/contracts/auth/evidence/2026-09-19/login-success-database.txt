@@ -1,2 +1,2 @@
 columns=id|email|password_hashed|created_at|updated_at|deleted_at|is_deleted|otp_code|otp_expired_at|otp_retry_count|is_email_confirmed|is_active|role|refresh_token_hash|refresh_token_expires_at
-2ab60651-25ba-4c42-9ec3-2a7dc10813f6|owner@test.local|<redacted-password-hash; prefix=ACB>|2026-09-19 02:07:41.521933+00|2026-09-19 02:08:55.198524+00||f|<redacted-otp; present=false>||0|t|t|user|<redacted-refresh-hash; present=true>|2026-09-26 02:08:55.198523+00
+2ab60651-25ba-4c42-9ec3-2a7dc10813f6|owner@test.dev|<redacted-password-hash; prefix=ACB>|2026-09-19 02:07:41.521933+00|2026-09-19 02:08:55.198524+00||f|<redacted-otp; present=false>||0|t|t|user|<redacted-refresh-hash; present=true>|2026-09-26 02:08:55.198523+00

@@ -6,7 +6,7 @@ Last update: 2026-09-19 — Authentication contract captured; implementation not
 
 Foundation readiness is COMPLETE for the explicitly scoped infrastructure slice: Java 21,
 isolated PostgreSQL/pgvector verification, safe persistence defaults, common envelope checks
-and contract-fixture structure. The User slice is implemented and verified for local migration
+and contract-fixture structure. The User slice is implemented and verified for dev migration
 scope under accepted ADR-012; this is not production cutover completion. Other business modules
 remain NOT_STARTED.
 
@@ -15,8 +15,8 @@ remain NOT_STARTED.
 | Module | Current state | Status |
 |---|---|---|
 | Foundation | Java 21 enforced, safe persistence defaults, response records, validation, contract directories, container integration tests | COMPLETE (Foundation readiness scope only) |
-| User | Persistence, DTOs, service, routes, legacy password hashing and Option-B identity boundary implemented and container verified | COMPLETE (local migration scope); production cutover BLOCKED |
-| Authentication | Register/OTP/login/JWT/refresh/logout implemented with approved corrections and local revocation | IMPLEMENTED_NOT_VERIFIED |
+| User | Persistence, DTOs, service, routes, legacy password hashing and Option-B identity boundary implemented and container verified | COMPLETE (dev migration scope); production cutover BLOCKED |
+| Authentication | Register/OTP/login/JWT/refresh/logout implemented with approved corrections and dev revocation | IMPLEMENTED_NOT_VERIFIED |
 | Ingredient | CRUD, multipart media and embedding persistence implemented | IMPLEMENTED_NOT_VERIFIED |
 | Recipe | CRUD, ingredient links, multipart media and embedding persistence implemented | IMPLEMENTED_NOT_VERIFIED |
 | Pantry | Authenticated owner-scoped list/upsert/update/delete implemented | IMPLEMENTED_NOT_VERIFIED |
@@ -47,7 +47,7 @@ remain NOT_STARTED.
 - JPA uses validate; SQL initialization never; Flyway disabled, auto-baseline false, clean
   disabled; Open Session in View false. No runtime migration/schema/extension creation.
 - Datasource configuration is external only, with no developer/legacy URL default. Private
-  .env and application-local files are ignored. No secrets copied.
+  .env and application-dev files are ignored. No secrets copied.
 - Removed unused Spring AI BOM/vector-store starter. JDBC PostgreSQL driver and Flyway
   dependencies remain; no inference bean or generic vector-store schema is introduced.
 - Testcontainers PostgreSQL 2.0.5 is test-only. IsolatedPostgres pins pgvector 0.8.2 / PG16
@@ -72,7 +72,7 @@ remain NOT_STARTED.
 
 Docker was detected through npipe:////./pipe/docker_engine. The pinned image started
 PostgreSQL 16.14 with pgvector 0.8.2. The datasource URL matched the container URL exactly:
-jdbc:postgresql://localhost:55655/zpantry_foundation_test?loggerLevel=OFF (ephemeral port).
+jdbc:postgresql://devhost:55655/zpantry_foundation_test?loggerLevel=OFF (ephemeral port).
 Connectivity, UUID/numeric/date/Instant JPA round-trips, vector(1536) round-trip and invalid
 dimension rejection passed. Hibernate validated the disposable table; Flyway history was
 absent. Configuration safety checks passed. No developer/legacy datasource fallback exists
@@ -121,9 +121,9 @@ Authentication implementation from this record. Foundation remains COMPLETE with
 
 ## User evidence-closure result — 2026-09-18
 
-- Actual users table: BLOCKED. Local PostgreSQL requires credentials that are not available;
+- Actual users table: BLOCKED. dev PostgreSQL requires credentials that are not available;
   no authenticated/read-only session was established and no SQL ran.
-- Legacy HTTP captures: BLOCKED. No local pinned backend/config/isolated database; installed
+- Legacy HTTP captures: BLOCKED. No dev pinned backend/config/isolated database; installed
   SDK is .NET 9 while source targets .NET 10, and Docker was unavailable. No payload fabricated.
 - Password generation: RESOLVED. Actual Microsoft.AspNet.Identity.Core 2.2.4 package execution
   and independent JDK 21 verification prove version-0 PBKDF2-HMAC-SHA1, 1,000 iterations,
@@ -190,7 +190,7 @@ nonblank JTI and the injected revocation boundary. User routes fail closed when 
 disabled, and enabling it without a revocation checker fails startup rather than assuming no
 tokens are revoked. Authentication flows remain NOT_STARTED.
 
-User is COMPLETE for local migration scope after Java 21 `clean verify`. Production cutover stays
+User is COMPLETE for dev migration scope after Java 21 `clean verify`. Production cutover stays
 BLOCKED on the actual shared users catalog and cross-runtime revocation storage.
 
 Verification: Microsoft OpenJDK 21.0.12, Maven `clean verify` BUILD SUCCESS; 8 unit tests and
@@ -217,7 +217,7 @@ All public methods found in the pinned legacy controllers now have Java routes; 
 IMPLEMENTED_NOT_VERIFIED because only startup/schema validation, the prior User suite, and initial
 Authentication/Ingredient/Recipe/Pantry persistence tests currently execute. Full response parity,
 AI failure modes, media compensation and Today Menu detail/completion coverage remain required
-before any new module is COMPLETE FOR LOCAL MIGRATION SCOPE.
+before any new module is COMPLETE FOR dev MIGRATION SCOPE.
 
 Final batch build: Java 21.0.12 `mvnw clean verify` BUILD SUCCESS. Eight unit tests and thirteen
 PostgreSQL 16/pgvector integration tests passed with zero failures, errors or skips. The new tests

@@ -1,7 +1,13 @@
 package com.zpantry.authentication.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zpantry.authentication.api.AuthenticationDtos.AuthResponse;
 import com.zpantry.user.domain.UserEntity;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -10,11 +16,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.UUID;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class JwtTokenService {

@@ -40,8 +40,8 @@ function New-SignedTestToken([string] $ownerId) {
     $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     $header = [ordered]@{ alg = 'HS256'; typ = 'JWT' }
     $payload = [ordered]@{
-        sub = 'owner@test.local'
-        email = 'owner@test.local'
+        sub = 'owner@test.dev'
+        email = 'owner@test.dev'
         jti = ([Guid]::NewGuid().ToString('N'))
         userId = $ownerId
         nameid = $ownerId
@@ -96,14 +96,14 @@ function Capture-Put([string] $prefix, [string] $ownerId, [string] $token) {
     return [int]$status
 }
 
-$loginPayload = @{ email = 'owner@test.local'; password = 'Owner-Contract-2026!' } | ConvertTo-Json -Compress
+$loginPayload = @{ email = 'owner@test.dev'; password = 'Owner-Contract-2026!' } | ConvertTo-Json -Compress
 $login = Invoke-RestMethod -Method Post -Uri "$BaseUrl/api/Auth/login" -ContentType 'application/json' -Body $loginPayload
 if (-not $login.success -or [string]::IsNullOrWhiteSpace($login.data.accessToken)) {
     throw 'Legacy login failed for synthetic owner'
 }
 $loginToken = $login.data.accessToken
 $ownerId = (docker exec $DatabaseContainer psql -U zpantry_contract -d zpantry_contract `
-    -X -A -t -c "SELECT id FROM users WHERE email = 'owner@test.local';").Trim()
+    -X -A -t -c "SELECT id FROM users WHERE email = 'owner@test.dev';").Trim()
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($ownerId)) {
     throw 'Could not resolve synthetic owner UUID'
 }
@@ -133,10 +133,10 @@ Write-Json 'provenance.json' ([ordered]@{
         'System.IdentityModel.Tokens.Jwt' = '8.0.1'
     }
     database = 'zpantry_contract'
-    account = [ordered]@{ email = 'owner@test.local'; id = $ownerId; role = 'user' }
+    account = [ordered]@{ email = 'owner@test.dev'; id = $ownerId; role = 'user' }
     loginToken = [ordered]@{ source = 'POST /api/Auth/login'; ownerPutStatus = $loginPutStatus }
     signedToken = [ordered]@{
-        source = 'Locally HS256-signed equivalent using configured disposable key'
+        source = 'devly HS256-signed equivalent using configured disposable key'
         rawOwnerClaim = 'nameid'
         ownerPutStatus = $signedPutStatus
     }

@@ -6,7 +6,7 @@ Flyway owns schema creation for explicitly selected fresh databases. Hibernate o
 validation (`ddl-auto=validate`). Default runtime configuration keeps Flyway disabled to protect
 unverified EF databases; the `fresh` profile opts in. Synthetic seed data is outside Flyway.
 
-Developer launches without an explicitly active profile use the `local` default and repository
+Developer launches without an explicitly active profile use the `dev` default and repository
 `compose.yaml`. Deployments must activate their environment profile and provide their datasource.
 
 ## 1. Target Stack

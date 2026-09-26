@@ -460,7 +460,7 @@ Order order = new OrderBuilder()
     .withItems(items)
     .withShippingAddress(address)
     .withPaymentMethod(paymentMethod)
-    .deliverBy(LocalDate.now().plusDays(3))
+    .deliverBy(devDate.now().plusDays(3))
     .build();
 ```
 
@@ -473,7 +473,7 @@ order.setCustomer(customer);
 order.setItems(items);
 order.setShippingAddress(address);
 order.setPaymentMethod(paymentMethod);
-order.setDeliveryDate(LocalDate.now().plusDays(3));
+order.setDeliveryDate(devDate.now().plusDays(3));
 ```
 
 ### Example 7: Use Consistent Type "Weights" (Bold, Regular, Light)

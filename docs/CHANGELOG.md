@@ -1,8 +1,25 @@
 # ZPantry Java Migration Documentation Changelog
 
-## 2026-09-19 — Local Startup Datasource Fix
+## 2026-09-25 — Shared Development Stack Port Allocation
 
-- Added a default local profile and dedicated PostgreSQL 16/pgvector Docker Compose service.
+- Reserved `15432` for the Docker PostgreSQL/pgvector service, leaving the host PostgreSQL
+  listener on `5432` untouched.
+- Standardized backend-to-AI development traffic on port `8000` and backend HTTP on `8080`.
+- Added the workspace-level Compose stack for PostgreSQL, AI, backend and mobile web; the landing
+  frontend is intentionally excluded. Mobile web maps to `18081` to avoid the active Expo `8081`.
+
+## 2026-09-23 — Development Startup Configuration Repair
+
+- Restored the Docker-backed datasource settings to the active `dev` profile
+  (`localhost:54329`, `zpantry_dev`) instead of the unrelated local `postgres` defaults.
+- Registered the profile-scoped development email-verification adapter so the Authentication
+  service can be created during a `dev` startup.
+- Verified a clean dev startup connects to PostgreSQL 16/pgvector, applies/validates Flyway,
+  starts Tomcat on port 8080, and serves `/v3/api-docs` with HTTP 200.
+
+## 2026-09-19 — dev Startup Datasource Fix
+
+- Added a default dev profile and dedicated PostgreSQL 16/pgvector Docker Compose service.
 - Added optional Spring Boot Docker Compose development support.
 - Verified a no-profile Maven/IDE launch runs Flyway V1, validates Hibernate and starts Tomcat.
 
@@ -87,7 +104,7 @@ Keep entries concise and focused on meaningful migration changes.
 
 ## 2026-09-18 — User Evidence Closure
 
-- Attempted a safe actual-schema probe. Local PostgreSQL 17 required unavailable credentials;
+- Attempted a safe actual-schema probe. dev PostgreSQL 17 required unavailable credentials;
   no session/SQL/database modification occurred. Actual users catalog remains BLOCKED.
 - Could not safely execute the net10.0 legacy host: only .NET SDK 9 was installed, Docker was
   unavailable and no isolated legacy database/configuration existed. Added an evidence README
@@ -217,14 +234,14 @@ Keep entries concise and focused on meaningful migration changes.
 - Captured redacted runtime contracts on isolated .NET 10 and PostgreSQL 16 with synthetic actors and
   intercepted email delivery; no real database, email or secret was used.
 - Proved refresh rotation, exact state failures, email-before-insert ordering, empty registration,
-  process-local JTI rejection and loss of revocation after process restart.
+  process-dev JTI rejection and loss of revocation after process restart.
 - Added `AUTHENTICATION_MIGRATION_ANALYSIS.md`, MIG-005, evidence provenance, mutation/HTTP matrices,
   ownership proposal and revocation alternatives. No Java production/build/security code changed.
 # 2026-09-19 — Batch production implementation pass
 
 - Added Java production routes for every public endpoint in the pinned legacy controllers.
 - Added Authentication issuance/rotation/OTP/logout with approved input, RNG, ADR-012 and bounded
-  local-revocation corrections.
+  dev-revocation corrections.
 - Added JPA feature mappings, CRUD/orchestration services, multipart media boundaries, Cloudinary
   adapter, external AI HTTP client and `vector(1536)` persistence.
 - Extended the isolated test schema and added initial cross-feature persistence/authentication tests.

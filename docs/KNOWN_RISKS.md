@@ -7,7 +7,7 @@ This file is intentionally explicit. Do not silently "clean up" these issues dur
 The batch pass provides every legacy route, but most new feature endpoints lack captured legacy
 HTTP fixtures. AI/Cloudinary production connectivity and Today Menu upload compensation are not
 verified. Several batch classes are deliberately dense and use map-shaped upstream payloads; they
-need type and readability cleanup only after parity is locked. Status: BLOCKS LOCAL COMPLETION.
+need type and readability cleanup only after parity is locked. Status: BLOCKS dev COMPLETION.
 
 ## R-001 — Legacy Secrets Were Committed
 
@@ -226,7 +226,7 @@ The security starter is present, but no JWT/authentication/authorization configu
 
 Do not deploy this scaffold as a replacement backend. No new password scheme or API contract has been selected. Existing password continuity and secret rotation risks remain unresolved.
 
-The current .gitignore does not protect .env variants or private application configuration. No secrets were found in the inspected Java source/configuration, but future local credentials could be accidentally staged. Introduce suitable exclusions and secret-free examples when configuration is added; do not copy legacy credentials.
+The current .gitignore does not protect .env variants or private application configuration. No secrets were found in the inspected Java source/configuration, but future dev credentials could be accidentally staged. Introduce suitable exclusions and secret-free examples when configuration is added; do not copy legacy credentials.
 
 ## R-017 — Target Package Layout Falls Outside Current Default Scan
 
@@ -255,7 +255,7 @@ Capture representative legacy error responses and explicitly decide which messag
   legacy schema and future production vector mapping are still unverified. Deployment
   overrides must not relax this safety policy.
 - R-016: Source-derived response records and explicit Bean Validation now exist, but all
-  business security/API behavior remains unimplemented. .env/application-local exclusions
+  business security/API behavior remains unimplemented. .env/application-dev exclusions
   now reduce accidental credential staging; secret rotation risks remain open.
 - R-017: Resolved by moving the composition root to com.zpantry before feature packages exist.
 - R-012 and R-018: Unresolved. The existing API file was not modified because no API migration
@@ -309,7 +309,7 @@ Foundation remains COMPLETE and unchanged. User remains unimplemented.
 
 **Severity:** High (persistence compatibility blocker)
 
-**Evidence-closure status (2026-09-18): BLOCKED.** Local PostgreSQL 17 required a password;
+**Evidence-closure status (2026-09-18): BLOCKED.** dev PostgreSQL 17 required a password;
 no connection environment variable or pgpass file was available. A no-prompt connection failed
 before a session, so no read-only catalog query ran and no database was modified. The service
 was not assumed to be the ZPantry database. An explicit read-only connection/catalog export is required.
@@ -362,7 +362,7 @@ evidence. Preserve-always-403 versus repair-owner-consumption requires explicit 
 
 NameIdentifier contains the UUID; sub contains email. Admin grants list/detail/delete but
 never bypasses owner-only PUT. Non-admin own-detail reads are forbidden. A mock principal
-cannot prove legacy JWT validation/claim/revocation interoperability. The existing process-local
+cannot prove legacy JWT validation/claim/revocation interoperability. The existing process-dev
 JTI blacklist also cannot automatically be shared across Java and C# processes.
 
 Legacy token validation does not reload active/confirmed/deleted flags. Password updates and
@@ -420,7 +420,7 @@ lifetime and JTI validation.
 ## R-025 — Shared-Database Cutover Evidence Still Missing
 
 **Status (2026-09-19): implementation limitation; cutover blocker.** Pinned migrations and the
-disposable PostgreSQL catalog provide enough evidence for local User implementation. They do not
+disposable PostgreSQL catalog provide enough evidence for dev User implementation. They do not
 prove the actual shared table's constraints, indexes, collation, triggers/RLS/grants, migration
 history, production data quality or security-field variants. User implementation is READY WITH
 DOCUMENTED LIMITATIONS; production cutover remains BLOCKED until read-only catalog comparison.
@@ -449,7 +449,7 @@ checks `otp_retry_count`. Wrong and expired attempts do not mutate the row, and 
 route. A secure Java generator and attempt policy would intentionally deviate from legacy behavior.
 Status: OPEN; decision required before register/OTP implementation.
 
-## R-028 — Logout Revocation Is Process-Local and Lost on Restart
+## R-028 — Logout Revocation Is Process-dev and Lost on Restart
 
 The C# blacklist is a static `ConcurrentDictionary` keyed by JTI. Runtime evidence proves logout
 rejects the token in-process, but restarting the process makes the same still-valid token usable.
@@ -467,7 +467,7 @@ are exposed through the controller's 500 envelope. Status: OPEN compatibility/se
 Ingredient, Recipe, Media, Pantry, Recommendation and Today Menu source methods have Java
 implementations, but their HTTP response/status parity has not been captured against the legacy
 runtime. AI and Cloudinary production connectivity are also unverified. Modules remain
-IMPLEMENTED_NOT_VERIFIED. Status: OPEN and blocks local completion.
+IMPLEMENTED_NOT_VERIFIED. Status: OPEN and blocks dev completion.
 
 ## R-031 — Today Menu External Upload Cannot Roll Back Atomically
 
@@ -479,17 +479,17 @@ equivalent compensating deletion for every post-upload failure. Status: OPEN.
 
 The current Java recommendation orchestration returns the AI adapter's raw response map as the
 `data` member, persists only the `meal_recommendations` parent row, and does not persist ranked
-`meal_recommendation_items`. The legacy service unwraps and maps the AI payload, provides a local
+`meal_recommendation_items`. The legacy service unwraps and maps the AI payload, provides a dev
 fallback for meal recommendation/check operations, completes the parent state, and stores every
 result item. Stored-detail and feedback response shapes also differ. Status: CONFIRMED BUG; blocks
-local completion for all five Recommendation endpoints.
+dev completion for all five Recommendation endpoints.
 
 ## R-034 — Today Menu Detail, Log Expansion, and Compensation Are Incomplete
 
 The Java detail response currently returns only the base menu item, while legacy includes recipe,
 required ingredients, current pantry items and usage logs. Java cooking-log listing emits empty
 usage-log arrays. Completion has a database transaction but does not compensate the uploaded media
-asset when a post-upload database operation fails. Status: CONFIRMED BUG; blocks local completion
+asset when a post-upload database operation fails. Status: CONFIRMED BUG; blocks dev completion
 for detail, completion and cooking-log endpoints.
 
 ## R-035 — AI Client Failure Contract Is Not Yet Bounded

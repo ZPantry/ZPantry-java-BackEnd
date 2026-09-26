@@ -9,7 +9,7 @@
   },
   "database": "zpantry_contract",
   "account": {
-    "email": "owner@test.local",
+    "email": "owner@test.dev",
     "id": "9a833dce-849f-43ee-aa6e-6760ffcf3e54",
     "role": "user"
   },
@@ -18,7 +18,7 @@
     "ownerPutStatus": 403
   },
   "signedToken": {
-    "source": "Locally HS256-signed equivalent using configured disposable key",
+    "source": "devly HS256-signed equivalent using configured disposable key",
     "rawOwnerClaim": "nameid",
     "ownerPutStatus": 403
   },

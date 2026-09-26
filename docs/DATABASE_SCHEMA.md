@@ -380,7 +380,7 @@ tests passed; no legacy database was used or modified.
 ## User slice mapping analysis — 2026-09-16
 
 **Evidence level:** exact source/migration-derived mapping, NOT a verified live schema.
-The local repository has no legacy pg_dump/schema-only export, catalog query result or
+The dev repository has no legacy pg_dump/schema-only export, catalog query result or
 users-table integration fixture; its only SQL is the Foundation probe. Documentation
 explicitly defers actual schema verification. No live legacy connection was used in this
 analysis, and the passing Foundation PostgreSQL container is not legacy schema evidence.
@@ -486,14 +486,14 @@ explicitly includes isActive, isEmailConfirmed and role. No schema migration is 
 
 ### Evidence-closure probe — 2026-09-18
 
-The actual-table gate remains **BLOCKED**. A local PostgreSQL 17 Windows service was detected,
+The actual-table gate remains **BLOCKED**. A dev PostgreSQL 17 Windows service was detected,
 but no connection environment variable or PostgreSQL password file was available. A no-prompt
-`psql -w -h localhost -U postgres -d postgres` attempt failed with `no password supplied`
+`psql -w -h devhost -U postgres -d postgres` attempt failed with `no password supplied`
 before any session or SQL statement. Consequently no database identity, read-only transaction,
 catalog row, column, constraint, index, default, collation, trigger or RLS evidence was collected.
 No database was modified.
 
-Do not reinterpret the running local service as the legacy/development ZPantry database. The
+Do not reinterpret the running dev service as the legacy/development ZPantry database. The
 20-column EF/skeleton mapping above remains provisional, and the conflicting quoted-PascalCase
 Db.sql remains unresolved. Evidence closure requires an explicitly supplied read-only connection
 or a schema-only/catalog export from the actual environment. The query session must first confirm

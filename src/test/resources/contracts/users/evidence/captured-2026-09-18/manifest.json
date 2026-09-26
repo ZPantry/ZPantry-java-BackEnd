@@ -7,21 +7,21 @@
   "dataPolicy": "Synthetic test accounts only; no real credentials/data; bearer tokens not persisted",
   "accounts": [
     {
-      "email": "admin@test.local",
+      "email": "admin@test.dev",
       "id": "eb8ffbe9-8334-49d7-ab82-45c097b6f523",
       "role": "admin",
       "active": true,
       "confirmed": true
     },
     {
-      "email": "owner@test.local",
+      "email": "owner@test.dev",
       "id": "45d99c19-64b9-456d-a1e8-aec4d667c53f",
       "role": "user",
       "active": true,
       "confirmed": true
     },
     {
-      "email": "other-user@test.local",
+      "email": "other-user@test.dev",
       "id": "96de117a-65a9-4ae5-abb9-d228103eab80",
       "role": "user",
       "active": true,

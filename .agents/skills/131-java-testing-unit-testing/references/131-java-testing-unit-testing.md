@@ -506,7 +506,7 @@ class UserServiceTestBad {
     @Test
     void findUserById() {
         // Bad: Using real dependencies instead of mocks
-        DatabaseConnection connection = new DatabaseConnection("localhost", 5432);
+        DatabaseConnection connection = new DatabaseConnection("devhost", 5432);
         UserRepository userRepository = new PostgresUserRepository(connection);
         UserService userService = new UserService(userRepository);
 

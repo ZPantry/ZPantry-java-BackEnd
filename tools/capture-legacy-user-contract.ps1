@@ -8,7 +8,7 @@ param(
     [string] $OutputDirectory = "src/test/resources/contracts/users/evidence/captured-2026-09-18"
 )
 
-# TEST-ONLY evidence capture. Synthetic local accounts only; tokens remain in memory.
+# TEST-ONLY evidence capture. Synthetic dev accounts only; tokens remain in memory.
 
 $ErrorActionPreference = "Stop"
 $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
@@ -85,12 +85,12 @@ function CaptureHttp(
     })
 }
 
-$adminToken = Login "admin@test.local" "Admin-Contract-2026!"
-$ownerToken = Login "owner@test.local" "Owner-Contract-2026!"
-$otherToken = Login "other-user@test.local" "Other-Contract-2026!"
-$adminId = UserId "admin@test.local"
-$ownerId = UserId "owner@test.local"
-$otherId = UserId "other-user@test.local"
+$adminToken = Login "admin@test.dev" "Admin-Contract-2026!"
+$ownerToken = Login "owner@test.dev" "Owner-Contract-2026!"
+$otherToken = Login "other-user@test.dev" "Other-Contract-2026!"
+$adminId = UserId "admin@test.dev"
+$ownerId = UserId "owner@test.dev"
+$otherId = UserId "other-user@test.dev"
 $missingId = "00000000-0000-0000-0000-000000000099"
 
 CaptureHttp "get-list-admin-default" "GET" "/api/users" "admin" $adminToken
@@ -120,7 +120,7 @@ CaptureRow "put-empty-strings.after.json" $ownerId
 CaptureRow "put-password.before.json" $ownerId
 CaptureHttp "put-owner-password" "PUT" "/api/users/$ownerId" "owner" $ownerToken '{"password":"Owner-Contract-Updated-2026!"}'
 CaptureRow "put-password.after.json" $ownerId
-$ownerTokenAfterRejectedPasswordPut = Login "owner@test.local" "Owner-Contract-2026!"
+$ownerTokenAfterRejectedPasswordPut = Login "owner@test.dev" "Owner-Contract-2026!"
 
 CaptureHttp "put-wrong-owner" "PUT" "/api/users/$otherId" "owner" $ownerTokenAfterRejectedPasswordPut '{"fullName":"Forbidden"}'
 CaptureHttp "put-admin-other-user" "PUT" "/api/users/$ownerId" "admin" $adminToken '{"fullName":"Forbidden Admin Update"}'
@@ -163,9 +163,9 @@ $provenance = [ordered]@{
     database = "zpantry_contract"
     dataPolicy = "Synthetic test accounts only; no real credentials/data; bearer tokens not persisted"
     accounts = @(
-        [ordered]@{ email = "admin@test.local"; id = $adminId; role = "admin"; active = $true; confirmed = $true },
-        [ordered]@{ email = "owner@test.local"; id = $ownerId; role = "user"; active = $true; confirmed = $true },
-        [ordered]@{ email = "other-user@test.local"; id = $otherId; role = "user"; active = $true; confirmed = $true }
+        [ordered]@{ email = "admin@test.dev"; id = $adminId; role = "admin"; active = $true; confirmed = $true },
+        [ordered]@{ email = "owner@test.dev"; id = $ownerId; role = "user"; active = $true; confirmed = $true },
+        [ordered]@{ email = "other-user@test.dev"; id = $otherId; role = "user"; active = $true; confirmed = $true }
     )
     accountCreation = "Legacy EnsureDemoAccountsAsync bootstrap; actual Microsoft.AspNet.Identity.PasswordHasher"
     cases = $manifest

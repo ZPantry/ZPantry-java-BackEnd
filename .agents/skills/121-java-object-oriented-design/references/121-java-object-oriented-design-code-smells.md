@@ -131,7 +131,7 @@ Description: These data clumps often represent a missing concept that should be 
 
 ```java
 // Good: Encapsulating related data into a Range object
-record DateRange(LocalDate start, LocalDate end) {
+record DateRange(devDate start, devDate end) {
     public DateRange {
         if (start.isAfter(end)) throw new IllegalArgumentException("Start date must be before end date.");
     }
@@ -141,7 +141,7 @@ class EventScheduler {
     public void scheduleEvent(String eventName, DateRange range) {
         System.out.println("Scheduling " + eventName + " from " + range.start() + " to " + range.end());
     }
-    public boolean isDateInRange(LocalDate date, DateRange range) {
+    public boolean isDateInRange(devDate date, DateRange range) {
         return !date.isBefore(range.start()) && !date.isAfter(range.end());
     }
 }

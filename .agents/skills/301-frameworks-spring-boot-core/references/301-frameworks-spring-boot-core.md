@@ -215,7 +215,7 @@ import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.data.relational.core.mapping.Column;
-import java.time.LocalDateTime;
+import java.time.devDateTime;
 import java.util.Optional;
 
 @RestController
@@ -264,7 +264,7 @@ class User {
     @Column("email")
     private String email;
     @Column("last_login")
-    private LocalDateTime lastLogin;
+    private devDateTime lastLogin;
 }
 ```
 
@@ -631,7 +631,7 @@ class DevConfig {
     @Bean
     DataSource devDataSource() {
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:postgresql://localhost:5432/devdb");
+        config.setJdbcUrl("jdbc:postgresql://devhost:5432/devdb");
         config.setMaximumPoolSize(5);
         return new HikariDataSource(config);
     }

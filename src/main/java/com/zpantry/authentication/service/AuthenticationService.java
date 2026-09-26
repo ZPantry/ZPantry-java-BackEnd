@@ -2,22 +2,24 @@ package com.zpantry.authentication.service;
 
 import com.zpantry.authentication.api.AuthenticationDtos.*;
 import com.zpantry.authentication.security.JwtTokenService;
-import com.zpantry.authentication.security.LocalTokenRevocationService;
+import com.zpantry.authentication.security.DevTokenRevocationService;
 import com.zpantry.user.domain.UserEntity;
 import com.zpantry.user.persistence.UserRepository;
 import com.zpantry.user.service.LegacyPasswordHasher;
-import java.security.SecureRandom;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
 @Service
 public class AuthenticationService {
     private final UserRepository users; private final LegacyPasswordHasher passwords; private final JwtTokenService tokens;
-    private final EmailVerificationPort email; private final ObjectProvider<LocalTokenRevocationService> revocations; private final SecureRandom random=new SecureRandom();
-    public AuthenticationService(UserRepository users,LegacyPasswordHasher passwords,JwtTokenService tokens,EmailVerificationPort email,ObjectProvider<LocalTokenRevocationService> revocations){this.users=users;this.passwords=passwords;this.tokens=tokens;this.email=email;this.revocations=revocations;}
+    private final EmailVerificationPort email;
+    private final ObjectProvider<DevTokenRevocationService> revocations; private final SecureRandom random=new SecureRandom();
+    public AuthenticationService(UserRepository users,LegacyPasswordHasher passwords,JwtTokenService tokens,EmailVerificationPort email,ObjectProvider<DevTokenRevocationService> revocations){this.users=users;this.passwords=passwords;this.tokens=tokens;this.email=email;this.revocations=revocations;}
     @Transactional public void register(RegisterRequest r){
         if(users.findByEmailAndDeletedFalse(r.email()).isPresent())throw new IllegalStateException("Email already exists.");
         String otp="%06d".formatted(random.nextInt(900000)+100000);

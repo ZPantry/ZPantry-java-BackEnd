@@ -7,7 +7,7 @@ The backend calls a separate AI service.
 Legacy default service URL:
 
 ```text
-http://localhost:8000
+http://devhost:8000
 ```
 
 Known legacy paths:

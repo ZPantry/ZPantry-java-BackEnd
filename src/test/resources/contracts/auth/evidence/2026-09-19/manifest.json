@@ -3,7 +3,7 @@
   "legacyCommit": "a010fdc5894176596bb195e4fef66db2c09496f1",
   "runtime": ".NET 10",
   "database": "disposable PostgreSQL 16 with pgvector",
-  "actors": "synthetic @test.local accounts only",
+  "actors": "synthetic @test.dev accounts only",
   "emailDelivery": "intercepted at the disposable EmailService provider boundary",
   "redactions": [
     "password",

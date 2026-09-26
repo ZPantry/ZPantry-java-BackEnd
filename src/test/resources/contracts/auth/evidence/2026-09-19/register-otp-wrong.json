@@ -4,7 +4,7 @@
     "path": "/api/Auth/register",
     "body": {
       "fullName": "Synthetic User",
-      "email": "otp-wrong@test.local",
+      "email": "otp-wrong@test.dev",
       "password": "<redacted-test-password>"
     },
     "authenticated": false

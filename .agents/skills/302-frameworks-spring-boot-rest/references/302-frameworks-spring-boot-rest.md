@@ -45,7 +45,7 @@ Before applying any recommendations, ensure the project is in a valid state by r
 - Example 12: Caching semantics
 - Example 13: Deprecation and sunset
 - Example 14: Content negotiation
-- Example 15: Time and locale in contracts
+- Example 15: Time and deve in contracts
 - Example 16: API-first with OpenAPI Generator (Spring)
 
 ### Example 1: Use HTTP methods semantically
@@ -908,10 +908,10 @@ class LooseContentController {
 }
 ```
 
-### Example 15: Time and locale in contracts
+### Example 15: Time and deve in contracts
 
 Title: ISO-8601 with offset; optional `Accept-Language` for errors
-Description: Model timestamps as `Instant` or `OffsetDateTime` (ISO-8601 with offset) so clients interpret wall-clock unambiguously—avoid legacy `Date` and ambiguous zone-less `LocalDateTime` in public JSON unless the domain is strictly calendar-local. For localized problem/error text (RFC 7807-style bodies), honor `Accept-Language` only if you keep stable problem `type` URIs/codes identical across locales and avoid leaking sensitive details through translated messages.
+Description: Model timestamps as `Instant` or `OffsetDateTime` (ISO-8601 with offset) so clients interpret wall-clock unambiguously—avoid legacy `Date` and ambiguous zone-less `devDateTime` in public JSON unless the domain is strictly calendar-dev. For devized problem/error text (RFC 7807-style bodies), honor `Accept-Language` only if you keep stable problem `type` URIs/codes identical across deves and avoid leaking sensitive details through translated messages.
 
 **Good example:**
 
@@ -925,7 +925,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.Locale;
+import java.util.deve;
 
 @RestController
 @RequestMapping("/api/v1/events")
@@ -942,21 +942,21 @@ class EventController {
 record EventDTO(Instant occurredAt, OffsetDateTime windowStart) { }
 
 @ControllerAdvice
-class LocalizedProblemAdvice {
+class devizedProblemAdvice {
 
     private final MessageSource messages;
 
-    LocalizedProblemAdvice(MessageSource messages) {
+    devizedProblemAdvice(MessageSource messages) {
         this.messages = messages;
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    ResponseEntity<ProblemDetail> badRequest(IllegalArgumentException ex, Locale locale) {
+    ResponseEntity<ProblemDetail> badRequest(IllegalArgumentException ex, deve deve) {
         // Both title and detail come from the message source — ex.getMessage() is never sent to clients
-        String detail = messages.getMessage("problem.invalid_argument.detail", null, locale);
+        String detail = messages.getMessage("problem.invalid_argument.detail", null, deve);
         ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
         pd.setType(URI.create("https://example.com/problems/invalid-argument"));
-        pd.setTitle(messages.getMessage("problem.invalid_argument.title", null, locale));
+        pd.setTitle(messages.getMessage("problem.invalid_argument.title", null, deve));
         return ResponseEntity.badRequest().body(pd);
     }
 }

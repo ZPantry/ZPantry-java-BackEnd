@@ -1,11 +1,121 @@
-package com.zpantry.ingredient.service; import static com.zpantry.ingredient.api.IngredientDtos.*;import com.zpantry.common.api.*;import com.zpantry.ingredient.domain.IngredientEntity;import com.zpantry.ingredient.persistence.IngredientRepository;import com.zpantry.integration.ai.AiClient;import com.zpantry.media.service.MediaStoragePort;import java.time.Instant;import org.springframework.data.domain.*;import org.springframework.stereotype.Service;import org.springframework.transaction.annotation.Transactional;
-@Service public class IngredientService{private final IngredientRepository repo;private final AiClient ai;private final MediaStoragePort media;public IngredientService(IngredientRepository r,AiClient a,MediaStoragePort m){repo=r;ai=a;media=m;}private static <T>ApiResponse<T> ok(T d,String m){return new ApiResponse<>(true,m,d,null,"",Instant.now());}private static <T>ApiResponse<T> fail(String m){return new ApiResponse<>(false,m,null,null,"",Instant.now());}
- public PagedResponse<IngredientResponse> list(int pi,int ps,String search){pi=Math.max(pi,1);ps=ps<=0?10:Math.min(ps,100);var pageable=PageRequest.of(pi-1,ps,Sort.by("name"));Page<IngredientEntity> p=search==null||search.isBlank()?repo.findAllByDeletedFalse(pageable):repo.searchActive(search.trim().toLowerCase(),pageable);var data=p.stream().map(this::dto).toList();return PagedResponse.successPage(data,pi,ps,(int)p.getTotalElements(),"","",Instant.now());}
- @Transactional public ApiResponse<IngredientResponse> create(CreateIngredientRequest r){if(r.name()==null||r.name().isBlank())return fail("Ingredient name is required.");String n=r.name().trim().toLowerCase();if(repo.existsByNormalizedNameAndDeletedFalse(n))return fail("Ingredient already exists.");IngredientEntity e=new IngredientEntity(r.name());apply(e,r);ai.embedIngredient(e.getId(),e.name,e.normalizedName,e.category).ifPresent(v->e.embedding=v);return ok(dto(repo.save(e)),"Ingredient created.");}
- @Transactional public ApiResponse<IngredientResponse> createForm(IngredientFormRequest r){var result=create(new CreateIngredientRequest(r.name(),r.category(),r.unit(),r.caloriesPerUnit(),r.proteinPerUnit(),r.fatPerUnit(),r.carbPerUnit(),r.imageUrl(),r.gradientFrom(),r.gradientTo()));if(result.success()&&r.imageFile()!=null&&!r.imageFile().isEmpty()){var e=repo.findById(result.data().id()).orElseThrow();e.imageUrl=media.upload(r.imageFile(),"ingredients").secureUrl();e.touch();return ok(dto(e),"Ingredient created.");}return result;}
- @Transactional public ApiResponse<IngredientResponse> update(java.util.UUID id,UpdateIngredientRequest r){var e=repo.findByIdAndDeletedFalse(id).orElse(null);if(e==null)return fail("Ingredient not found.");if(r.name()!=null&&!r.name().isBlank()){var normalized=r.name().trim().toLowerCase();if(repo.existsByNormalizedNameAndDeletedFalseAndIdNot(normalized,id))return fail("Ingredient already exists.");e.name=r.name().trim();e.normalizedName=normalized;}apply(e,new CreateIngredientRequest(e.name,r.category(),r.unit(),r.caloriesPerUnit(),r.proteinPerUnit(),r.fatPerUnit(),r.carbPerUnit(),r.imageUrl(),r.gradientFrom(),r.gradientTo()));e.touch();ai.embedIngredient(e.getId(),e.name,e.normalizedName,e.category).ifPresent(v->e.embedding=v);return ok(dto(e),"Ingredient updated.");}
- @Transactional public ApiResponse<IngredientResponse> updateForm(java.util.UUID id,IngredientFormRequest r){var result=update(id,new UpdateIngredientRequest(r.name(),r.category(),r.unit(),r.caloriesPerUnit(),r.proteinPerUnit(),r.fatPerUnit(),r.carbPerUnit(),r.imageUrl(),r.gradientFrom(),r.gradientTo()));if(result.success()&&r.imageFile()!=null&&!r.imageFile().isEmpty()){var e=repo.findByIdAndDeletedFalse(id).orElseThrow();e.imageUrl=media.upload(r.imageFile(),"ingredients").secureUrl();e.touch();return ok(dto(e),"Ingredient updated.");}return result;}
- @Transactional public ApiResponse<Object> delete(java.util.UUID id){var e=repo.findByIdAndDeletedFalse(id).orElse(null);if(e==null)return fail("Ingredient not found.");e.softDelete();return ok(null,"Ingredient deleted.");}
- private void apply(IngredientEntity e,CreateIngredientRequest r){if(r.category()!=null)e.category=r.category();if(r.unit()!=null)e.unit=r.unit();if(r.caloriesPerUnit()!=null)e.caloriesPerUnit=r.caloriesPerUnit();if(r.proteinPerUnit()!=null)e.proteinPerUnit=r.proteinPerUnit();if(r.fatPerUnit()!=null)e.fatPerUnit=r.fatPerUnit();if(r.carbPerUnit()!=null)e.carbPerUnit=r.carbPerUnit();if(r.imageUrl()!=null)e.imageUrl=r.imageUrl();if(r.gradientFrom()!=null)e.gradientFrom=r.gradientFrom();if(r.gradientTo()!=null)e.gradientTo=r.gradientTo();}
- private IngredientResponse dto(IngredientEntity e){return new IngredientResponse(e.getId(),e.name,e.normalizedName,e.category,e.unit,e.caloriesPerUnit,e.proteinPerUnit,e.fatPerUnit,e.carbPerUnit,e.imageUrl,e.gradientFrom,e.gradientTo);}
+package com.zpantry.ingredient.service;
+
+import static com.zpantry.ingredient.api.IngredientDtos.*;
+
+import com.zpantry.common.api.*;
+import com.zpantry.ingredient.domain.IngredientEntity;
+import com.zpantry.ingredient.persistence.IngredientRepository;
+import com.zpantry.integration.ai.AiClient;
+import com.zpantry.media.service.MediaStoragePort;
+
+import java.time.Instant;
+
+import org.springframework.data.domain.*;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class IngredientService {
+    private final IngredientRepository repo;
+    private final AiClient ai;
+    private final MediaStoragePort media;
+
+    public IngredientService(IngredientRepository r, AiClient a, MediaStoragePort m) {
+        repo = r;
+        ai = a;
+        media = m;
+    }
+
+    private static <T> ApiResponse<T> ok(T d, String m) {
+        return new ApiResponse<>(true, m, d, null, "", Instant.now());
+    }
+
+    private static <T> ApiResponse<T> fail(String m) {
+        return new ApiResponse<>(false, m, null, null, "", Instant.now());
+    }
+
+    public PagedResponse<IngredientResponse> list(int pi, int ps, String search) {
+        pi = Math.max(pi, 1);
+        ps = ps <= 0 ? 10 : Math.min(ps, 100);
+        var pageable = PageRequest.of(pi - 1, ps, Sort.by("name"));
+        Page<IngredientEntity> p = search == null || search.isBlank() ? repo.findAllByDeletedFalse(pageable) : repo.searchActive(search.trim().toLowerCase(), pageable);
+        var data = p.stream().map(this::dto).toList();
+        return PagedResponse.successPage(data, pi, ps, (int) p.getTotalElements(), "", "", Instant.now());
+    }
+
+    @Transactional
+    public ApiResponse<IngredientResponse> create(CreateIngredientRequest r) {
+        if (r.name() == null || r.name().isBlank()) return fail("Ingredient name is required.");
+        String n = r.name().trim().toLowerCase();
+        if (repo.existsByNormalizedNameAndDeletedFalse(n)) return fail("Ingredient already exists.");
+        IngredientEntity e = new IngredientEntity(r.name());
+        apply(e, r);
+        ai.embedIngredient(e.getId(), e.name, e.normalizedName, e.category).ifPresent(v -> e.embedding = v);
+        return ok(dto(repo.save(e)), "Ingredient created.");
+    }
+
+    @Transactional
+    public ApiResponse<IngredientResponse> createForm(IngredientFormRequest r) {
+        var result = create(new CreateIngredientRequest(r.name(), r.category(), r.unit(), r.caloriesPerUnit(), r.proteinPerUnit(), r.fatPerUnit(), r.carbPerUnit(), r.imageUrl(), r.gradientFrom(), r.gradientTo()));
+        if (result.success() && r.imageFile() != null && !r.imageFile().isEmpty()) {
+            var e = repo.findById(result.data().id()).orElseThrow();
+            e.imageUrl = media.upload(r.imageFile(), "ingredients").secureUrl();
+            e.touch();
+            return ok(dto(e), "Ingredient created.");
+        }
+        return result;
+    }
+
+    @Transactional
+    public ApiResponse<IngredientResponse> update(java.util.UUID id, UpdateIngredientRequest r) {
+        var e = repo.findByIdAndDeletedFalse(id).orElse(null);
+        if (e == null) return fail("Ingredient not found.");
+        if (r.name() != null && !r.name().isBlank()) {
+            var normalized = r.name().trim().toLowerCase();
+            if (repo.existsByNormalizedNameAndDeletedFalseAndIdNot(normalized, id))
+                return fail("Ingredient already exists.");
+            e.name = r.name().trim();
+            e.normalizedName = normalized;
+        }
+        apply(e, new CreateIngredientRequest(e.name, r.category(), r.unit(), r.caloriesPerUnit(), r.proteinPerUnit(), r.fatPerUnit(), r.carbPerUnit(), r.imageUrl(), r.gradientFrom(), r.gradientTo()));
+        e.touch();
+        ai.embedIngredient(e.getId(), e.name, e.normalizedName, e.category).ifPresent(v -> e.embedding = v);
+        return ok(dto(e), "Ingredient updated.");
+    }
+
+    @Transactional
+    public ApiResponse<IngredientResponse> updateForm(java.util.UUID id, IngredientFormRequest r) {
+        var result = update(id, new UpdateIngredientRequest(r.name(), r.category(), r.unit(), r.caloriesPerUnit(), r.proteinPerUnit(), r.fatPerUnit(), r.carbPerUnit(), r.imageUrl(), r.gradientFrom(), r.gradientTo()));
+        if (result.success() && r.imageFile() != null && !r.imageFile().isEmpty()) {
+            var e = repo.findByIdAndDeletedFalse(id).orElseThrow();
+            e.imageUrl = media.upload(r.imageFile(), "ingredients").secureUrl();
+            e.touch();
+            return ok(dto(e), "Ingredient updated.");
+        }
+        return result;
+    }
+
+    @Transactional
+    public ApiResponse<Object> delete(java.util.UUID id) {
+        var e = repo.findByIdAndDeletedFalse(id).orElse(null);
+        if (e == null) return fail("Ingredient not found.");
+        e.softDelete();
+        return ok(null, "Ingredient deleted.");
+    }
+
+    private void apply(IngredientEntity e, CreateIngredientRequest r) {
+        if (r.category() != null) e.category = r.category();
+        if (r.unit() != null) e.unit = r.unit();
+        if (r.caloriesPerUnit() != null) e.caloriesPerUnit = r.caloriesPerUnit();
+        if (r.protenPerUnit() != null) e.proteinPerUnit = r.protenPerUnit();
+        if (r.fatPerUnit() != null) e.fatPerUnit = r.fatPerUnit();
+        if (r.carbPerUnit() != null) e.carbPerUnit = r.carbPerUnit();
+        if (r.imageUrl() != null) e.imageUrl = r.imageUrl();
+        if (r.gradientFrom() != null) e.gradientFrom = r.gradientFrom();
+        if (r.gradientTo() != null) e.gradientTo = r.gradientTo();
+    }
+
+    private IngredientResponse dto(IngredientEntity e) {
+        return new IngredientResponse(e.getId(), e.name, e.normalizedName, e.category, e.unit, e.caloriesPerUnit, e.proteinPerUnit, e.fatPerUnit, e.carbPerUnit, e.imageUrl, e.gradientFrom, e.gradientTo);
+    }
 }

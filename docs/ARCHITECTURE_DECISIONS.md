@@ -173,10 +173,10 @@ runtime behavior. MIG-004, frontend expectations and tests must state the deviat
 converter can serve later slices while issuance, refresh and OTP remain out of scope.
 ## ADR-013 — Cross-runtime access-token revocation (PROPOSED)
 
-**Context:** Runtime evidence proves the legacy static JTI blacklist is process-local and is lost
+**Context:** Runtime evidence proves the legacy static JTI blacklist is process-dev and is lost
 on restart. During coexistence, neither C# nor Java can observe the other's logout.
 
-**Options:** (A) preserve local memory, which is incompatible with shared-token coexistence;
+**Options:** (A) preserve dev memory, which is incompatible with shared-token coexistence;
 (B) adapt both runtimes to a shared expiry-aware revocation store; (C) route all bearer traffic and
 logout to one runtime, cut over atomically, and drain for the maximum access-token lifetime.
 

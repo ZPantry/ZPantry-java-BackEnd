@@ -224,7 +224,7 @@ identical. This is a compatibility decision blocker, not a missing snapshot to a
 Prerequisites: JDK 21 and a working Docker-compatible Linux-container daemon for integration
 tests. Set JAVA_HOME to the JDK 21 installation and put its bin directory first on PATH in
 your shell/IDE. The wrapper does not install or choose a JDK. Maven rejects Java 8/17/23+.
-On this audit host JDK 21 is available at C:/Users/ASUS/.jdks/ms-21.0.12; that is a local
+On this audit host JDK 21 is available at C:/Users/ASUS/.jdks/ms-21.0.12; that is a dev
 observation, not a required portable path.
 
 Run from the repository root:

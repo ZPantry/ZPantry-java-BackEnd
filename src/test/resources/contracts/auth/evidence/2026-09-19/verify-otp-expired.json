@@ -3,7 +3,7 @@
   "request": {
     "path": "/api/Auth/verify-otp",
     "body": {
-      "email": "otp-expired@test.local",
+      "email": "otp-expired@test.dev",
       "otpCode": "599358"
     },
     "authenticated": false

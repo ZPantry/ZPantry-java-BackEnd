@@ -169,7 +169,7 @@ Description: Good method signatures are self-documenting and hard to use incorre
 ```java
 public class UserService {
     // Clear, descriptive method names
-    public User createUser(String username, String email, LocalDate birthDate) {
+    public User createUser(String username, String email, devDate birthDate) {
         // Implementation
         return new User(username, email, birthDate);
     }
@@ -178,14 +178,14 @@ public class UserService {
     public static class UserBuilder {
         private String username;
         private String email;
-        private LocalDate birthDate;
+        private devDate birthDate;
         private String firstName;
         private String lastName;
         private Address address;
 
         public UserBuilder username(String username) { this.username = username; return this; }
         public UserBuilder email(String email) { this.email = email; return this; }
-        public UserBuilder birthDate(LocalDate birthDate) { this.birthDate = birthDate; return this; }
+        public UserBuilder birthDate(devDate birthDate) { this.birthDate = birthDate; return this; }
         public UserBuilder firstName(String firstName) { this.firstName = firstName; return this; }
         public UserBuilder lastName(String lastName) { this.lastName = lastName; return this; }
         public UserBuilder address(Address address) { this.address = address; return this; }
@@ -218,7 +218,7 @@ public class UserService {
     public User doUserStuff(String s1, String s2, int d, int m, int y,
                            String s3, String s4, String s5, String s6, String s7) {
         // What do these parameters mean?
-        return new User(s1, s2, LocalDate.of(y, m, d));
+        return new User(s1, s2, devDate.of(y, m, d));
     }
 
     // Ambiguous parameter types

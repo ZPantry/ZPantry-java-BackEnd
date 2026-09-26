@@ -23,7 +23,7 @@ class SeedDataIT {
     void syntheticSeedLoadsAfterCleanMigrationWithExpectedRelationships() {
         new ResourceDatabasePopulator(new ClassPathResource("db/seed/test-data.sql")).execute(dataSource);
         var jdbc = new JdbcTemplate(dataSource);
-        assertThat(jdbc.queryForObject("SELECT role FROM users WHERE email='admin@test.local'", String.class)).isEqualTo("admin");
+        assertThat(jdbc.queryForObject("SELECT role FROM users WHERE email='admin@test.dev'", String.class)).isEqualTo("admin");
         assertThat(jdbc.queryForObject("SELECT count(*) FROM users", Integer.class)).isEqualTo(5);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM ingredients", Integer.class)).isEqualTo(3);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM ingredient_aliases a JOIN ingredients i ON i.id=a.ingredient_id", Integer.class)).isEqualTo(2);

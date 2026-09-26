@@ -3,9 +3,10 @@ package com.zpantry.authentication.service;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-
+@Profile("prod")
 @Component
 public class ResendEmailVerificationAdapter implements EmailVerificationPort {
     private final RestClient client; private final String key; private final String from;

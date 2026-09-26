@@ -54,9 +54,9 @@ class UserSliceIT {
     @BeforeEach
     void seed() {
         jdbc.update("DELETE FROM users");
-        insert(OWNER, "Owner", "owner@test.local", "owner-hash", "123456", "owner-refresh", true, true, "user");
-        insert(OTHER, "Other", "other@test.local", "other-hash", "234567", "other-refresh", true, true, "user");
-        insert(ADMIN, "Admin", "admin@test.local", "admin-hash", "345678", "admin-refresh", true, true, "admin");
+        insert(OWNER, "Owner", "owner@test.dev", "owner-hash", "123456", "owner-refresh", true, true, "user");
+        insert(OTHER, "Other", "other@test.dev", "other-hash", "234567", "other-refresh", true, true, "user");
+        insert(ADMIN, "Admin", "admin@test.dev", "admin-hash", "345678", "admin-refresh", true, true, "admin");
     }
 
     @Test
@@ -64,8 +64,8 @@ class UserSliceIT {
         mvc.perform(get("/api/users?pageIndex=0&pageSize=101").with(adminJwt()))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.pageIndex").value(1))
                 .andExpect(jsonPath("$.pageSize").value(100)).andExpect(jsonPath("$.totalItems").value(3))
-                .andExpect(jsonPath("$.data[0].email").value("admin@test.local"))
-                .andExpect(jsonPath("$.data[2].email").value("owner@test.local"))
+                .andExpect(jsonPath("$.data[0].email").value("admin@test.dev"))
+                .andExpect(jsonPath("$.data[2].email").value("owner@test.dev"))
                 .andExpect(jsonPath("$.data[0].passwordHashed").doesNotExist());
     }
 
@@ -124,7 +124,7 @@ class UserSliceIT {
                 .andExpect(status().isForbidden()).andExpect(jsonPath("$.success").value(false));
         mvc.perform(put("/api/users/{id}", OWNER).with(adminJwt()).contentType("application/json").content("{}"))
                 .andExpect(status().isForbidden());
-        mvc.perform(put("/api/users/{id}", OWNER).with(jwt().jwt(token -> token.claim("sub", "owner@test.local").claim("jti", "x")))
+        mvc.perform(put("/api/users/{id}", OWNER).with(jwt().jwt(token -> token.claim("sub", "owner@test.dev").claim("jti", "x")))
                         .contentType("application/json").content("{}"))
                 .andExpect(status().isForbidden());
     }
@@ -144,7 +144,7 @@ class UserSliceIT {
     void validatesARealHs256LegacyCompatibleBearerToken() throws Exception {
         Instant now = Instant.now();
         var claims = new JWTClaimsSet.Builder()
-                .subject("admin@test.local").claim("email", "admin@test.local")
+                .subject("admin@test.dev").claim("email", "admin@test.dev")
                 .claim("userId", ADMIN.toString()).claim("role", "admin")
                 .jwtID("signed-test-jti").issueTime(Date.from(now))
                 .notBeforeTime(Date.from(now.minusSeconds(1))).expirationTime(Date.from(now.plusSeconds(60))).build();
@@ -167,12 +167,12 @@ class UserSliceIT {
     }
 
     private org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor ownerJwt(UUID id) {
-        return jwt().jwt(token -> token.claim("sub", "owner@test.local").claim("userId", id.toString())
+        return jwt().jwt(token -> token.claim("sub", "owner@test.dev").claim("userId", id.toString())
                 .claim("role", "user").claim("jti", "synthetic-jti"));
     }
 
     private org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor adminJwt() {
-        return jwt().jwt(token -> token.claim("sub", "admin@test.local").claim("userId", ADMIN.toString())
+        return jwt().jwt(token -> token.claim("sub", "admin@test.dev").claim("userId", ADMIN.toString())
                         .claim("role", "admin").claim("jti", "synthetic-admin-jti"))
                 .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"));
     }
