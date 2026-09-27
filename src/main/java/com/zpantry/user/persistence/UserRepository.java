@@ -13,4 +13,6 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID> {
     long countByDeletedFalse();
     Optional<UserEntity> findByEmailAndDeletedFalse(String email);
     Optional<UserEntity> findByRefreshTokenHashAndDeletedFalse(String refreshTokenHash);
+    boolean existsByRoleIgnoreCaseAndDeletedFalse(String role);
+    boolean existsByRoleIgnoreCase(String role);
 }

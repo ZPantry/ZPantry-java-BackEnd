@@ -74,6 +74,18 @@ public class UserEntity extends BaseEntity {
         this.deletedAt = now;
     }
 
+    public ApplicationRole applicationRole() { return ApplicationRole.fromPersisted(role); }
+
+    public void changeRole(ApplicationRole newRole, Instant now) {
+        this.role = newRole.name();
+        this.updatedAt = now;
+    }
+
+    public void changeActive(boolean newActive, Instant now) {
+        this.active = newActive;
+        this.updatedAt = now;
+    }
+
     public static UserEntity register(String fullName, String email, String passwordHash,
             String otpCode, Instant otpExpiresAt) {
         UserEntity user = new UserEntity(UUID.randomUUID(), Instant.now(), fullName, email,
@@ -81,6 +93,11 @@ public class UserEntity extends BaseEntity {
         user.otpCode = otpCode;
         user.otpExpiredAt = otpExpiresAt;
         return user;
+    }
+
+    public static UserEntity bootstrapSuperAdmin(String email, String passwordHash) {
+        return new UserEntity(UUID.randomUUID(), Instant.now(), "Initial Super Admin", email,
+                passwordHash, true, true, ApplicationRole.SUPER_ADMIN.name());
     }
 
     public void confirmEmail(Instant now) {

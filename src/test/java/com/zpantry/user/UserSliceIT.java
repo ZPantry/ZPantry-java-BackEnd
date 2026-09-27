@@ -188,6 +188,5 @@ class UserSliceIT {
 
     @TestConfiguration(proxyBeanMethods = false)
     static class SecurityTestConfiguration {
-        @Bean TokenRevocationChecker tokenRevocationChecker() { return jti -> false; }
     }
 }
