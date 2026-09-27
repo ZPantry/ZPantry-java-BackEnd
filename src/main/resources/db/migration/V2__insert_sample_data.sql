@@ -1,6 +1,6 @@
 -- Insert sample data for users
 INSERT INTO users (id, created_at, is_deleted, full_name, email, password_hashed, is_email_confirmed, is_active, role) VALUES
-('11111111-1111-1111-1111-111111111111', NOW(), false, 'Admin User', 'admin@zpantry.com', 'hashed_pass_1', true, true, 'admin'),
+('11111111-1111-1111-1111-111111111111', NOW(), false, 'Admin User', 'admin@zpantry.com', 'AFvOo0/V4TADRLG7FKT+JdIO8SKkwTDreLV+7mQury+oLERZF31YrVhF+r11C9Ij3A==', true, true, 'admin'),
 ('22222222-2222-2222-2222-222222222222', NOW(), false, 'Test User 1', 'test1@zpantry.com', 'hashed_pass_2', true, true, 'user'),
 ('33333333-3333-3333-3333-333333333333', NOW(), false, 'Test User 2', 'test2@zpantry.com', 'hashed_pass_3', false, false, 'user')
 ON CONFLICT (id) DO NOTHING;
