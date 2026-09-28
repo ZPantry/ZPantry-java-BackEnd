@@ -36,6 +36,7 @@ public class UserSecurityConfiguration {
                         .requestMatchers("/api/Auth/register", "/api/Auth/verify-otp", "/api/Auth/login", "/api/Auth/refresh-token").permitAll()
                         .requestMatchers("/api/Auth/logout", "/api/me/**", "/api/recommendations/**").authenticated()
                         .requestMatchers("/api/admin/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/users/*/profile").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/users", "/api/users/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/users/**").authenticated()

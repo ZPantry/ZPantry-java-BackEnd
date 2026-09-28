@@ -1,8 +1,71 @@
-package com.zpantry.integration.ai; import java.util.*;import org.springframework.beans.factory.annotation.Value;import org.springframework.stereotype.Component;import org.springframework.web.client.*;import org.slf4j.Logger;import org.slf4j.LoggerFactory;
-@Component public class HttpAiClient implements AiClient{private static final Logger log = LoggerFactory.getLogger(HttpAiClient.class);private final RestClient client;public HttpAiClient(@Value("${zpantry.ai.service-url:http://devhost:8000}")String url){client=RestClient.builder().baseUrl(url).build();}
- @SuppressWarnings("unchecked") public Map<String,Object> post(String p,Object r){try{return client.post().uri(p).body(r).retrieve().body(Map.class);}catch(RestClientException e){throw new AiIntegrationException("AI service request failed",e);}}
- public Optional<float[]> embedIngredient(UUID id,String n,String nn,String c){try{return embedding(post("/ai/embed-ingredient",Map.of("ingredientId",id,"name",n,"normalizedName",nn,"category",c==null?"":c)));}catch(AiIntegrationException e){log.warn("Failed to embed ingredient {}: {}", id, e.getMessage());return Optional.empty();}}
- public Optional<float[]> embedRecipe(UUID id,String n,String d,List<String> i,String t){try{return embedding(post("/ai/embed-recipe",Map.of("recipeId",id,"name",n,"description",d==null?"":d,"ingredientNames",i,"instructionText",t==null?"":t)));}catch(AiIntegrationException e){log.warn("Failed to embed recipe {}: {}", id, e.getMessage());return Optional.empty();}}
- private Optional<float[]> embedding(Map<String,Object> m){Object data=m==null?null:m.get("data");if(data instanceof Map<?,?> dm&&dm.get("embedding") instanceof List<?> l){float[] v=new float[l.size()];for(int x=0;x<l.size();x++)v[x]=((Number)l.get(x)).floatValue();return Optional.of(v);}return Optional.empty();}
- public static class AiIntegrationException extends RuntimeException{public AiIntegrationException(String m,Throwable c){super(m,c);}}
+package com.zpantry.integration.ai;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+
+@Component
+public class HttpAiClient implements AiClient {
+    private static final Logger log = LoggerFactory.getLogger(HttpAiClient.class);
+    private final RestClient client;
+
+    public HttpAiClient(@Value("${zpantry.ai.service-url:http://localhost:8000}") String url) {
+        this.client = RestClient.builder().baseUrl(url.endsWith("/") ? url.substring(0, url.length() - 1) : url).build();
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> post(String path, Object request) {
+        try {
+            return client.post().uri(path).contentType(MediaType.APPLICATION_JSON).body(request).retrieve().body(Map.class);
+        } catch (RestClientException exception) {
+            throw new AiIntegrationException("AI service request failed", exception);
+        }
+    }
+
+    public Optional<float[]> embedIngredient(UUID id, String name, String normalizedName, String category) {
+        try {
+            return embedding(post("/ai/embed-ingredient", Map.of("ingredientId", id, "name", name,
+                    "normalizedName", normalizedName, "category", category == null ? "" : category)));
+        } catch (AiIntegrationException exception) {
+            log.warn("Failed to embed ingredient {}: {}", id, exception.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    public Optional<float[]> embedRecipe(UUID id, String name, String description, List<String> ingredients, String instructionText) {
+        try {
+            return embedding(post("/ai/embed-recipe", Map.of("recipeId", id, "name", name,
+                    "description", description == null ? "" : description, "ingredientNames", ingredients,
+                    "instructionText", instructionText == null ? "" : instructionText)));
+        } catch (AiIntegrationException exception) {
+            log.warn("Failed to embed recipe {}: {}", id, exception.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private Optional<float[]> embedding(Map<String, Object> response) {
+        Object data = response == null ? null : response.get("data");
+        if (data instanceof Map<?, ?> dataMap && dataMap.get("embedding") instanceof List<?> values) {
+            float[] vector = new float[values.size()];
+            for (int index = 0; index < values.size(); index++) {
+                vector[index] = ((Number) values.get(index)).floatValue();
+            }
+            return Optional.of(vector);
+        }
+        return Optional.empty();
+    }
+
+    public static class AiIntegrationException extends RuntimeException {
+        public AiIntegrationException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
 }
