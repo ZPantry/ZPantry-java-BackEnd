@@ -1,5 +1,7 @@
 package com.zpantry.integration.ai;
 
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,21 +16,47 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 @Component
 public class HttpAiClient implements AiClient {
     private static final Logger log = LoggerFactory.getLogger(HttpAiClient.class);
     private final RestClient client;
+    private final ObjectMapper objectMapper;
+    private final String baseUrl;
 
-    public HttpAiClient(@Value("${zpantry.ai.service-url:http://localhost:8000}") String url) {
-        this.client = RestClient.builder().baseUrl(url.endsWith("/") ? url.substring(0, url.length() - 1) : url).build();
+    public HttpAiClient(@Value("${zpantry.ai.service-url:http://localhost:8000}") String url, ObjectMapper objectMapper) {
+        this.baseUrl = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+        this.client = RestClient.builder().baseUrl(baseUrl).build();
+        this.objectMapper = objectMapper;
     }
 
     @SuppressWarnings("unchecked")
     public Map<String, Object> post(String path, Object request) {
         try {
-            return client.post().uri(path).contentType(MediaType.APPLICATION_JSON).body(request).retrieve().body(Map.class);
-        } catch (RestClientException exception) {
+            String json = objectMapper.writeValueAsString(request);
+            log.info("Calling AI endpoint {} with JSON payload size {} bytes", path, json.length());
+            byte[] payload = json.getBytes(StandardCharsets.UTF_8);
+            var connection = (HttpURLConnection) URI.create(baseUrl + path).toURL().openConnection();
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            connection.setRequestProperty("Content-Type", MediaType.APPLICATION_JSON_VALUE);
+            connection.setFixedLengthStreamingMode(payload.length);
+            try (var output = connection.getOutputStream()) {
+                output.write(payload);
+            }
+            int status = connection.getResponseCode();
+            InputStream responseBody = status >= 200 && status < 300 ? connection.getInputStream() : connection.getErrorStream();
+            String response = responseBody == null ? "" : new String(responseBody.readAllBytes(), StandardCharsets.UTF_8);
+            if (status < 200 || status >= 300) {
+                throw new AiIntegrationException("AI service responded with HTTP " + status, null);
+            }
+            return objectMapper.readValue(response, Map.class);
+        } catch (JacksonException | IOException exception) {
             throw new AiIntegrationException("AI service request failed", exception);
         }
     }
@@ -51,8 +79,12 @@ public class HttpAiClient implements AiClient {
 
     public Optional<float[]> embedIngredient(UUID id, String name, String normalizedName, String category) {
         try {
-            return embedding(post("/ai/embed-ingredient", Map.of("ingredientId", id, "name", name,
-                    "normalizedName", normalizedName, "category", category == null ? "" : category)));
+            Map<String, Object> request = new java.util.HashMap<>();
+            request.put("ingredientId", id);
+            request.put("name", name);
+            request.put("normalizedName", normalizedName);
+            request.put("category", category == null ? "" : category);
+            return embedding(post("/ai/embed-ingredient", request));
         } catch (AiIntegrationException exception) {
             log.warn("Failed to embed ingredient {}: {}", id, exception.getMessage());
             return Optional.empty();

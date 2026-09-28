@@ -1,5 +1,17 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-09-28 — Super Admin Authority
+
+- Super Admin now inherits all User administration read/delete permissions and may manage or assign every application role, including `SUPER_ADMIN`, as an explicit product policy.
+
+## 2026-09-28 — Vietnamese Development Recommendation Catalog
+
+- Added an idempotent, `dev`-profile-only catalog seed with common Vietnamese ingredients and
+  nine recipes, including allergen metadata and recipe-ingredient links.
+- Added English aliases and `Egg Tomato Rice Bowl` so the existing AI test account can exercise
+  Pantry-based Recommendation V2 end-to-end.
+- Verified `POST /api/recommendations/v2/meals` returns two ranked results for `topK: 2`.
+
 ## 2026-09-25 — Shared Development Stack Port Allocation
 
 - Reserved `15432` for the Docker PostgreSQL/pgvector service, leaving the host PostgreSQL

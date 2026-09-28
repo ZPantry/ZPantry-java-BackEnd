@@ -23,6 +23,8 @@ public interface IngredientRepository extends JpaRepository<IngredientEntity, UU
 
     Optional<IngredientEntity> findByIdAndDeletedFalse(UUID id);
 
+    Optional<IngredientEntity> findByNormalizedNameAndDeletedFalse(String normalizedName);
+
     boolean existsByNormalizedNameAndDeletedFalse(String normalizedName);
 
     boolean existsByNormalizedNameAndDeletedFalseAndIdNot(String normalizedName, UUID id);

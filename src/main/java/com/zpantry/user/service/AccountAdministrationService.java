@@ -36,7 +36,7 @@ public class AccountAdministrationService {
 
     private static boolean mayManage(ApplicationRole actor, ApplicationRole target) {
         return switch (actor) {
-            case SUPER_ADMIN -> target != ApplicationRole.SUPER_ADMIN;
+            case SUPER_ADMIN -> true;
             case ADMIN -> target == ApplicationRole.MANAGER || target == ApplicationRole.USER;
             default -> false;
         };
@@ -44,7 +44,7 @@ public class AccountAdministrationService {
 
     private static boolean mayAssign(ApplicationRole actor, ApplicationRole requested) {
         return switch (actor) {
-            case SUPER_ADMIN -> requested == ApplicationRole.ADMIN || requested == ApplicationRole.MANAGER || requested == ApplicationRole.USER;
+            case SUPER_ADMIN -> true;
             case ADMIN -> requested == ApplicationRole.MANAGER || requested == ApplicationRole.USER;
             default -> false;
         };
