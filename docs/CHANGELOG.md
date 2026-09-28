@@ -248,3 +248,12 @@ Keep entries concise and focused on meaningful migration changes.
 - Preserved `ddl-auto=validate`, disabled Flyway execution and environment-only credentials.
 - Added a complete endpoint inventory. New modules remain IMPLEMENTED_NOT_VERIFIED pending full
   legacy runtime parity and external integration verification.
+# 2026-09-28 — Pantry image import and Recommendation V2 foundation
+
+- Added AI-service Gemini image-analysis boundary; the Java backend remains an orchestrator and
+  never stores the provider key.
+- Added multipart Pantry Import preview/confirm boundaries and a no-direct-AI-write rule.
+- Added controlled profile/allergen enums, V3 allergen metadata columns, and Ingredient/Recipe CRUD
+  support for allergen declarations.
+- Added Recommendation V2 server-derived Pantry/Profile context and allergen candidate exclusion.
+- Verified Java `test` and `clean verify`; diet/goal hard filtering remains pending recipe metadata.

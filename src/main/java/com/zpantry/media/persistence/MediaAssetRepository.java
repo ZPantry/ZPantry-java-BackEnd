@@ -1,1 +1,11 @@
-package com.zpantry.media.persistence;import com.zpantry.media.domain.MediaAssetEntity;import java.util.*;import org.springframework.data.jpa.repository.JpaRepository;public interface MediaAssetRepository extends JpaRepository<MediaAssetEntity,UUID>{Optional<MediaAssetEntity>findByPublicIdAndDeletedFalse(String p);}
+package com.zpantry.media.persistence;
+
+import com.zpantry.media.domain.MediaAssetEntity;
+
+import java.util.*;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface MediaAssetRepository extends JpaRepository<MediaAssetEntity, UUID> {
+    Optional<MediaAssetEntity> findByPublicIdAndDeletedFalse(String p);
+}

@@ -1,18 +1,20 @@
 package com.zpantry.ingredient.service;
 
-import static com.zpantry.ingredient.api.IngredientDtos.*;
-
-import com.zpantry.common.api.*;
+import com.zpantry.common.api.ApiResponse;
+import com.zpantry.common.api.PagedResponse;
 import com.zpantry.ingredient.domain.IngredientEntity;
 import com.zpantry.ingredient.persistence.IngredientRepository;
 import com.zpantry.integration.ai.AiClient;
 import com.zpantry.media.service.MediaStoragePort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
-import org.springframework.data.domain.*;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import static com.zpantry.ingredient.api.IngredientDtos.*;
 
 @Service
 public class IngredientService {
@@ -56,7 +58,7 @@ public class IngredientService {
 
     @Transactional
     public ApiResponse<IngredientResponse> createForm(IngredientFormRequest r) {
-        var result = create(new CreateIngredientRequest(r.name(), r.category(), r.unit(), r.caloriesPerUnit(), r.proteinPerUnit(), r.fatPerUnit(), r.carbPerUnit(), r.imageUrl(), r.gradientFrom(), r.gradientTo()));
+        var result = create(new CreateIngredientRequest(r.name(), r.category(), r.unit(), r.caloriesPerUnit(), r.proteinPerUnit(), r.fatPerUnit(), r.carbPerUnit(), r.imageUrl(), r.gradientFrom(), r.gradientTo(), null));
         if (result.success() && r.imageFile() != null && !r.imageFile().isEmpty()) {
             var e = repo.findById(result.data().id()).orElseThrow();
             e.imageUrl = media.upload(r.imageFile(), "ingredients").secureUrl();
@@ -77,7 +79,7 @@ public class IngredientService {
             e.name = r.name().trim();
             e.normalizedName = normalized;
         }
-        apply(e, new CreateIngredientRequest(e.name, r.category(), r.unit(), r.caloriesPerUnit(), r.proteinPerUnit(), r.fatPerUnit(), r.carbPerUnit(), r.imageUrl(), r.gradientFrom(), r.gradientTo()));
+        apply(e, new CreateIngredientRequest(e.name, r.category(), r.unit(), r.caloriesPerUnit(), r.proteinPerUnit(), r.fatPerUnit(), r.carbPerUnit(), r.imageUrl(), r.gradientFrom(), r.gradientTo(), r.allergens()));
         e.touch();
         ai.embedIngredient(e.getId(), e.name, e.normalizedName, e.category).ifPresent(v -> e.embedding = v);
         return ok(dto(e), "Ingredient updated.");
@@ -85,7 +87,7 @@ public class IngredientService {
 
     @Transactional
     public ApiResponse<IngredientResponse> updateForm(java.util.UUID id, IngredientFormRequest r) {
-        var result = update(id, new UpdateIngredientRequest(r.name(), r.category(), r.unit(), r.caloriesPerUnit(), r.proteinPerUnit(), r.fatPerUnit(), r.carbPerUnit(), r.imageUrl(), r.gradientFrom(), r.gradientTo()));
+        var result = update(id, new UpdateIngredientRequest(r.name(), r.category(), r.unit(), r.caloriesPerUnit(), r.proteinPerUnit(), r.fatPerUnit(), r.carbPerUnit(), r.imageUrl(), r.gradientFrom(), r.gradientTo(), null));
         if (result.success() && r.imageFile() != null && !r.imageFile().isEmpty()) {
             var e = repo.findByIdAndDeletedFalse(id).orElseThrow();
             e.imageUrl = media.upload(r.imageFile(), "ingredients").secureUrl();
@@ -113,9 +115,11 @@ public class IngredientService {
         if (r.imageUrl() != null) e.imageUrl = r.imageUrl();
         if (r.gradientFrom() != null) e.gradientFrom = r.gradientFrom();
         if (r.gradientTo() != null) e.gradientTo = r.gradientTo();
+        if (r.allergens() != null)
+            e.allergens = r.allergens().stream().map(Enum::name).sorted().collect(java.util.stream.Collectors.joining(","));
     }
 
     private IngredientResponse dto(IngredientEntity e) {
-        return new IngredientResponse(e.getId(), e.name, e.normalizedName, e.category, e.unit, e.caloriesPerUnit, e.proteinPerUnit, e.fatPerUnit, e.carbPerUnit, e.imageUrl, e.gradientFrom, e.gradientTo);
+        return new IngredientResponse(e.getId(), e.name, e.normalizedName, e.category, e.unit, e.caloriesPerUnit, e.proteinPerUnit, e.fatPerUnit, e.carbPerUnit, e.imageUrl, e.gradientFrom, e.gradientTo, e.allergens == null || e.allergens.isBlank() ? java.util.Set.of() : java.util.Arrays.stream(e.allergens.split(",")).map(com.zpantry.user.domain.FoodAllergen::valueOf).collect(java.util.stream.Collectors.toUnmodifiableSet()));
     }
 }

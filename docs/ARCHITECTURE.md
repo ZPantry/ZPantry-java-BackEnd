@@ -281,3 +281,13 @@ Production packages now follow feature ownership: `authentication`, `ingredient`
 identity, repository and password compatibility. Media and AI calls are ports with environment-only
 adapters. Ingredient and Recipe use Hibernate vector mappings for `vector(1536)`. Normal persistence
 still validates schema and never creates or updates it.
+## Pantry Image Import and Recommendation V2
+
+```text
+Client image -> Java Pantry Import -> AI service -> Gemini -> preview -> user confirm -> Pantry
+JWT -> Java Recommendation V2 -> Profile + Pantry -> allergen filter -> AI service -> ranked recipes
+```
+
+Java never stores a Gemini key and never writes AI extraction directly to Pantry. The AI service owns
+provider calls. Recommendation V2 derives user context from the validated JWT and server-side data;
+the client supplies only an optional result limit.

@@ -196,3 +196,15 @@ read-only catalog comparison and an approved baseline action; `baseline-on-migra
 
 **Consequences:** Clean environments are reproducible without weakening legacy-database safety.
 Production adoption remains blocked until the real catalog is verified.
+
+## ADR-015 — Controlled Profile Enums for Recommendation V2
+
+**Status:** Accepted
+**Date:** 2026-09-28
+
+`goal`, `dietPreference`, and `allergies` are controlled domain values for the personalized
+recommendation MVP. Java exposes `UserGoal`, `DietPreference`, and `FoodAllergen`; unknown JSON
+values are rejected at the API boundary. The existing varchar/text columns remain unchanged:
+enum names are persisted as strings and allergens as a comma-separated canonical enum list. No
+implicit mapping of unknown legacy values is permitted. Recommendation V2 must obtain profile and
+Pantry data server-side from the authenticated UUID before AI ranking.

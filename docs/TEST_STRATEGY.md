@@ -296,4 +296,10 @@ soft-delete filtering and mutation boundaries. MockMvc checks admin/owner/anonym
 legacy empty middleware bodies, missing-resource wrappers, Option-B PUT, sensitive-field omission,
 and a real signed HS256 token through the configured decoder. No H2 or external datasource is used.
 
+## Pantry Import and Recommendation V2
 
+Test image size/type rejection, AI timeout/malformed responses, and the invariant that analysis
+does not mutate Pantry. Test confirm ownership and atomic multi-item writes. Recommendation V2 tests
+must prove server-side Pantry/Profile use, exclusion of recipes whose allergen set intersects the
+user allergy set, and no cross-user context access. AI service tests use deterministic fakes; never
+require a real Gemini key.

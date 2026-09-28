@@ -119,6 +119,14 @@ existing-token authorization integration before implementation approval. Passwor
 evidence is now resolved below, but its adapter remains unimplemented. Do not start User or
 Authentication implementation from this record. Foundation remains COMPLETE within its scope.
 
+## Recommendation V2 preparation — 2026-09-28
+
+Profile recommendation inputs are now controlled Java enums: `UserGoal`, `DietPreference`, and
+`FoodAllergen`. Existing columns are retained; enum names are persisted as canonical text values.
+The next implementation phase is MIG-007: an authenticated, server-derived recommendation flow
+using Pantry/Profile data, deterministic allergy/diet filtering, and AI ranking. It is PLANNED and
+not yet endpoint- or integration-verified.
+
 ## User evidence-closure result — 2026-09-18
 
 - Actual users table: BLOCKED. dev PostgreSQL requires credentials that are not available;

@@ -1,2 +1,58 @@
-package com.zpantry.todaymenu.api;import static com.zpantry.todaymenu.api.TodayMenuDtos.*;import com.zpantry.common.api.*;import com.zpantry.todaymenu.service.TodayMenuService;import com.zpantry.user.security.AuthenticatedUserResolver;import java.time.LocalDate;import java.util.UUID;import org.springframework.security.core.Authentication;import org.springframework.web.bind.annotation.*;
-@RestController public class TodayMenuController{private final TodayMenuService s;private final AuthenticatedUserResolver ids;public TodayMenuController(TodayMenuService s,AuthenticatedUserResolver i){this.s=s;ids=i;}private UUID id(Authentication a){return ids.resolve(a).orElseThrow().userId();}@GetMapping("/api/me/today-menu")public PagedResponse<TodayMenuItemResponse>list(Authentication a,@RequestParam(required=false)LocalDate date,@RequestParam(defaultValue="1")int pageIndex,@RequestParam(defaultValue="10")int pageSize){return s.list(id(a),date,pageIndex,pageSize);}@GetMapping("/api/me/today-menu/items/{itemId}")public ApiResponse<TodayMenuItemResponse>get(Authentication a,@PathVariable UUID itemId){return s.get(id(a),itemId);}@PostMapping("/api/me/today-menu/items")public ApiResponse<TodayMenuItemResponse>create(Authentication a,@RequestBody CreateTodayMenuItemRequest r){return s.create(id(a),r);}@DeleteMapping("/api/me/today-menu/items/{itemId}")public ApiResponse<Object>delete(Authentication a,@PathVariable UUID itemId){return s.delete(id(a),itemId);}@PostMapping(path="/api/me/today-menu/items/{itemId}/complete",consumes="multipart/form-data")public ApiResponse<TodayMenuCompletionResponse>complete(Authentication a,@PathVariable UUID itemId,@ModelAttribute CompleteTodayMenuItemRequest r){return s.complete(id(a),itemId,r);}@GetMapping("/api/me/cooking-logs")public PagedResponse<CookingLogResponse>logs(Authentication a,@RequestParam(defaultValue="1")int pageIndex,@RequestParam(defaultValue="10")int pageSize){return s.logs(id(a),pageIndex,pageSize);}}
+package com.zpantry.todaymenu.api;
+
+import static com.zpantry.todaymenu.api.TodayMenuDtos.*;
+
+import com.zpantry.common.api.*;
+import com.zpantry.todaymenu.service.TodayMenuService;
+import com.zpantry.user.security.AuthenticatedUserResolver;
+
+import java.time.LocalDate;
+import java.util.UUID;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+public class TodayMenuController {
+    private final TodayMenuService s;
+    private final AuthenticatedUserResolver ids;
+
+    public TodayMenuController(TodayMenuService s, AuthenticatedUserResolver i) {
+        this.s = s;
+        ids = i;
+    }
+
+    private UUID id(Authentication a) {
+        return ids.resolve(a).orElseThrow().userId();
+    }
+
+    @GetMapping("/api/me/today-menu")
+    public PagedResponse<TodayMenuItemResponse> list(Authentication a, @RequestParam(required = false) LocalDate date, @RequestParam(defaultValue = "1") int pageIndex, @RequestParam(defaultValue = "10") int pageSize) {
+        return s.list(id(a), date, pageIndex, pageSize);
+    }
+
+    @GetMapping("/api/me/today-menu/items/{itemId}")
+    public ApiResponse<TodayMenuItemResponse> get(Authentication a, @PathVariable UUID itemId) {
+        return s.get(id(a), itemId);
+    }
+
+    @PostMapping("/api/me/today-menu/items")
+    public ApiResponse<TodayMenuItemResponse> create(Authentication a, @RequestBody CreateTodayMenuItemRequest r) {
+        return s.create(id(a), r);
+    }
+
+    @DeleteMapping("/api/me/today-menu/items/{itemId}")
+    public ApiResponse<Object> delete(Authentication a, @PathVariable UUID itemId) {
+        return s.delete(id(a), itemId);
+    }
+
+    @PostMapping(path = "/api/me/today-menu/items/{itemId}/complete", consumes = "multipart/form-data")
+    public ApiResponse<TodayMenuCompletionResponse> complete(Authentication a, @PathVariable UUID itemId, @ModelAttribute CompleteTodayMenuItemRequest r) {
+        return s.complete(id(a), itemId, r);
+    }
+
+    @GetMapping("/api/me/cooking-logs")
+    public PagedResponse<CookingLogResponse> logs(Authentication a, @RequestParam(defaultValue = "1") int pageIndex, @RequestParam(defaultValue = "10") int pageSize) {
+        return s.logs(id(a), pageIndex, pageSize);
+    }
+}

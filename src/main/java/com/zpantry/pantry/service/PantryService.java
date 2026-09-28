@@ -1,3 +1,87 @@
-package com.zpantry.pantry.service;import static com.zpantry.pantry.api.PantryDtos.*;import com.zpantry.common.api.*;import com.zpantry.ingredient.persistence.IngredientRepository;import com.zpantry.pantry.domain.PantryItemEntity;import com.zpantry.pantry.persistence.PantryItemRepository;import java.time.Instant;import java.util.UUID;import org.springframework.data.domain.*;import org.springframework.stereotype.Service;import org.springframework.transaction.annotation.Transactional;
-@Service public class PantryService{private final PantryItemRepository repo;private final IngredientRepository ingredients;public PantryService(PantryItemRepository r,IngredientRepository i){repo=r;ingredients=i;}private static<T>ApiResponse<T>ok(T d,String m){return new ApiResponse<>(true,m,d,null,"",Instant.now());}private static<T>ApiResponse<T>fail(String m){return new ApiResponse<>(false,m,null,null,"",Instant.now());}public PagedResponse<PantryItemResponse>list(UUID u,int pi,int ps){pi=Math.max(1,pi);ps=ps<=0?10:Math.min(ps,100);var p=repo.findAllByUserIdAndDeletedFalse(u,PageRequest.of(pi-1,ps,Sort.by("expiredAt").ascending().and(Sort.by("createdAt"))));return PagedResponse.successPage(p.stream().map(this::dto).toList(),pi,ps,(int)p.getTotalElements(),"","",Instant.now());}
-@Transactional public ApiResponse<PantryItemResponse>upsert(UUID u,UpsertPantryItemRequest r){if(r.ingredientId()==null)return fail("IngredientId is required.");var e=repo.findByUserIdAndIngredientIdAndDeletedFalse(u,r.ingredientId()).orElseGet(()->new PantryItemEntity(u,r.ingredientId()));apply(e,r.ingredientId(),r.quantity(),r.unit(),r.expiredAt(),r.storageLocation(),r.note());return ok(dto(repo.save(e)),"Pantry item saved.");}@Transactional public ApiResponse<PantryItemResponse>update(UUID u,UUID id,UpdatePantryItemRequest r){var e=repo.findByIdAndUserIdAndDeletedFalse(id,u).orElse(null);if(e==null)return fail("Pantry item not found.");apply(e,r.ingredientId(),r.quantity(),r.unit(),r.expiredAt(),r.storageLocation(),r.note());e.touch();return ok(dto(e),"Pantry item updated.");}@Transactional public ApiResponse<Object>delete(UUID u,UUID id){var e=repo.findByIdAndUserIdAndDeletedFalse(id,u).orElse(null);if(e==null)return fail("Pantry item not found.");e.softDelete();return ok(null,"Pantry item deleted.");}private void apply(PantryItemEntity e,UUID i,java.math.BigDecimal q,String unit,Instant ex,String loc,String note){if(i!=null)e.ingredientId=i;if(q!=null)e.quantity=q;if(unit!=null)e.unit=unit;if(ex!=null)e.expiredAt=ex;if(loc!=null)e.storageLocation=loc;if(note!=null)e.note=note;}private PantryItemResponse dto(PantryItemEntity e){return new PantryItemResponse(e.getId(),e.ingredientId,ingredients.findById(e.ingredientId).map(x->x.name).orElse(null),e.quantity,e.unit,e.expiredAt,e.storageLocation,e.note);}}
+package com.zpantry.pantry.service;
+
+import com.zpantry.common.api.ApiResponse;
+import com.zpantry.common.api.PagedResponse;
+import com.zpantry.ingredient.persistence.IngredientRepository;
+import com.zpantry.pantry.domain.PantryItemEntity;
+import com.zpantry.pantry.persistence.PantryItemRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.util.UUID;
+
+import static com.zpantry.pantry.api.PantryDtos.*;
+
+@Service
+public class PantryService {
+    private final PantryItemRepository repo;
+    private final IngredientRepository ingredients;
+
+    public PantryService(PantryItemRepository r, IngredientRepository i) {
+        repo = r;
+        ingredients = i;
+    }
+
+    private static <T> ApiResponse<T> ok(T d, String m) {
+        return new ApiResponse<>(true, m, d, null, "", Instant.now());
+    }
+
+    private static <T> ApiResponse<T> fail(String m) {
+        return new ApiResponse<>(false, m, null, null, "", Instant.now());
+    }
+
+    public PagedResponse<PantryItemResponse> list(UUID u, int pi, int ps) {
+        pi = Math.max(1, pi);
+        ps = ps <= 0 ? 10 : Math.min(ps, 100);
+        var p = repo.findAllByUserIdAndDeletedFalse(u, PageRequest.of(pi - 1, ps, Sort.by("expiredAt").ascending().and(Sort.by("createdAt"))));
+        return PagedResponse.successPage(p.stream().map(this::dto).toList(), pi, ps, (int) p.getTotalElements(), "", "", Instant.now());
+    }
+
+    @Transactional
+    public ApiResponse<PantryItemResponse> upsert(UUID u, UpsertPantryItemRequest r) {
+        if (r.ingredientId() == null) return fail("IngredientId is required.");
+        var e = repo.findByUserIdAndIngredientIdAndDeletedFalse(u, r.ingredientId()).orElseGet(() -> new PantryItemEntity(u, r.ingredientId()));
+        apply(e, r.ingredientId(), r.quantity(), r.unit(), r.expiredAt(), r.storageLocation(), r.note());
+        return ok(dto(repo.save(e)), "Pantry item saved.");
+    }
+
+    @Transactional
+    public ApiResponse<PantryItemResponse> update(UUID u, UUID id, UpdatePantryItemRequest r) {
+        var e = repo.findByIdAndUserIdAndDeletedFalse(id, u).orElse(null);
+        if (e == null) return fail("Pantry item not found.");
+        apply(e, r.ingredientId(), r.quantity(), r.unit(), r.expiredAt(), r.storageLocation(), r.note());
+        e.touch();
+        return ok(dto(e), "Pantry item updated.");
+    }
+
+    @Transactional
+    public ApiResponse<Object> delete(UUID u, UUID id) {
+        var e = repo.findByIdAndUserIdAndDeletedFalse(id, u).orElse(null);
+        if (e == null) return fail("Pantry item not found.");
+        e.softDelete();
+        return ok(null, "Pantry item deleted.");
+    }
+
+    public void validateImportItem(UUID ingredientId, java.math.BigDecimal quantity, String unit) {
+        if (ingredientId == null || ingredients.findByIdAndDeletedFalse(ingredientId).isEmpty())
+            throw new IllegalArgumentException("Ingredient not found.");
+        if (quantity == null || quantity.signum() <= 0 || unit == null || unit.isBlank() || unit.length() > 50)
+            throw new IllegalArgumentException("Invalid pantry item.");
+    }
+
+    private void apply(PantryItemEntity e, UUID i, java.math.BigDecimal q, String unit, Instant ex, String loc, String note) {
+        if (i != null) e.ingredientId = i;
+        if (q != null) e.quantity = q;
+        if (unit != null) e.unit = unit;
+        if (ex != null) e.expiredAt = ex;
+        if (loc != null) e.storageLocation = loc;
+        if (note != null) e.note = note;
+    }
+
+    private PantryItemResponse dto(PantryItemEntity e) {
+        return new PantryItemResponse(e.getId(), e.ingredientId, ingredients.findById(e.ingredientId).map(x -> x.name).orElse(null), e.quantity, e.unit, e.expiredAt, e.storageLocation, e.note);
+    }
+}

@@ -689,3 +689,13 @@ Menu/Cooking Log controller method. Paths and HTTP methods are listed in
 legacy paths through an HTTP adapter. Media uses a Cloudinary port and environment configuration.
 No module covered by MIG-006 is parity-certified until legacy response capture, AI error-contract
 tests, media compensation tests and complete multi-entity behavior tests pass.
+
+## [MIG-007] Recommendation V2 personalization
+
+**Status:** PLANNED
+
+Recommendation V2 is a new, versioned API. It will derive pantry ingredients and the authenticated
+user profile on the server, then apply allergy and diet filters before requesting AI ranking. Profile
+values are controlled enums: `UserGoal`, `DietPreference`, and `FoodAllergen`. Unknown enum values
+are rejected with a client error; no free-text fallback is accepted. The existing recommendation
+route remains unchanged until V2 is implemented and verified.

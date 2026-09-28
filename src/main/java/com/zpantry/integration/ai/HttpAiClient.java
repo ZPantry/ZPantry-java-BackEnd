@@ -1,16 +1,19 @@
 package com.zpantry.integration.ai;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 
 @Component
 public class HttpAiClient implements AiClient {
@@ -27,6 +30,22 @@ public class HttpAiClient implements AiClient {
             return client.post().uri(path).contentType(MediaType.APPLICATION_JSON).body(request).retrieve().body(Map.class);
         } catch (RestClientException exception) {
             throw new AiIntegrationException("AI service request failed", exception);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> postImage(String path, byte[] image, String filename, String contentType) {
+        try {
+            var body = new LinkedMultiValueMap<String, Object>();
+            body.add("image", new ByteArrayResource(image) {
+                @Override
+                public String getFilename() {
+                    return filename;
+                }
+            });
+            return client.post().uri(path).contentType(MediaType.MULTIPART_FORM_DATA).body(body).retrieve().body(Map.class);
+        } catch (RestClientException exception) {
+            throw new AiIntegrationException("AI image analysis failed", exception);
         }
     }
 

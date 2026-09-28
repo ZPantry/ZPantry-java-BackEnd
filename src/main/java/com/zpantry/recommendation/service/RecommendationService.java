@@ -1,3 +1,68 @@
-package com.zpantry.recommendation.service;import com.zpantry.common.api.ApiResponse;import com.zpantry.integration.ai.AiClient;import com.zpantry.recommendation.api.RecommendationDtos.*;import com.zpantry.recommendation.domain.*;import com.zpantry.recommendation.persistence.*;import java.time.Instant;import java.util.*;import org.springframework.stereotype.Service;import org.springframework.transaction.annotation.Transactional;
-@Service public class RecommendationService{private final AiClient ai;private final MealRecommendationRepository recommendations;private final RecommendationFeedbackRepository feedback;public RecommendationService(AiClient a,MealRecommendationRepository r,RecommendationFeedbackRepository f){ai=a;recommendations=r;feedback=f;}private static<T>ApiResponse<T>ok(T d,String m){return new ApiResponse<>(true,m,d,null,"",Instant.now());}private static<T>ApiResponse<T>fail(String m){return new ApiResponse<>(false,m,null,null,"",Instant.now());}
-@Transactional public ApiResponse<Map<String,Object>>recommend(UUID user,RecommendMealRequest r){Map<String, Object> req = new HashMap<>();req.put("userId", user.toString());req.put("inputIngredientText", r.inputIngredientText());req.put("ingredients", r.selectedIngredients());req.put("candidateRecipes", r.candidateRecipes() != null ? r.candidateRecipes() : List.of());req.put("topK", r.topK());var response=ai.post("/ai/recommend-meals",req);recommendations.save(new MealRecommendationEntity(user,r.inputIngredientText()));return ok(response,"Meal recommendations generated.");}public ApiResponse<Map<String,Object>>missing(UUID user,Object r){return ok(ai.post("/ai/suggest-missing-ingredients",r),"Missing ingredients suggested.");}public ApiResponse<Map<String,Object>>check(UUID user,UUID meal){return ok(ai.post("/ai/check-meal-ingredients",Map.of("userId",user,"mealId",meal)),"");}public ApiResponse<Object>get(UUID user,UUID id){var e=recommendations.findById(id).filter(x->x.userId.equals(user)&&!x.isDeleted()).orElse(null);return e==null?fail("Recommendation not found."):ok(Map.of("id",e.getId(),"userId",e.userId,"status",e.status,"inputIngredientText",e.inputIngredientText),"");}@Transactional public ApiResponse<Object>feedback(UUID user,UUID id,RecommendationFeedbackRequest r){var e=recommendations.findById(id).filter(x->x.userId.equals(user)&&!x.isDeleted()).orElse(null);if(e==null)return fail("Recommendation not found.");feedback.save(new RecommendationFeedbackEntity(user,r.mealRecommendationId(),r.recipeId(),r.rating(),r.feedbackType(),r.comment()));return ok(null,"Feedback saved.");}}
+package com.zpantry.recommendation.service;
+
+import com.zpantry.common.api.ApiResponse;
+import com.zpantry.integration.ai.AiClient;
+import com.zpantry.recommendation.api.RecommendationDtos.*;
+import com.zpantry.recommendation.domain.*;
+import com.zpantry.recommendation.persistence.*;
+
+import java.time.Instant;
+import java.util.*;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class RecommendationService {
+    private final AiClient ai;
+    private final MealRecommendationRepository recommendations;
+    private final RecommendationFeedbackRepository feedback;
+
+    public RecommendationService(AiClient a, MealRecommendationRepository r, RecommendationFeedbackRepository f) {
+        ai = a;
+        recommendations = r;
+        feedback = f;
+    }
+
+    private static <T> ApiResponse<T> ok(T d, String m) {
+        return new ApiResponse<>(true, m, d, null, "", Instant.now());
+    }
+
+    private static <T> ApiResponse<T> fail(String m) {
+        return new ApiResponse<>(false, m, null, null, "", Instant.now());
+    }
+
+    @Transactional
+    public ApiResponse<Map<String, Object>> recommend(UUID user, RecommendMealRequest r) {
+        Map<String, Object> req = new HashMap<>();
+        req.put("userId", user.toString());
+        req.put("inputIngredientText", r.inputIngredientText());
+        req.put("ingredients", r.selectedIngredients());
+        req.put("candidateRecipes", r.candidateRecipes() != null ? r.candidateRecipes() : List.of());
+        req.put("topK", r.topK());
+        var response = ai.post("/ai/recommend-meals", req);
+        recommendations.save(new MealRecommendationEntity(user, r.inputIngredientText()));
+        return ok(response, "Meal recommendations generated.");
+    }
+
+    public ApiResponse<Map<String, Object>> missing(UUID user, Object r) {
+        return ok(ai.post("/ai/suggest-missing-ingredients", r), "Missing ingredients suggested.");
+    }
+
+    public ApiResponse<Map<String, Object>> check(UUID user, UUID meal) {
+        return ok(ai.post("/ai/check-meal-ingredients", Map.of("userId", user, "mealId", meal)), "");
+    }
+
+    public ApiResponse<Object> get(UUID user, UUID id) {
+        var e = recommendations.findById(id).filter(x -> x.userId.equals(user) && !x.isDeleted()).orElse(null);
+        return e == null ? fail("Recommendation not found.") : ok(Map.of("id", e.getId(), "userId", e.userId, "status", e.status, "inputIngredientText", e.inputIngredientText), "");
+    }
+
+    @Transactional
+    public ApiResponse<Object> feedback(UUID user, UUID id, RecommendationFeedbackRequest r) {
+        var e = recommendations.findById(id).filter(x -> x.userId.equals(user) && !x.isDeleted()).orElse(null);
+        if (e == null) return fail("Recommendation not found.");
+        feedback.save(new RecommendationFeedbackEntity(user, r.mealRecommendationId(), r.recipeId(), r.rating(), r.feedbackType(), r.comment()));
+        return ok(null, "Feedback saved.");
+    }
+}

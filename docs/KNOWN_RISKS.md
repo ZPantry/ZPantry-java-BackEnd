@@ -507,3 +507,9 @@ catalog remains unavailable. Legacy evidence has no foreign keys and no indexes 
 email. Production adoption must compare constraints, indexes, defaults, extensions, grants/RLS,
 triggers and data quality before assigning a Flyway baseline. Automatic baselining remains disabled.
 Status: BLOCKING PRODUCTION DATABASE ADOPTION.
+## R-035 — Diet and goal recipe suitability metadata is absent
+
+Recommendation V2 can hard-filter declared recipe allergens. `UserGoal` and `DietPreference` are
+controlled profile enums but recipes do not yet declare diet suitability or nutrition thresholds, so
+these values cannot safely be hard-filtered. Do not claim diet/goal compliance until that metadata
+and tests exist.

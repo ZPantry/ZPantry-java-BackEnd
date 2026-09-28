@@ -1,1 +1,10 @@
-package com.zpantry.recommendation.persistence;import com.zpantry.recommendation.domain.MealRecommendationEntity;import java.util.UUID;import org.springframework.data.jpa.repository.JpaRepository;public interface MealRecommendationRepository extends JpaRepository<MealRecommendationEntity,UUID>{}
+package com.zpantry.recommendation.persistence;
+
+import com.zpantry.recommendation.domain.MealRecommendationEntity;
+
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface MealRecommendationRepository extends JpaRepository<MealRecommendationEntity, UUID> {
+}

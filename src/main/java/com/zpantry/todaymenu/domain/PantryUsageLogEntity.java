@@ -1,1 +1,31 @@
-package com.zpantry.todaymenu.domain;import com.zpantry.common.persistence.BaseEntity;import jakarta.persistence.*;import java.math.BigDecimal;import java.util.UUID;@Entity@Table(name="pantry_usage_logs")public class PantryUsageLogEntity extends BaseEntity{@Column(name="user_id")public UUID userId;@Column(name="today_menu_item_id")public UUID todayMenuItemId;@Column(name="cooking_log_id")public UUID cookingLogId;@Column(name="ingredient_id")public UUID ingredientId;@Column(name="ingredient_name")public String ingredientName;@Column(name="quantity_used")public BigDecimal quantityUsed;public String unit;@Column(name="action_type")public String actionType="consumed";public String warning;public PantryUsageLogEntity(){}}
+package com.zpantry.todaymenu.domain;
+
+import com.zpantry.common.persistence.BaseEntity;
+import jakarta.persistence.*;
+
+import java.math.BigDecimal;
+import java.util.UUID;
+
+@Entity
+@Table(name = "pantry_usage_logs")
+public class PantryUsageLogEntity extends BaseEntity {
+    @Column(name = "user_id")
+    public UUID userId;
+    @Column(name = "today_menu_item_id")
+    public UUID todayMenuItemId;
+    @Column(name = "cooking_log_id")
+    public UUID cookingLogId;
+    @Column(name = "ingredient_id")
+    public UUID ingredientId;
+    @Column(name = "ingredient_name")
+    public String ingredientName;
+    @Column(name = "quantity_used")
+    public BigDecimal quantityUsed;
+    public String unit;
+    @Column(name = "action_type")
+    public String actionType = "consumed";
+    public String warning;
+
+    public PantryUsageLogEntity() {
+    }
+}

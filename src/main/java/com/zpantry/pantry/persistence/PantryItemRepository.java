@@ -1,1 +1,18 @@
-package com.zpantry.pantry.persistence;import com.zpantry.pantry.domain.PantryItemEntity;import java.util.*;import org.springframework.data.domain.*;import org.springframework.data.jpa.repository.JpaRepository;public interface PantryItemRepository extends JpaRepository<PantryItemEntity,UUID>{Page<PantryItemEntity>findAllByUserIdAndDeletedFalse(UUID u,Pageable p);List<PantryItemEntity>findAllByUserIdAndDeletedFalseOrderByExpiredAtAscCreatedAtAsc(UUID u);Optional<PantryItemEntity>findByUserIdAndIngredientIdAndDeletedFalse(UUID u,UUID i);Optional<PantryItemEntity>findByIdAndUserIdAndDeletedFalse(UUID id,UUID u);}
+package com.zpantry.pantry.persistence;
+
+import com.zpantry.pantry.domain.PantryItemEntity;
+
+import java.util.*;
+
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface PantryItemRepository extends JpaRepository<PantryItemEntity, UUID> {
+    Page<PantryItemEntity> findAllByUserIdAndDeletedFalse(UUID u, Pageable p);
+
+    List<PantryItemEntity> findAllByUserIdAndDeletedFalseOrderByExpiredAtAscCreatedAtAsc(UUID u);
+
+    Optional<PantryItemEntity> findByUserIdAndIngredientIdAndDeletedFalse(UUID u, UUID i);
+
+    Optional<PantryItemEntity> findByIdAndUserIdAndDeletedFalse(UUID id, UUID u);
+}

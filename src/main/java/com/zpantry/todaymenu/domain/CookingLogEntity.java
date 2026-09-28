@@ -1,1 +1,42 @@
-package com.zpantry.todaymenu.domain;import com.zpantry.common.persistence.BaseEntity;import jakarta.persistence.*;import java.time.Instant;import java.util.UUID;@Entity@Table(name="cooking_logs")public class CookingLogEntity extends BaseEntity{@Column(name="user_id")public UUID userId;@Column(name="today_menu_item_id")public UUID todayMenuItemId;@Column(name="meal_id")public UUID mealId;@Column(name="recipe_id")public UUID recipeId;@Column(name="meal_name")public String mealName;@Column(name="image_url")public String imageUrl;@Column(name="image_public_id")public String imagePublicId;@Column(name="cooked_at")public Instant cookedAt;public Integer rating;public String note;protected CookingLogEntity(){}public CookingLogEntity(UUID u,TodayMenuItemEntity m){userId=u;todayMenuItemId=m.getId();mealId=m.mealId;recipeId=m.recipeId;mealName=m.mealName;cookedAt=m.cookedAt;}}
+package com.zpantry.todaymenu.domain;
+
+import com.zpantry.common.persistence.BaseEntity;
+import jakarta.persistence.*;
+
+import java.time.Instant;
+import java.util.UUID;
+
+@Entity
+@Table(name = "cooking_logs")
+public class CookingLogEntity extends BaseEntity {
+    @Column(name = "user_id")
+    public UUID userId;
+    @Column(name = "today_menu_item_id")
+    public UUID todayMenuItemId;
+    @Column(name = "meal_id")
+    public UUID mealId;
+    @Column(name = "recipe_id")
+    public UUID recipeId;
+    @Column(name = "meal_name")
+    public String mealName;
+    @Column(name = "image_url")
+    public String imageUrl;
+    @Column(name = "image_public_id")
+    public String imagePublicId;
+    @Column(name = "cooked_at")
+    public Instant cookedAt;
+    public Integer rating;
+    public String note;
+
+    protected CookingLogEntity() {
+    }
+
+    public CookingLogEntity(UUID u, TodayMenuItemEntity m) {
+        userId = u;
+        todayMenuItemId = m.getId();
+        mealId = m.mealId;
+        recipeId = m.recipeId;
+        mealName = m.mealName;
+        cookedAt = m.cookedAt;
+    }
+}

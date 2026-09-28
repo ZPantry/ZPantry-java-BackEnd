@@ -3,6 +3,9 @@ package com.zpantry.user.service;
 import com.zpantry.common.api.ApiResponse;
 import com.zpantry.user.api.UserProfileResponse;
 import com.zpantry.user.api.UserProfileUpdateRequest;
+import com.zpantry.user.domain.DietPreference;
+import com.zpantry.user.domain.FoodAllergen;
+import com.zpantry.user.domain.UserGoal;
 import com.zpantry.user.domain.UserProfileEntity;
 import com.zpantry.user.persistence.UserProfileRepository;
 import com.zpantry.user.persistence.UserRepository;
@@ -24,16 +27,8 @@ public class UserProfileService {
         this.userRepository = userRepository;
     }
 
-    @Transactional(readOnly = true)
-    public ApiResponse<UserProfileResponse> get(UUID userId, AuthenticatedUser identity) {
-        if (!identity.userId().equals(userId) || !identity.roles().contains("user")) {
-            throw new OwnerAuthorizationException();
-        }
-
-        return profileRepository.findByUserIdAndDeletedFalse(userId)
-                .map(this::mapToResponse)
-                .map(UserProfileService::success)
-                .orElseGet(() -> success(new UserProfileResponse(null, userId, null, null, null, null, null, null, null)));
+    private static UserGoal parseGoal(String value) {
+        return value == null ? null : UserGoal.valueOf(value);
     }
 
     @Transactional
@@ -56,10 +51,31 @@ public class UserProfileService {
         return success(mapToResponse(profile));
     }
 
+    private static DietPreference parseDiet(String value) {
+        return value == null ? null : DietPreference.valueOf(value);
+    }
+
+    private static java.util.Set<FoodAllergen> parseAllergens(String value) {
+        if (value == null || value.isBlank()) return java.util.Set.of();
+        return java.util.Arrays.stream(value.split(",")).map(FoodAllergen::valueOf).collect(java.util.stream.Collectors.toUnmodifiableSet());
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse<UserProfileResponse> get(UUID userId, AuthenticatedUser identity) {
+        if (!identity.userId().equals(userId) || !identity.roles().contains("user")) {
+            throw new OwnerAuthorizationException();
+        }
+
+        return profileRepository.findByUserIdAndDeletedFalse(userId)
+                .map(this::mapToResponse)
+                .map(UserProfileService::success)
+                .orElseGet(() -> success(new UserProfileResponse(null, userId, null, null, null, null, null, null, java.util.Set.of())));
+    }
+
     private UserProfileResponse mapToResponse(UserProfileEntity entity) {
         return new UserProfileResponse(entity.getId(), entity.getUserId(), entity.getAge(),
                 entity.getGender(), entity.getHeight(), entity.getWeight(),
-                entity.getGoal(), entity.getDietPreference(), entity.getAllergies());
+                parseGoal(entity.getGoal()), parseDiet(entity.getDietPreference()), parseAllergens(entity.getAllergies()));
     }
 
     private static ApiResponse<UserProfileResponse> success(UserProfileResponse data) {

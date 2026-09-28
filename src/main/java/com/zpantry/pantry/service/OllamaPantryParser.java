@@ -2,10 +2,12 @@ package com.zpantry.pantry.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -17,7 +19,7 @@ public class OllamaPantryParser {
     private final ObjectMapper json;
 
     public OllamaPantryParser(@Value("${zpantry.ollama.base-url:http://localhost:11434}") String baseUrl,
-            @Value("${zpantry.ollama.model:qwen2.5:3b}") String model, ObjectMapper json) {
+                              @Value("${zpantry.ollama.model:qwen2.5:3b}") String model, ObjectMapper json) {
         this.client = RestClient.builder().baseUrl(baseUrl).build();
         this.model = model;
         this.json = json;
@@ -30,7 +32,8 @@ public class OllamaPantryParser {
                     .body(Map.of("model", model, "prompt", prompt, "stream", false, "format", "json"))
                     .retrieve().body(Map.class);
             Object response = reply == null ? null : reply.get("response");
-            if (!(response instanceof String body)) throw new IllegalArgumentException("Ollama returned no JSON response");
+            if (!(response instanceof String body))
+                throw new IllegalArgumentException("Ollama returned no JSON response");
             JsonNode items = json.readTree(body).path("items");
             if (!items.isArray()) throw new IllegalArgumentException("Ollama response does not contain items");
             List<ParsedItem> result = new ArrayList<>();
@@ -45,5 +48,7 @@ public class OllamaPantryParser {
             throw new IllegalStateException("Unable to parse pantry text with Ollama", exception);
         }
     }
-    public record ParsedItem(String name, BigDecimal quantity, String unit) { }
+
+    public record ParsedItem(String name, BigDecimal quantity, String unit) {
+    }
 }

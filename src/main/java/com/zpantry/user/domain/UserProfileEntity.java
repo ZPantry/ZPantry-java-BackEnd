@@ -4,6 +4,7 @@ import com.zpantry.common.persistence.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -50,14 +51,14 @@ public class UserProfileEntity extends BaseEntity {
     public String getAllergies() { return allergies; }
 
     public void update(Integer age, String gender, BigDecimal height, BigDecimal weight,
-            String goal, String dietPreference, String allergies) {
+                       UserGoal goal, DietPreference dietPreference, java.util.Set<FoodAllergen> allergies) {
         this.age = age;
         this.gender = gender;
         this.height = height;
         this.weight = weight;
-        this.goal = goal;
-        this.dietPreference = dietPreference;
-        this.allergies = allergies;
+        this.goal = goal == null ? null : goal.name();
+        this.dietPreference = dietPreference == null ? null : dietPreference.name();
+        this.allergies = allergies == null ? null : allergies.stream().map(Enum::name).sorted().collect(java.util.stream.Collectors.joining(","));
         this.touch();
     }
 }

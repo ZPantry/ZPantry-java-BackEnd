@@ -112,3 +112,9 @@ The legacy backend reads configuration from environment/config providers, includ
 - optional embedding bootstrap/backfill flags.
 
 The Java project may normalize property names, but container/deployment compatibility must be considered before renaming externally supplied environment variables.
+## Gemini image analysis
+
+The independent AI service exposes `POST /ai/analyze-receipt` and
+`POST /ai/recognize-food-image`. It reads `GEMINI_API_KEY` and optional `GEMINI_MODEL` from its
+local `.env`; these values must never be present in Java configuration, frontend code, logs, or Git.
+The Java backend calls the AI service through `AI_SERVICE_URL` using multipart image uploads.
