@@ -17,9 +17,9 @@ remain NOT_STARTED.
 | Foundation | Java 21 enforced, safe persistence defaults, response records, validation, contract directories, container integration tests | COMPLETE (Foundation readiness scope only) |
 | User | Persistence, DTOs, service, routes, legacy password hashing and Option-B identity boundary implemented and container verified | COMPLETE (dev migration scope); production cutover BLOCKED |
 | Authentication | Register/OTP/login/JWT/refresh/logout implemented with approved corrections and dev revocation | IMPLEMENTED_NOT_VERIFIED |
-| Ingredient | CRUD, multipart media and embedding persistence implemented | IMPLEMENTED_NOT_VERIFIED |
+| Ingredient | CRUD, multipart media and embedding persistence implemented; catalog writes now role-protected and creation persists UUID before best-effort embedding | IMPLEMENTED_NOT_VERIFIED |
 | Recipe | CRUD, ingredient links, multipart media and embedding persistence implemented | IMPLEMENTED_NOT_VERIFIED |
-| Pantry | Authenticated owner-scoped list/upsert/update/delete implemented | IMPLEMENTED_NOT_VERIFIED |
+| Pantry | Authenticated owner-scoped list/upsert/update/delete implemented; positive quantity, active ingredient and unit validation enforced | IMPLEMENTED_NOT_VERIFIED |
 | Recommendation | Routes, persistence boundary and external AI orchestration implemented | IMPLEMENTED_NOT_VERIFIED |
 | Today Menu | Owner-scoped menu, completion, cooking/pantry logs implemented | IMPLEMENTED_NOT_VERIFIED |
 | Media | Cloudinary port/adapter and upload/delete routes implemented | IMPLEMENTED_NOT_VERIFIED |

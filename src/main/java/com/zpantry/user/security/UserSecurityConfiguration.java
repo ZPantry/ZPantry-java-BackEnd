@@ -35,6 +35,9 @@ public class UserSecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/Auth/register", "/api/Auth/verify-otp", "/api/Auth/login", "/api/Auth/refresh-token").permitAll()
                         .requestMatchers("/api/Auth/logout", "/api/me/**", "/api/recommendations/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/ingredients", "/api/v2/ingredients", "/api/recipes", "/api/v2/recipes", "/api/media/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/api/ingredients/**", "/api/v2/ingredients/**", "/api/recipes/**", "/api/v2/recipes/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/ingredients/**", "/api/recipes/**", "/api/media/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "MANAGER")
                         .requestMatchers("/api/admin/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/users/*/profile").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/users", "/api/users/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
@@ -54,6 +57,9 @@ public class UserSecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/Auth/register", "/api/Auth/verify-otp", "/api/Auth/login", "/api/Auth/refresh-token").permitAll()
                         .requestMatchers("/api/Auth/logout", "/api/me/**", "/api/recommendations/**").denyAll()
+                        .requestMatchers(HttpMethod.POST, "/api/ingredients", "/api/v2/ingredients", "/api/recipes", "/api/v2/recipes", "/api/media/**").denyAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/ingredients/**", "/api/v2/ingredients/**", "/api/recipes/**", "/api/v2/recipes/**").denyAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/ingredients/**", "/api/recipes/**", "/api/media/**").denyAll()
                         .requestMatchers("/api/admin/**").denyAll()
                         .requestMatchers("/api/users", "/api/users/**").denyAll()
                         .anyRequest().permitAll());

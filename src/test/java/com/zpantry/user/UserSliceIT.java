@@ -5,6 +5,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -138,6 +139,16 @@ class UserSliceIT {
         mvc.perform(get("/api/users/{id}", OWNER).with(ownerJwt(OWNER))).andExpect(status().isForbidden());
         mvc.perform(delete("/api/users/{id}", OWNER).with(ownerJwt(OWNER))).andExpect(status().isForbidden());
         mvc.perform(delete("/api/users/{id}", OWNER)).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void catalogWritesRequireAnAuthenticatedCatalogManager() throws Exception {
+        mvc.perform(post("/api/ingredients").contentType("application/json").content("{\"name\":\"Rice\"}"))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/ingredients").with(ownerJwt(OWNER)).contentType("application/json").content("{\"name\":\"Rice\"}"))
+                .andExpect(status().isForbidden());
+        mvc.perform(put("/api/recipes/{id}", OWNER).contentType("application/json").content("{}"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

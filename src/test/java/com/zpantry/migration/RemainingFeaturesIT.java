@@ -18,6 +18,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,6 +27,7 @@ import java.util.UUID;
 import static com.zpantry.authentication.api.AuthenticationDtos.*;
 import static com.zpantry.ingredient.api.IngredientDtos.*;
 import static com.zpantry.pantry.api.PantryDtos.UpsertPantryItemRequest;
+import static com.zpantry.pantry.api.PantryDtos.UpdatePantryItemRequest;
 import static com.zpantry.recipe.api.RecipeDtos.RecipeIngredientRequest;
 import static com.zpantry.recipe.api.RecipeDtos.RecipeRequest;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,16 +64,34 @@ class RemainingFeaturesIT {
 
     @Test
     void ingredientRecipeAndPantryPersistWithVectorMappings() {
-        var ingredient = ingredients.create(new CreateIngredientRequest("Rice", "grain", "g", BigDecimal.ONE, null, null, null, null, null, null));
+        String ingredientName = "Rice " + UUID.randomUUID();
+        var ingredient = ingredients.create(new CreateIngredientRequest(ingredientName, "grain", "g", BigDecimal.ONE, null, null, null, null, null, null));
         assertThat(ingredient.success()).isTrue();
-        assertThat(ingredient.data().normalizedName()).isEqualTo("rice");
-        var recipe = recipes.create(new RecipeRequest("Rice bowl", null, 10, "easy", 1, "Cook", null, "manual", null, null, List.of(new RecipeIngredientRequest(ingredient.data().id(), "Rice", BigDecimal.ONE, "g", true, null))));
+        assertThat(ingredient.data().normalizedName()).isEqualTo(ingredientName.toLowerCase());
+        var recipe = recipes.create(new RecipeRequest("Rice bowl " + UUID.randomUUID(), null, 10, "easy", 1, "Cook", null, "manual", null, null, List.of(new RecipeIngredientRequest(ingredient.data().id(), ingredientName, BigDecimal.ONE, "g", true, null))));
         assertThat(recipe.success()).isTrue();
         UUID user = UUID.randomUUID();
         var item = pantry.upsert(user, new UpsertPantryItemRequest(ingredient.data().id(), BigDecimal.TEN, "g", null, null, null));
         assertThat(item.success()).isTrue();
         assertThat(pantry.list(user, 1, 10).data()).hasSize(1);
         assertThat(recipes.get(recipe.data().id()).data().ingredients()).hasSize(1);
+    }
+
+    @Test
+    void ingredientCreationPersistsBeforeEmbeddingAndPantryRejectsInvalidUpdates() {
+        var ingredient = ingredients.create(new CreateIngredientRequest("Validated rice", "grain", "g", null, null, null, null, null, null, null));
+        assertThat(ingredient.success()).isTrue();
+        assertThat(ingredient.data().id()).isNotNull();
+        UUID user = UUID.randomUUID();
+        Instant expiry = Instant.now().plusSeconds(86_400);
+        var item = pantry.upsert(user, new UpsertPantryItemRequest(ingredient.data().id(), BigDecimal.TEN, "g", expiry, null, null));
+        assertThat(item.success()).isTrue();
+        var invalid = pantry.update(user, item.data().id(), new UpdatePantryItemRequest(null, BigDecimal.valueOf(-1), null, null, null, null), false);
+        assertThat(invalid.success()).isFalse();
+        assertThat(pantry.list(user, 1, 10).data().getFirst().quantity()).isEqualByComparingTo(BigDecimal.TEN);
+        var clearsExpiry = pantry.update(user, item.data().id(), new UpdatePantryItemRequest(null, null, null, null, null, null), true);
+        assertThat(clearsExpiry.success()).isTrue();
+        assertThat(clearsExpiry.data().expiredAt()).isNull();
     }
 
     @Test

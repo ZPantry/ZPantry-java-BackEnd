@@ -38,6 +38,8 @@ public class AuthenticationController {
         try {
             service.register(body);
             return ResponseEntity.ok(ok(null, "Đăng ký thành công! Vui lòng kiểm tra Gmail để nhận mã OTP xác thực.", req));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(fail(e.getMessage(), req));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(fail(e.getMessage(), req));
         }

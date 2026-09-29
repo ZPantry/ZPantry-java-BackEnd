@@ -1,5 +1,13 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-09-29 — Audit security and pantry validation repairs
+
+- Restricted JSON/v2 catalog mutations and media upload/delete to `SUPER_ADMIN`, `ADMIN`, or `MANAGER`; anonymous and ordinary users are rejected by the security filter chain.
+- Ingredient creation now persists before its best-effort embedding call, so generated UUIDs are available and an unavailable AI adapter cannot abort the CRUD transaction.
+- Pantry create/update now requires an active ingredient, positive quantity and nonblank unit. JSON update distinguishes an omitted `expiredAt` (leave unchanged) from explicit `null` (clear it).
+- Owner-authorization exceptions now map to HTTP 403 for profile controllers, and duplicate registration maps to 409 instead of 500.
+- The external AI/media/Today Menu detail/completion findings remain unverified and are not marked resolved.
+
 ## 2026-09-28 — Super Admin Authority
 
 - Super Admin now inherits all User administration read/delete permissions and may manage or assign every application role, including `SUPER_ADMIN`, as an explicit product policy.

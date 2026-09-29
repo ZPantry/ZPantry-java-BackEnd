@@ -42,7 +42,8 @@ public class PantryService {
 
     @Transactional
     public ApiResponse<PantryItemResponse> upsert(UUID u, UpsertPantryItemRequest r) {
-        if (r.ingredientId() == null) return fail("IngredientId is required.");
+        String invalid = invalidItem(r.ingredientId(), r.quantity(), r.unit());
+        if (invalid != null) return fail(invalid);
         var e = repo.findByUserIdAndIngredientIdAndDeletedFalse(u, r.ingredientId()).orElseGet(() -> new PantryItemEntity(u, r.ingredientId()));
         apply(e, r.ingredientId(), r.quantity(), r.unit(), r.expiredAt(), r.storageLocation(), r.note());
         return ok(dto(repo.save(e)), "Pantry item saved.");
@@ -50,9 +51,17 @@ public class PantryService {
 
     @Transactional
     public ApiResponse<PantryItemResponse> update(UUID u, UUID id, UpdatePantryItemRequest r) {
+        return update(u, id, r, true);
+    }
+
+    @Transactional
+    public ApiResponse<PantryItemResponse> update(UUID u, UUID id, UpdatePantryItemRequest r, boolean expiredAtProvided) {
         var e = repo.findByIdAndUserIdAndDeletedFalse(id, u).orElse(null);
         if (e == null) return fail("Pantry item not found.");
-        apply(e, r.ingredientId(), r.quantity(), r.unit(), r.expiredAt(), r.storageLocation(), r.note());
+        UUID ingredientId = r.ingredientId() == null ? e.ingredientId : r.ingredientId();
+        String invalid = invalidItem(ingredientId, r.quantity() == null ? e.quantity : r.quantity(), r.unit() == null ? e.unit : r.unit());
+        if (invalid != null) return fail(invalid);
+        apply(e, r.ingredientId(), r.quantity(), r.unit(), r.expiredAt(), expiredAtProvided, r.storageLocation(), r.note());
         e.touch();
         return ok(dto(e), "Pantry item updated.");
     }
@@ -66,19 +75,27 @@ public class PantryService {
     }
 
     public void validateImportItem(UUID ingredientId, java.math.BigDecimal quantity, String unit) {
-        if (ingredientId == null || ingredients.findByIdAndDeletedFalse(ingredientId).isEmpty())
-            throw new IllegalArgumentException("Ingredient not found.");
-        if (quantity == null || quantity.signum() <= 0 || unit == null || unit.isBlank() || unit.length() > 50)
-            throw new IllegalArgumentException("Invalid pantry item.");
+        String invalid = invalidItem(ingredientId, quantity, unit);
+        if (invalid != null) throw new IllegalArgumentException(invalid);
     }
 
     private void apply(PantryItemEntity e, UUID i, java.math.BigDecimal q, String unit, Instant ex, String loc, String note) {
+        apply(e, i, q, unit, ex, false, loc, note);
+    }
+
+    private void apply(PantryItemEntity e, UUID i, java.math.BigDecimal q, String unit, Instant ex, boolean expiredAtProvided, String loc, String note) {
         if (i != null) e.ingredientId = i;
         if (q != null) e.quantity = q;
         if (unit != null) e.unit = unit;
-        if (ex != null) e.expiredAt = ex;
+        if (expiredAtProvided || ex != null) e.expiredAt = ex;
         if (loc != null) e.storageLocation = loc;
         if (note != null) e.note = note;
+    }
+
+    private String invalidItem(UUID ingredientId, java.math.BigDecimal quantity, String unit) {
+        if (ingredientId == null || ingredients.findByIdAndDeletedFalse(ingredientId).isEmpty()) return "Ingredient not found.";
+        if (quantity == null || quantity.signum() <= 0 || unit == null || unit.isBlank() || unit.length() > 50) return "Invalid pantry item.";
+        return null;
     }
 
     private PantryItemResponse dto(PantryItemEntity e) {

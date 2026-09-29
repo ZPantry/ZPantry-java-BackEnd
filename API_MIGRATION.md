@@ -687,6 +687,9 @@ Java routes now exist for every pinned Ingredient, Recipe, Media, Pantry, Recomm
 Menu/Cooking Log controller method. Paths and HTTP methods are listed in
 `docs/ENDPOINT_COVERAGE.md`. The external AI implementation remains external; Java calls its six
 legacy paths through an HTTP adapter. Media uses a Cloudinary port and environment configuration.
+Catalog and media mutations require `SUPER_ADMIN`, `ADMIN`, or `MANAGER`. Pantry writes reject an
+inactive ingredient, non-positive quantity, or blank/oversized unit. On pantry update, an omitted
+`expiredAt` leaves the stored value unchanged while an explicit JSON `null` clears it.
 No module covered by MIG-006 is parity-certified until legacy response capture, AI error-contract
 tests, media compensation tests and complete multi-entity behavior tests pass.
 

@@ -11,6 +11,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 
@@ -18,6 +20,7 @@ import static com.zpantry.ingredient.api.IngredientDtos.*;
 
 @Service
 public class IngredientService {
+    private static final Logger log = LoggerFactory.getLogger(IngredientService.class);
     private final IngredientRepository repo;
     private final AiClient ai;
     private final MediaStoragePort media;
@@ -52,8 +55,9 @@ public class IngredientService {
         if (repo.existsByNormalizedNameAndDeletedFalse(n)) return fail("Ingredient already exists.");
         IngredientEntity e = new IngredientEntity(r.name());
         apply(e, r);
-        ai.embedIngredient(e.getId(), e.name, e.normalizedName, e.category).ifPresent(v -> e.embedding = v);
-        return ok(dto(repo.save(e)), "Ingredient created.");
+        e = repo.save(e);
+        embed(e);
+        return ok(dto(e), "Ingredient created.");
     }
 
     @Transactional
@@ -81,7 +85,7 @@ public class IngredientService {
         }
         apply(e, new CreateIngredientRequest(e.name, r.category(), r.unit(), r.caloriesPerUnit(), r.proteinPerUnit(), r.fatPerUnit(), r.carbPerUnit(), r.imageUrl(), r.gradientFrom(), r.gradientTo(), r.allergens()));
         e.touch();
-        ai.embedIngredient(e.getId(), e.name, e.normalizedName, e.category).ifPresent(v -> e.embedding = v);
+        embed(e);
         return ok(dto(e), "Ingredient updated.");
     }
 
@@ -117,6 +121,15 @@ public class IngredientService {
         if (r.gradientTo() != null) e.gradientTo = r.gradientTo();
         if (r.allergens() != null)
             e.allergens = r.allergens().stream().map(Enum::name).sorted().collect(java.util.stream.Collectors.joining(","));
+    }
+
+    private void embed(IngredientEntity ingredient) {
+        try {
+            ai.embedIngredient(ingredient.getId(), ingredient.name, ingredient.normalizedName, ingredient.category)
+                    .ifPresent(vector -> ingredient.embedding = vector);
+        } catch (RuntimeException exception) {
+            log.warn("Ingredient {} was saved without an embedding because AI is unavailable", ingredient.getId(), exception);
+        }
     }
 
     private IngredientResponse dto(IngredientEntity e) {
