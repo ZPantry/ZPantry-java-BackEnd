@@ -1,7 +1,9 @@
 package com.zpantry.authentication.api;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.zpantry.authentication.service.AuthenticationFailure;
 import com.zpantry.authentication.service.AuthenticationService;
+import com.zpantry.authentication.service.GoogleAuthService;
 import com.zpantry.common.api.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -20,9 +22,11 @@ import static com.zpantry.authentication.api.AuthenticationDtos.*;
 @RequestMapping("/api/Auth")
 public class AuthenticationController {
     private final AuthenticationService service;
+    private final GoogleAuthService googleAuthService;
 
-    public AuthenticationController(AuthenticationService service) {
+    public AuthenticationController(AuthenticationService service, GoogleAuthService googleAuthService) {
         this.service = service;
+        this.googleAuthService = googleAuthService;
     }
 
     private static <T> ApiResponse<T> ok(T data, String message, HttpServletRequest r) {
@@ -64,6 +68,24 @@ public class AuthenticationController {
         var jwt = auth.getToken();
         service.logout(jwt.getClaimAsString("email"), jwt.getId(), jwt.getExpiresAt());
         return ok(null, "Logout successful.", req);
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<ApiResponse<AuthResponse>> authenticateGoogle(@RequestBody GoogleLoginRequest body, HttpServletRequest req) {
+        return auth(() -> {
+            try {
+                String idToken = body.idToken();
+                GoogleIdToken.Payload payload = googleAuthService.verifyToken(idToken);
+                
+                return service.googleLogin(
+                        payload.getEmail(),
+                        (String) payload.get("name"),
+                        (String) payload.get("picture")
+                );
+            } catch (Exception e) {
+                throw new AuthenticationFailure("Xác thực Google thất bại: " + e.getMessage());
+            }
+        }, req);
     }
 
     private ResponseEntity<ApiResponse<AuthResponse>> auth(java.util.function.Supplier<AuthResponse> call, HttpServletRequest req) {
