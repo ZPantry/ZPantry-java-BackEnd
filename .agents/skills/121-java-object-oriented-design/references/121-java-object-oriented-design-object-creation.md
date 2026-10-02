@@ -308,7 +308,7 @@ public class DateUtils {
     private static final DateTimeFormatter FORMATTER =
         DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    public String formatDate(LocalDate date) {
+    public String formatDate(devDate date) {
         return FORMATTER.format(date);  // Reuse formatter
     }
 
@@ -323,7 +323,7 @@ public class DateUtils {
 
 ```java
 public class DateUtils {
-    public String formatDate(LocalDate date) {
+    public String formatDate(devDate date) {
         // Creates new formatter every time - expensive
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         return formatter.format(date);

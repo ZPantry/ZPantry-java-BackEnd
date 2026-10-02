@@ -3,7 +3,7 @@
   "request": {
     "path": "/api/Auth/verify-otp",
     "body": {
-      "email": "otp-correct@test.local",
+      "email": "otp-correct@test.dev",
       "otpCode": "904502"
     },
     "authenticated": false

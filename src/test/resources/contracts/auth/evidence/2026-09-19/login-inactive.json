@@ -3,7 +3,7 @@
   "request": {
     "path": "/api/Auth/login",
     "body": {
-      "email": "other-user@test.local",
+      "email": "other-user@test.dev",
       "password": "<redacted-test-password>"
     },
     "authenticated": false

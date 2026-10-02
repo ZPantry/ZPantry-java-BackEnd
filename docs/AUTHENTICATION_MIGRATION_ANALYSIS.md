@@ -95,7 +95,7 @@ hash and expiry and persist, but do not update `updatedAt`.
 Bearer authentication runs before the controller. The service reads raw `jti` and email from the
 already validated JWT. Missing identity yields wrapped 401. When a non-deleted user is found,
 logout clears refresh hash/expiry and sets `updatedAt`; a missing/deleted user does not prevent JTI
-revocation. The blacklist is a static process-local `ConcurrentDictionary<string, DateTimeOffset>`
+revocation. The blacklist is a static process-dev `ConcurrentDictionary<string, DateTimeOffset>`
 mapping JTI to token expiry. Lookup lazily removes expired entries; there is no periodic cleanup,
 persistence or cross-instance sharing.
 
@@ -137,7 +137,7 @@ each runtime can make a different revocation decision, and multiple C# instances
 
 | Strategy | C# / Java impact | Infrastructure | Compatibility and security | Cutover impact |
 |---|---|---|---|---|
-| A. Preserve local memory | Keep C# dictionary; Java uses local checker | none | Matches single-process legacy behavior but logout is not globally effective and restart revives tokens | Safe only with strict token-affinity/single issuer-consumer routing and a bounded token drain |
+| A. Preserve dev memory | Keep C# dictionary; Java uses dev checker | none | Matches single-process legacy behavior but logout is not globally effective and restart revives tokens | Safe only with strict token-affinity/single issuer-consumer routing and a bounded token drain |
 | B. Shared revocation store | Adapt both runtimes to write/read JTI with expiry | PostgreSQL table or another already-operated shared store | Makes logout consistent across processes; adds availability/cleanup concerns and changes C# internals without changing API | Supports gradual bidirectional coexistence |
 | C. Authentication-owner routing and drain | One runtime owns issuance/logout and all bearer-protected traffic for old tokens; cut over after maximum access lifetime | gateway/routing rules; no new store | Preserves current mechanism within one process if routing affinity is enforceable; concurrency across runtimes is intentionally prevented | Lowest schema impact, but constrains rollout and needs a maintenance/drain window |
 

@@ -40,12 +40,12 @@ build/
 **/.env.*
 !**/.env.example
 
-# Developer-specific Spring overrides. The repository-owned local profile below
+# Developer-specific Spring overrides. The repository-owned dev profile below
 # contains synthetic Docker-only values and must remain versioned.
-application-local.properties
-application-local.yml
-application-local.yaml
-!src/main/resources/application-local.properties
+application-dev.properties
+application-dev.yml
+application-dev.yaml
+!src/main/resources/application-prod.properties
 application-private.properties
 application-private.yml
 application-private.yaml
@@ -53,7 +53,7 @@ application-secrets.properties
 application-secrets.yml
 application-secrets.yaml
 
-# Local secret stores and signing material
+# dev secret stores and signing material
 secrets/
 *.jks
 *.p12

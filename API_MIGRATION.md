@@ -418,7 +418,7 @@ When uncertain, document the change.
 
 ## [MIG-004] User compatibility slice — source analysis only
 
-**Status:** `MIGRATED` (local migration scope verified; production cutover blocked)
+**Status:** `MIGRATED` (dev migration scope verified; production cutover blocked)
 **Breaking Change:** `YES` for the explicitly approved owner-PUT bug correction
 **Date:** `2026-09-16`
 **Legacy API:** present in pinned source; deployment/runtime not probed
@@ -633,7 +633,7 @@ MIG-004 remains PENDING; no Java endpoint is migrated.
 ### ClaimsPrincipal diagnosis and pending compatibility decision — 2026-09-19
 
 The pinned runtime's owner 403 is a proven claim-mapping defect. The login token has both
-`sub=owner@test.local` and the literal NameIdentifier URI containing the owner UUID.
+`sub=owner@test.dev` and the literal NameIdentifier URI containing the owner UUID.
 `JwtBearerOptions.MapInboundClaims=true` uses `JsonWebTokenHandler` 8.0.1 with its separate
 73-entry default inbound map. It maps `sub` to the NameIdentifier URI, producing two claims of
 that type with the email first. The controller's only `FindFirstValue(NameIdentifier)` resolves
@@ -653,7 +653,7 @@ Option B was explicitly approved on 2026-09-19 and implemented. Java validates t
 prefers a valid UUID `userId`, permits only matching-owner PUT, and denies wrong-owner and
 admin-other updates. The legacy observed owner 403 remains preserved as defect evidence rather
 than as the Java expected result. No registration, login, OTP, token issuance, refresh, logout or
-full Authentication flow was implemented. MIG-004 is MIGRATED for local scope; production cutover
+full Authentication flow was implemented. MIG-004 is MIGRATED for dev scope; production cutover
 remains blocked on the real users catalog and shared revocation interoperability.
 ## [MIG-005] Authentication compatibility slice — evidence/specification only
 
@@ -670,12 +670,12 @@ mutations, token format and failure statuses are specified in
 
 Runtime capture verifies that login and refresh issue both access and rotated refresh tokens; only
 an uppercase SHA-256 refresh hash is stored. Logout clears stored refresh state and writes JTI only
-to a process-local static dictionary. Revocation is lost on restart and is not visible across C#
+to a process-dev static dictionary. Revocation is lost on restart and is not visible across C#
 and Java. Register accepts `{}` and OTP uses non-cryptographic randomness with no retry enforcement;
 these require explicit compatibility/security decisions.
 
 Authentication implementation readiness is **READY WITH DOCUMENTED LIMITATIONS**. MIG-005 is
-implemented with the approved blank-input rejection, secure OTP RNG and bounded local revocation,
+implemented with the approved blank-input rejection, secure OTP RNG and bounded dev revocation,
 but remains unverified until Java endpoints pass fixture parity.
 Production cutover is BLOCKED by cross-runtime revocation and actual shared-catalog verification.
 
@@ -687,5 +687,35 @@ Java routes now exist for every pinned Ingredient, Recipe, Media, Pantry, Recomm
 Menu/Cooking Log controller method. Paths and HTTP methods are listed in
 `docs/ENDPOINT_COVERAGE.md`. The external AI implementation remains external; Java calls its six
 legacy paths through an HTTP adapter. Media uses a Cloudinary port and environment configuration.
+Catalog and media mutations require `SUPER_ADMIN`, `ADMIN`, or `MANAGER`. Pantry writes reject an
+inactive ingredient, non-positive quantity, or blank/oversized unit. On pantry update, an omitted
+`expiredAt` leaves the stored value unchanged while an explicit JSON `null` clears it.
 No module covered by MIG-006 is parity-certified until legacy response capture, AI error-contract
 tests, media compensation tests and complete multi-entity behavior tests pass.
+
+## [MIG-007] Recommendation V2 personalization
+
+**Status:** PLANNED
+
+Recommendation V2 is a new, versioned API. It will derive pantry ingredients and the authenticated
+user profile on the server, then apply allergy and diet filters before requesting AI ranking. Profile
+values are controlled enums: `UserGoal`, `DietPreference`, and `FoodAllergen`. Unknown enum values
+are rejected with a client error; no free-text fallback is accepted. The existing recommendation
+route remains unchanged until V2 is implemented and verified.
+
+## [MIG-008] Catalog-backed Pantry AI previews
+
+**Status:** IMPLEMENTED_NOT_VERIFIED
+
+`POST /api/me/pantry/parse` and the image import analysis endpoints now share one catalog-resolution
+contract. Every item included in a preview has a non-null `ingredientId`, canonical database name,
+database unit, and canonical Ingredient object. AI/Ollama names, units, and IDs are never trusted.
+Missing or non-positive quantities are replaced by the Ingredient `defaultQuantity`. Image rows that
+cannot be matched unambiguously to an active catalog record are omitted; their presence is conveyed
+through a warning, not a fabricated ID. The text endpoint returns the same preview-item fields as
+image analysis, wrapped in its existing `ApiResponse` list.
+
+Ollama schema parsing accepts `ingredients`, `items`, and a root array. Unknown response schemas
+return a bounded service-unavailable response without exposing parser internals. This is a
+deliberate contract enhancement for the approved Pantry AI import feature, not captured legacy
+behavior; live Ollama/Gemini verification remains pending and must use deployment-owned credentials.

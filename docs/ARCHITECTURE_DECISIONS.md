@@ -173,10 +173,10 @@ runtime behavior. MIG-004, frontend expectations and tests must state the deviat
 converter can serve later slices while issuance, refresh and OTP remain out of scope.
 ## ADR-013 — Cross-runtime access-token revocation (PROPOSED)
 
-**Context:** Runtime evidence proves the legacy static JTI blacklist is process-local and is lost
+**Context:** Runtime evidence proves the legacy static JTI blacklist is process-dev and is lost
 on restart. During coexistence, neither C# nor Java can observe the other's logout.
 
-**Options:** (A) preserve local memory, which is incompatible with shared-token coexistence;
+**Options:** (A) preserve dev memory, which is incompatible with shared-token coexistence;
 (B) adapt both runtimes to a shared expiry-aware revocation store; (C) route all bearer traffic and
 logout to one runtime, cut over atomically, and drain for the maximum access-token lifetime.
 
@@ -196,3 +196,15 @@ read-only catalog comparison and an approved baseline action; `baseline-on-migra
 
 **Consequences:** Clean environments are reproducible without weakening legacy-database safety.
 Production adoption remains blocked until the real catalog is verified.
+
+## ADR-015 — Controlled Profile Enums for Recommendation V2
+
+**Status:** Accepted
+**Date:** 2026-09-28
+
+`goal`, `dietPreference`, and `allergies` are controlled domain values for the personalized
+recommendation MVP. Java exposes `UserGoal`, `DietPreference`, and `FoodAllergen`; unknown JSON
+values are rejected at the API boundary. The existing varchar/text columns remain unchanged:
+enum names are persisted as strings and allergens as a comma-separated canonical enum list. No
+implicit mapping of unknown legacy values is permitted. Recommendation V2 must obtain profile and
+Pantry data server-side from the authenticated UUID before AI ranking.

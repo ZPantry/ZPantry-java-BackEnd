@@ -19,25 +19,25 @@ class LegacyClaimConverterTest {
     void explicitUserIdWinsWhenEmailSubWasMappedToNameIdentifier() {
         UUID owner = UUID.randomUUID();
         Jwt jwt = jwt(Map.of(
-                "sub", "owner@test.local",
+                "sub", "owner@test.dev",
                 "userId", owner.toString(),
-                NAME_ID, List.of("owner@test.local", owner.toString()),
+                NAME_ID, List.of("owner@test.dev", owner.toString()),
                 "role", "user",
                 "jti", "synthetic-jti"));
         var identity = converter.convert(jwt).orElseThrow();
         assertThat(identity.userId()).isEqualTo(owner);
-        assertThat(identity.email()).isEqualTo("owner@test.local");
+        assertThat(identity.email()).isEqualTo("owner@test.dev");
         assertThat(identity.roles()).containsExactly("user");
     }
 
     @Test
     void fallbackRequiresOneUnambiguousUuidAndNeverUsesEmailSub() {
         UUID owner = UUID.randomUUID();
-        assertThat(converter.convert(jwt(Map.of("sub", "owner@test.local", NAME_ID, owner.toString(), "jti", "x"))))
+        assertThat(converter.convert(jwt(Map.of("sub", "owner@test.dev", NAME_ID, owner.toString(), "jti", "x"))))
                 .get().extracting(identity -> identity.userId()).isEqualTo(owner);
-        assertThat(converter.convert(jwt(Map.of("sub", "owner@test.local", NAME_ID,
+        assertThat(converter.convert(jwt(Map.of("sub", "owner@test.dev", NAME_ID,
                 List.of(UUID.randomUUID().toString(), UUID.randomUUID().toString()), "jti", "x")))).isEmpty();
-        assertThat(converter.convert(jwt(Map.of("sub", "owner@test.local", "jti", "x")))).isEmpty();
+        assertThat(converter.convert(jwt(Map.of("sub", "owner@test.dev", "jti", "x")))).isEmpty();
     }
 
     private static Jwt jwt(Map<String, Object> claims) {

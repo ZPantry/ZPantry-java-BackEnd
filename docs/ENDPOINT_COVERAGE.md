@@ -8,7 +8,7 @@ Pinned legacy commit: `a010fdc5894176596bb195e4fef66db2c09496f1`. Updated 2026-0
 | POST `/api/Auth/verify-otp` | `AuthenticationController.verify` | PARITY |
 | POST `/api/Auth/login` | `AuthenticationController.login` | PARITY |
 | POST `/api/Auth/refresh-token` | `AuthenticationController.refresh` | PARITY |
-| POST `/api/Auth/logout` | `AuthenticationController.logout` | INTENTIONAL_DEVIATION: bounded Java-local revocation |
+| POST `/api/Auth/logout` | `AuthenticationController.logout` | INTENTIONAL_DEVIATION: bounded Java-dev revocation |
 | GET `/api/users` | `UserController.list` | PARITY |
 | GET `/api/users/{id}` | `UserController.get` | PARITY |
 | PUT `/api/users/{id}` | `UserController.update` | INTENTIONAL_DEVIATION: ADR-012 |

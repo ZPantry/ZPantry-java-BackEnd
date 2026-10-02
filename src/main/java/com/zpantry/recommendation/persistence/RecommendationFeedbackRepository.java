@@ -1,1 +1,10 @@
-package com.zpantry.recommendation.persistence;import com.zpantry.recommendation.domain.RecommendationFeedbackEntity;import java.util.UUID;import org.springframework.data.jpa.repository.JpaRepository;public interface RecommendationFeedbackRepository extends JpaRepository<RecommendationFeedbackEntity,UUID>{}
+package com.zpantry.recommendation.persistence;
+
+import com.zpantry.recommendation.domain.RecommendationFeedbackEntity;
+
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface RecommendationFeedbackRepository extends JpaRepository<RecommendationFeedbackEntity, UUID> {
+}

@@ -31,7 +31,7 @@
         {
           "id": "6b472752-a902-4f4f-833b-622829af7137",
           "fullName": "Contract Admin",
-          "email": "admin@test.local",
+          "email": "admin@test.dev",
           "avatarUrl": null,
           "isEmailConfirmed": true,
           "isActive": true,
@@ -42,7 +42,7 @@
         {
           "id": "a0fe7714-d472-439f-81c9-e9758027a75a",
           "fullName": "Contract Other User",
-          "email": "other-user@test.local",
+          "email": "other-user@test.dev",
           "avatarUrl": null,
           "isEmailConfirmed": true,
           "isActive": false,
@@ -53,7 +53,7 @@
         {
           "id": "61133bc8-c576-42c1-94c9-e515334392db",
           "fullName": "Synthetic User",
-          "email": "otp-correct@test.local",
+          "email": "otp-correct@test.dev",
           "avatarUrl": null,
           "isEmailConfirmed": true,
           "isActive": true,
@@ -64,7 +64,7 @@
         {
           "id": "d663a468-f61d-4a28-ab2c-8446d920d73b",
           "fullName": "Synthetic User",
-          "email": "otp-expired@test.local",
+          "email": "otp-expired@test.dev",
           "avatarUrl": null,
           "isEmailConfirmed": false,
           "isActive": true,
@@ -75,7 +75,7 @@
         {
           "id": "f4ff60a7-e888-4d88-a8b0-d2808e789c56",
           "fullName": "Synthetic User",
-          "email": "otp-wrong@test.local",
+          "email": "otp-wrong@test.dev",
           "avatarUrl": null,
           "isEmailConfirmed": false,
           "isActive": true,
@@ -86,7 +86,7 @@
         {
           "id": "2ab60651-25ba-4c42-9ec3-2a7dc10813f6",
           "fullName": "Contract Owner",
-          "email": "owner@test.local",
+          "email": "owner@test.dev",
           "avatarUrl": null,
           "isEmailConfirmed": true,
           "isActive": true,
@@ -97,7 +97,7 @@
         {
           "id": "c5498dbc-818a-41eb-a258-0369835d758c",
           "fullName": "Synthetic User",
-          "email": "register-success@test.local",
+          "email": "register-success@test.dev",
           "avatarUrl": null,
           "isEmailConfirmed": false,
           "isActive": true,

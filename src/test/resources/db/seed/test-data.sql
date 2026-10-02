@@ -4,16 +4,16 @@
 INSERT INTO users (id, created_at, full_name, email, password_hashed,
                    is_email_confirmed, is_active, role)
 VALUES
-('00000000-0000-0000-0000-000000000101', '2026-01-01T00:00:00Z', 'Test Admin', 'admin@test.local',
- 'AIAxJyUGQQCIG+pquXusORUfScFNRqux2b91Uv/6ymchMc0X0P5lIjEpcO9ZMz2Puw==', true, true, 'admin'),
-('00000000-0000-0000-0000-000000000102', '2026-01-01T00:00:00Z', 'Test Owner', 'owner@test.local',
- 'AIAxJyUGQQCIG+pquXusORUfScFNRqux2b91Uv/6ymchMc0X0P5lIjEpcO9ZMz2Puw==', true, true, 'user'),
-('00000000-0000-0000-0000-000000000103', '2026-01-01T00:00:00Z', 'Test Other', 'other@test.local',
- 'AIAxJyUGQQCIG+pquXusORUfScFNRqux2b91Uv/6ymchMc0X0P5lIjEpcO9ZMz2Puw==', true, true, 'user'),
-('00000000-0000-0000-0000-000000000104', '2026-01-01T00:00:00Z', 'Test Inactive', 'inactive@test.local',
- 'AIAxJyUGQQCIG+pquXusORUfScFNRqux2b91Uv/6ymchMc0X0P5lIjEpcO9ZMz2Puw==', true, false, 'user'),
-('00000000-0000-0000-0000-000000000105', '2026-01-01T00:00:00Z', 'Test Unconfirmed', 'unconfirmed@test.local',
- 'AIAxJyUGQQCIG+pquXusORUfScFNRqux2b91Uv/6ymchMc0X0P5lIjEpcO9ZMz2Puw==', false, true, 'user');
+('00000000-0000-0000-0000-000000000101', '2026-01-01T00:00:00Z', 'Test Super Admin', 'superadmin@test.local',
+ 'AIAxJyUGQQCIG+pquXusORUfScFNRqux2b91Uv/6ymchMc0X0P5lIjEpcO9ZMz2Puw==', true, true, 'SUPER_ADMIN'),
+('00000000-0000-0000-0000-000000000102', '2026-01-01T00:00:00Z', 'Test Admin', 'admin@test.local',
+ 'AIAxJyUGQQCIG+pquXusORUfScFNRqux2b91Uv/6ymchMc0X0P5lIjEpcO9ZMz2Puw==', true, true, 'ADMIN'),
+('00000000-0000-0000-0000-000000000103', '2026-01-01T00:00:00Z', 'Test Manager', 'manager@test.local',
+ 'AIAxJyUGQQCIG+pquXusORUfScFNRqux2b91Uv/6ymchMc0X0P5lIjEpcO9ZMz2Puw==', true, true, 'MANAGER'),
+('00000000-0000-0000-0000-000000000104', '2026-01-01T00:00:00Z', 'Test User', 'user@test.local',
+ 'AIAxJyUGQQCIG+pquXusORUfScFNRqux2b91Uv/6ymchMc0X0P5lIjEpcO9ZMz2Puw==', true, true, 'USER'),
+('00000000-0000-0000-0000-000000000105', '2026-01-01T00:00:00Z', 'Test Inactive User', 'inactive@test.local',
+ 'AIAxJyUGQQCIG+pquXusORUfScFNRqux2b91Uv/6ymchMc0X0P5lIjEpcO9ZMz2Puw==', true, false, 'USER');
 
 INSERT INTO ingredients (id, created_at, name, normalized_name, category, unit,
                          calories_per_unit, protein_per_unit, fat_per_unit, carb_per_unit)

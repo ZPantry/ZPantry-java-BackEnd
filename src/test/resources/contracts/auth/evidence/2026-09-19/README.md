@@ -2,11 +2,11 @@
 
 This directory contains redacted observations from the pinned legacy commit
 `a010fdc5894176596bb195e4fef66db2c09496f1` running on .NET 10 against a disposable
-PostgreSQL 16/pgvector container. All actors use `@test.local`; the database and Docker network
+PostgreSQL 16/pgvector container. All actors use `@test.dev`; the database and Docker network
 were isolated from developer and shared environments.
 
 The disposable source copy intercepted `EmailService.SendEmailAsync` at the provider boundary.
-It returned without delivery, except for `delivery-fail@test.local`, where it threw a synthetic
+It returned without delivery, except for `delivery-fail@test.dev`, where it threw a synthetic
 failure. Registration, persistence, OTP, hashing and controller behavior were otherwise unchanged.
 The instrumentation was outside this repository and is not production code.
 

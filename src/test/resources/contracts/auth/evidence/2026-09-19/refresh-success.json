@@ -17,7 +17,7 @@
         "accessToken": "<redacted-token>",
         "expiresAt": "2026-09-19T03:08:56.1761707Z",
         "fullName": "Contract Owner",
-        "email": "owner@test.local",
+        "email": "owner@test.dev",
         "refreshToken": "<redacted-token>",
         "role": "user"
       },

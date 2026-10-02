@@ -1,1 +1,34 @@
-package com.zpantry.recommendation.domain;import com.zpantry.common.persistence.BaseEntity;import jakarta.persistence.*;import java.time.Instant;import java.util.UUID;@Entity@Table(name="meal_recommendations")public class MealRecommendationEntity extends BaseEntity{@Column(name="user_id")public UUID userId;@Column(name="request_text")public String requestText;@Column(name="input_ingredient_text")public String inputIngredientText;@Column(name="recommendation_type")public String recommendationType;public String status;@Column(name="completed_at")public Instant completedAt;protected MealRecommendationEntity(){}public MealRecommendationEntity(UUID u,String i){userId=u;inputIngredientText=i;recommendationType="meal";status="completed";completedAt=Instant.now();}}
+package com.zpantry.recommendation.domain;
+
+import com.zpantry.common.persistence.BaseEntity;
+import jakarta.persistence.*;
+
+import java.time.Instant;
+import java.util.UUID;
+
+@Entity
+@Table(name = "meal_recommendations")
+public class MealRecommendationEntity extends BaseEntity {
+    @Column(name = "user_id")
+    public UUID userId;
+    @Column(name = "request_text")
+    public String requestText;
+    @Column(name = "input_ingredient_text")
+    public String inputIngredientText;
+    @Column(name = "recommendation_type")
+    public String recommendationType;
+    public String status;
+    @Column(name = "completed_at")
+    public Instant completedAt;
+
+    protected MealRecommendationEntity() {
+    }
+
+    public MealRecommendationEntity(UUID u, String i) {
+        userId = u;
+        inputIngredientText = i;
+        recommendationType = "meal";
+        status = "completed";
+        completedAt = Instant.now();
+    }
+}

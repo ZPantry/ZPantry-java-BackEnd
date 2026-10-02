@@ -9,13 +9,13 @@
   "claims": [
     {
       "type": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
-      "value": "owner@test.local",
+      "value": "owner@test.dev",
       "valueType": "http://www.w3.org/2001/XMLSchema#string",
       "issuer": "zpantry-contract-test"
     },
     {
       "type": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
-      "value": "owner@test.local",
+      "value": "owner@test.dev",
       "valueType": "http://www.w3.org/2001/XMLSchema#string",
       "issuer": "zpantry-contract-test"
     },
@@ -70,7 +70,7 @@
   ],
   "ownerLookup": {
     "requestedClaimType": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
-    "resolvedValue": "owner@test.local",
+    "resolvedValue": "owner@test.dev",
     "guidTryParse": false,
     "parsedUserId": null,
     "routeId": "9a833dce-849f-43ee-aa6e-6760ffcf3e54",

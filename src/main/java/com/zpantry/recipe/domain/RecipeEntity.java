@@ -1,2 +1,42 @@
-package com.zpantry.recipe.domain;import com.zpantry.common.persistence.BaseEntity;import jakarta.persistence.*;import org.hibernate.annotations.JdbcTypeCode;import org.hibernate.type.SqlTypes;
-@Entity @Table(name="recipes") public class RecipeEntity extends BaseEntity{public String name;public String description;@Column(name="cooking_time_minutes")public Integer cookingTimeMinutes;public String difficulty;@Column(name="serving_size")public Integer servingSize;@Column(name="instruction_text")public String instructionText;@Column(name="image_url")public String imageUrl;@Column(name="source_type")public String sourceType;@Column(name="gradient_from")public String gradientFrom;@Column(name="gradient_to")public String gradientTo;@JdbcTypeCode(SqlTypes.VECTOR)@Column(columnDefinition="vector(1536)")public float[] embedding;protected RecipeEntity(){}public RecipeEntity(String n){name=n.trim();}}
+package com.zpantry.recipe.domain;
+
+import com.zpantry.common.persistence.BaseEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+@Entity
+@Table(name = "recipes")
+public class RecipeEntity extends BaseEntity {
+    public String name;
+    public String description;
+    @Column(columnDefinition = "text")
+    public String allergens;
+    @Column(name = "cooking_time_minutes")
+    public Integer cookingTimeMinutes;
+    public String difficulty;
+    @Column(name = "serving_size")
+    public Integer servingSize;
+    @Column(name = "instruction_text")
+    public String instructionText;
+    @Column(name = "image_url")
+    public String imageUrl;
+    @Column(name = "source_type")
+    public String sourceType;
+    @Column(name = "gradient_from")
+    public String gradientFrom;
+    @Column(name = "gradient_to")
+    public String gradientTo;
+    @JdbcTypeCode(SqlTypes.VECTOR)
+    @Column(columnDefinition = "vector(1536)")
+    public float[] embedding;
+
+    protected RecipeEntity() {
+    }
+
+    public RecipeEntity(String name) {
+        this.name = name.trim();
+    }
+}

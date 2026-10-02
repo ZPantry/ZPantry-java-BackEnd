@@ -224,7 +224,7 @@ identical. This is a compatibility decision blocker, not a missing snapshot to a
 Prerequisites: JDK 21 and a working Docker-compatible Linux-container daemon for integration
 tests. Set JAVA_HOME to the JDK 21 installation and put its bin directory first on PATH in
 your shell/IDE. The wrapper does not install or choose a JDK. Maven rejects Java 8/17/23+.
-On this audit host JDK 21 is available at C:/Users/ASUS/.jdks/ms-21.0.12; that is a local
+On this audit host JDK 21 is available at C:/Users/ASUS/.jdks/ms-21.0.12; that is a dev
 observation, not a required portable path.
 
 Run from the repository root:
@@ -296,4 +296,10 @@ soft-delete filtering and mutation boundaries. MockMvc checks admin/owner/anonym
 legacy empty middleware bodies, missing-resource wrappers, Option-B PUT, sensitive-field omission,
 and a real signed HS256 token through the configured decoder. No H2 or external datasource is used.
 
+## Pantry Import and Recommendation V2
 
+Test image size/type rejection, AI timeout/malformed responses, and the invariant that analysis
+does not mutate Pantry. Test confirm ownership and atomic multi-item writes. Recommendation V2 tests
+must prove server-side Pantry/Profile use, exclusion of recipes whose allergen set intersects the
+user allergy set, and no cross-user context access. AI service tests use deterministic fakes; never
+require a real Gemini key.

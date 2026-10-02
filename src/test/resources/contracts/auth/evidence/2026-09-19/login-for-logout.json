@@ -3,7 +3,7 @@
   "request": {
     "path": "/api/Auth/login",
     "body": {
-      "email": "admin@test.local",
+      "email": "admin@test.dev",
       "password": "<redacted-test-password>"
     },
     "authenticated": false
@@ -18,7 +18,7 @@
         "accessToken": "<redacted-token>",
         "expiresAt": "2026-09-19T03:08:58.0319647Z",
         "fullName": "Contract Admin",
-        "email": "admin@test.local",
+        "email": "admin@test.dev",
         "refreshToken": "<redacted-token>",
         "role": "admin"
       },

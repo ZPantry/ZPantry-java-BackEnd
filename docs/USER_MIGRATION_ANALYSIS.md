@@ -58,7 +58,7 @@ dependencies; their final files/scope require an explicit implementation decisio
   authorization rules, not interoperability with real legacy bearer tokens.
 - Signature/lifetime, zero skew, configured issuer/audience and nonblank/unrevoked JTI must
   be respected before exposing routes. Issuer/audience checks are conditional on configuration.
-  The process-local blacklist creates cross-process interoperability questions during coexistence.
+  The process-dev blacklist creates cross-process interoperability questions during coexistence.
 - Registration creates the raw email/name, password hash, OTP/expiry, active=true,
   confirmed=false, role=user and creation audit fields. Email is sent before the insert.
   OTP verification clears OTP/expiry, confirms email and sets updated_at; retry count is unused.
@@ -153,14 +153,14 @@ Java code was implemented and Foundation was not changed.
 
 | Evidence gate | Classification | Result |
 |---|---|---|
-| Actual PostgreSQL users table | BLOCKED | Local PostgreSQL 17 is running, but it requires credentials. No connection environment variables or pgpass file were available; `psql -w` failed before a session. No SQL ran. |
-| Legacy User HTTP captures | BLOCKED | The repository has no local legacy source/runtime configuration. This host has .NET SDK 9 while the pinned source targets .NET 10; Docker was unavailable and no isolated legacy database exists. No backend was started and no JSON was fabricated. |
+| Actual PostgreSQL users table | BLOCKED | dev PostgreSQL 17 is running, but it requires credentials. No connection environment variables or pgpass file were available; `psql -w` failed before a session. No SQL ran. |
+| Legacy User HTTP captures | BLOCKED | The repository has no dev legacy source/runtime configuration. This host has .NET SDK 9 while the pinned source targets .NET 10; Docker was unavailable and no isolated legacy database exists. No backend was started and no JSON was fabricated. |
 | Password hash generation | RESOLVED | Exact package 2.2.4 was executed with a synthetic password and independently verified on JDK 21. Format and strategy are established below. |
 | User authorization claims | PARTIALLY_RESOLVED | Legacy source fully establishes required claims and controller checks. Java has Spring Security starter only: no SecurityFilterChain, JwtDecoder/authentication converter or blacklist adapter exists, so it cannot yet consume the identity. |
 
 ### Actual database probe
 
-The only database found locally was a running `postgresql-x64-17` Windows service on the
+The only database found devly was a running `postgresql-x64-17` Windows service on the
 default endpoint. No `ConnectionStrings*`, `DATABASE*`, `DB_*`, `PG*` or `POSTGRES*` environment
 variable and no `%APPDATA%/postgresql/pgpass.conf` or `%USERPROFILE%/.pgpass` file was present.
 An explicit no-prompt connection attempt as `postgres` returned `no password supplied`.
@@ -171,7 +171,7 @@ provisional exactly as documented in DATABASE_SCHEMA.md. No database was modifie
 
 ### HTTP capture probe
 
-No local `.sln` or legacy backend checkout was found under the ZPantry workspace. The pinned
+No dev `.sln` or legacy backend checkout was found under the ZPantry workspace. The pinned
 host requires `authenticationconfig.json`, contains startup schema migration/create modes and
 targets net10.0. This machine exposes only .NET SDK 9.0.305; the Docker Linux engine was not
 available. Starting that host without an isolated database and secret-free configuration could
@@ -224,7 +224,7 @@ vector is a regression fixture, not a production salt.
   so Java must map the literal URI claims deliberately. It must not treat `sub` as the UUID or
   depend on Spring's default `SCOPE_` authorities. Existing validation also requires HS256
   signature, lifetime with zero clock skew, issuer/audience only when configured, and a nonblank,
-  non-revoked `jti` checked against the process-local blacklist.
+  non-revoked `jti` checked against the process-dev blacklist.
 
 Current Java cannot consume these claims: the dependency exists, but no JWT decoder, security
 filter chain, claim-to-authority converter, owner-principal adapter or shared revocation provider
@@ -268,9 +268,9 @@ UTC audit values and hashes using the actual legacy PasswordHasher:
 
 | Identity | Role | Active/confirmed | Purpose |
 |---|---|---|---|
-| admin@test.local | admin | true/true | list/detail/delete |
-| owner@test.local | user | true/true | owner/PUT probes |
-| other-user@test.local | user | true/true | cross-owner/role rejection |
+| admin@test.dev | admin | true/true | list/detail/delete |
+| owner@test.dev | user | true/true | owner/PUT probes |
+| other-user@test.dev | user | true/true | cross-owner/role rejection |
 
 All three logged in successfully through the real login endpoint. Tokens and refresh tokens were
 used transiently and are absent from fixtures. The capture contains 23 HTTP cases, raw bodies and
@@ -330,8 +330,8 @@ resolved identity packages (`Microsoft.IdentityModel.JsonWebTokens` and
 disposable legacy copy. Redacted evidence is under
 `src/test/resources/contracts/users/evidence/claims-diagnosis-2026-09-19/`.
 
-The login JWT contains `sub=owner@test.local`, `userId=<owner UUID>`, the literal
-`ClaimTypes.NameIdentifier` URI with the owner UUID, `email=owner@test.local`, `jti`, the literal
+The login JWT contains `sub=owner@test.dev`, `userId=<owner UUID>`, the literal
+`ClaimTypes.NameIdentifier` URI with the owner UUID, `email=owner@test.dev`, `jti`, the literal
 role URI with `user`, and plain `role=user`. `JwtBearerOptions.MapInboundClaims` is `true`; the
 active handler is `Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler`, whose mapping is
 also `true` and whose default inbound map has 73 entries. Clearing the static inbound/outbound
@@ -341,7 +341,7 @@ maps on `JwtSecurityTokenHandler` therefore does not disable the active handler'
 Microsoft claim URIs. It preserves the already URI-named NameIdentifier and role claims. The
 resulting principal contains these two NameIdentifier claims in order:
 
-1. `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier = owner@test.local`
+1. `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier = owner@test.dev`
 2. `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier = <owner UUID>`
 
 The controller code is exactly:
@@ -355,12 +355,12 @@ if (!Guid.TryParse(currentUserIdClaim, out var currentUserId) || currentUserId !
 ```
 
 There is no fallback. `FindFirstValue` resolves the first duplicate claim, the email.
-`Guid.TryParse("owner@test.local", out ...)` returns false, so the OR short-circuits and the
+`Guid.TryParse("owner@test.dev", out ...)` returns false, so the OR short-circuits and the
 controller returns its explicit 403. The captured route UUID was
 `9a833dce-849f-43ee-aa6e-6760ffcf3e54`; the later UUID claim matched it but was never selected.
 
 An independently HS256-signed token using the same disposable issuer, audience, key and
-evidence-backed identity values, with `sub=owner@test.local` and `nameid=<owner UUID>`, produced
+evidence-backed identity values, with `sub=owner@test.dev` and `nameid=<owner UUID>`, produced
 the same ordered duplicate claims and 403. This proves the separately signed case fails by the
 same mechanism for that token shape.
 
@@ -387,7 +387,7 @@ claims, email `sub`, malformed/missing UUID identity, owner success, wrong owner
 
 User implementation is **READY WITH DOCUMENTED LIMITATIONS**. Pinned entities, EF mappings,
 migrations, the generated disposable catalog, runtime operations, HTTP fixtures and the resolved
-password format are sufficient for local implementation. Starting implementation still requires
+password format are sufficient for dev implementation. Starting implementation still requires
 approval of the slice and the Option A/Option B choice.
 
 Production cutover remains **BLOCKED** until the actual shared users-table catalog is compared.
@@ -410,5 +410,5 @@ converter prefers validated `userId`, accepts only an unambiguous UUID NameIdent
 and never treats email `sub` as UUID. The complete Java 21 test lifecycle verifies the slice in
 isolated PostgreSQL 16.
 
-User status is **COMPLETE FOR LOCAL MIGRATION SCOPE**. The two documented production gates remain:
+User status is **COMPLETE FOR dev MIGRATION SCOPE**. The two documented production gates remain:
 actual shared-catalog comparison and interoperable cross-runtime revocation.

@@ -1,8 +1,78 @@
 # ZPantry Java Migration Documentation Changelog
 
-## 2026-09-19 — Local Startup Datasource Fix
+## 2026-10-02 — Receipt product-label resolution repair
 
-- Added a default local profile and dedicated PostgreSQL 16/pgvector Docker Compose service.
+- Normalized Gemini image payloads that use `ingredients`, root arrays, or alternate item name
+  properties before sending them to the Java backend.
+- Made the backend accept those safe name aliases and resolve a uniquely embedded catalog name in
+  branded/package receipt labels, while retaining the no-ambiguous-ID rule.
+- Verified offline with `Sữa tươi TH 1L` resolving to the active `Sữa tươi` catalog ingredient;
+  no Gemini request or API key was used.
+
+## 2026-10-02 — Generic Vietnamese Pantry catalog terms
+
+- Added generic `Gạo`, `Thịt heo`, `Hành lá`, and `Táo` catalog ingredients so branded, cut, and
+  varietal receipt labels resolve to a manageable Pantry staple instead of becoming separate stock
+  records.
+- Made development catalog ingredient upserts run independently of one-time recipe seeding, so
+  existing dev databases receive new generic terms at the next backend restart.
+
+## 2026-10-01 — Unified catalog-safe Pantry AI previews
+
+- Added a shared catalog resolution boundary for text, receipt, and food-image analysis previews.
+- Returned rows now use the active database Ingredient ID, canonical name, canonical unit, complete
+  Ingredient object, and persisted default quantity; model-supplied IDs and units are never trusted.
+- Made Ollama text-schema handling tolerant of `ingredients`, `items`, and root arrays, with a safe
+  unavailable response for malformed output and no model/request content in logs.
+- Added offline parser and image-preview tests; no Gemini or Ollama API request was made.
+
+## 2026-10-01 — Catalog-backed Pantry Text Parsing
+
+- Added persisted Ingredient `default_quantity` and backfilled catalog defaults by unit.
+- Changed Pantry text parsing to resolve only explicitly mentioned, unambiguous catalog Ingredients,
+  returning the canonical Ingredient object and ID rather than an unlinked model string.
+- Verified Vietnamese input returns `Trứng gà` with `1 quả` and `Thịt ức gà` with `100 g`.
+
+## 2026-09-29 — Audit security and pantry validation repairs
+
+- Restricted JSON/v2 catalog mutations and media upload/delete to `SUPER_ADMIN`, `ADMIN`, or `MANAGER`; anonymous and ordinary users are rejected by the security filter chain.
+- Ingredient creation now persists before its best-effort embedding call, so generated UUIDs are available and an unavailable AI adapter cannot abort the CRUD transaction.
+- Pantry create/update now requires an active ingredient, positive quantity and nonblank unit. JSON update distinguishes an omitted `expiredAt` (leave unchanged) from explicit `null` (clear it).
+- Owner-authorization exceptions now map to HTTP 403 for profile controllers, and duplicate registration maps to 409 instead of 500.
+- The external AI/media/Today Menu detail/completion findings remain unverified and are not marked resolved.
+
+## 2026-09-28 — Super Admin Authority
+
+- Super Admin now inherits all User administration read/delete permissions and may manage or assign every application role, including `SUPER_ADMIN`, as an explicit product policy.
+
+## 2026-09-28 — Vietnamese Development Recommendation Catalog
+
+- Added an idempotent, `dev`-profile-only catalog seed with common Vietnamese ingredients and
+  nine recipes, including allergen metadata and recipe-ingredient links.
+- Added English aliases and `Egg Tomato Rice Bowl` so the existing AI test account can exercise
+  Pantry-based Recommendation V2 end-to-end.
+- Verified `POST /api/recommendations/v2/meals` returns two ranked results for `topK: 2`.
+
+## 2026-09-25 — Shared Development Stack Port Allocation
+
+- Reserved `15432` for the Docker PostgreSQL/pgvector service, leaving the host PostgreSQL
+  listener on `5432` untouched.
+- Standardized backend-to-AI development traffic on port `8000` and backend HTTP on `8080`.
+- Added the workspace-level Compose stack for PostgreSQL, AI, backend and mobile web; the landing
+  frontend is intentionally excluded. Mobile web maps to `18081` to avoid the active Expo `8081`.
+
+## 2026-09-23 — Development Startup Configuration Repair
+
+- Restored the Docker-backed datasource settings to the active `dev` profile
+  (`localhost:54329`, `zpantry_dev`) instead of the unrelated local `postgres` defaults.
+- Registered the profile-scoped development email-verification adapter so the Authentication
+  service can be created during a `dev` startup.
+- Verified a clean dev startup connects to PostgreSQL 16/pgvector, applies/validates Flyway,
+  starts Tomcat on port 8080, and serves `/v3/api-docs` with HTTP 200.
+
+## 2026-09-19 — dev Startup Datasource Fix
+
+- Added a default dev profile and dedicated PostgreSQL 16/pgvector Docker Compose service.
 - Added optional Spring Boot Docker Compose development support.
 - Verified a no-profile Maven/IDE launch runs Flyway V1, validates Hibernate and starts Tomcat.
 
@@ -87,7 +157,7 @@ Keep entries concise and focused on meaningful migration changes.
 
 ## 2026-09-18 — User Evidence Closure
 
-- Attempted a safe actual-schema probe. Local PostgreSQL 17 required unavailable credentials;
+- Attempted a safe actual-schema probe. dev PostgreSQL 17 required unavailable credentials;
   no session/SQL/database modification occurred. Actual users catalog remains BLOCKED.
 - Could not safely execute the net10.0 legacy host: only .NET SDK 9 was installed, Docker was
   unavailable and no isolated legacy database/configuration existed. Added an evidence README
@@ -217,17 +287,26 @@ Keep entries concise and focused on meaningful migration changes.
 - Captured redacted runtime contracts on isolated .NET 10 and PostgreSQL 16 with synthetic actors and
   intercepted email delivery; no real database, email or secret was used.
 - Proved refresh rotation, exact state failures, email-before-insert ordering, empty registration,
-  process-local JTI rejection and loss of revocation after process restart.
+  process-dev JTI rejection and loss of revocation after process restart.
 - Added `AUTHENTICATION_MIGRATION_ANALYSIS.md`, MIG-005, evidence provenance, mutation/HTTP matrices,
   ownership proposal and revocation alternatives. No Java production/build/security code changed.
 # 2026-09-19 — Batch production implementation pass
 
 - Added Java production routes for every public endpoint in the pinned legacy controllers.
 - Added Authentication issuance/rotation/OTP/logout with approved input, RNG, ADR-012 and bounded
-  local-revocation corrections.
+  dev-revocation corrections.
 - Added JPA feature mappings, CRUD/orchestration services, multipart media boundaries, Cloudinary
   adapter, external AI HTTP client and `vector(1536)` persistence.
 - Extended the isolated test schema and added initial cross-feature persistence/authentication tests.
 - Preserved `ddl-auto=validate`, disabled Flyway execution and environment-only credentials.
 - Added a complete endpoint inventory. New modules remain IMPLEMENTED_NOT_VERIFIED pending full
   legacy runtime parity and external integration verification.
+# 2026-09-28 — Pantry image import and Recommendation V2 foundation
+
+- Added AI-service Gemini image-analysis boundary; the Java backend remains an orchestrator and
+  never stores the provider key.
+- Added multipart Pantry Import preview/confirm boundaries and a no-direct-AI-write rule.
+- Added controlled profile/allergen enums, V3 allergen metadata columns, and Ingredient/Recipe CRUD
+  support for allergen declarations.
+- Added Recommendation V2 server-derived Pantry/Profile context and allergen candidate exclusion.
+- Verified Java `test` and `clean verify`; diet/goal hard filtering remains pending recipe metadata.

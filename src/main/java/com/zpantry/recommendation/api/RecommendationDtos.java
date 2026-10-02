@@ -1,1 +1,28 @@
-package com.zpantry.recommendation.api;import java.math.BigDecimal;import java.util.*;public final class RecommendationDtos{private RecommendationDtos(){}public record RecommendMealIngredientRequest(UUID ingredientId,String name,BigDecimal quantity,String unit){}public record RecommendMealRequest(String inputIngredientText,List<String>ingredients,List<RecommendMealIngredientRequest>selectedIngredients,List<String>candidateRecipes,int topK){}public record RecommendationFeedbackRequest(UUID mealRecommendationId,UUID recipeId,int rating,String feedbackType,String comment){} }
+package com.zpantry.recommendation.api;
+
+import java.math.BigDecimal;
+import java.util.*;
+
+public final class RecommendationDtos {
+    private RecommendationDtos() {
+    }
+
+    public record RecommendMealIngredientRequest(UUID ingredientId, String name, BigDecimal quantity, String unit) {
+    }
+
+    public record RecommendMealCandidateRecipeRequest(UUID recipeId, String recipeName, List<String> ingredientNames,
+                                                      String instructionText) {
+    }
+
+    public record RecommendMealRequest(String inputIngredientText, List<String> ingredients,
+                                       List<RecommendMealIngredientRequest> selectedIngredients,
+                                       List<RecommendMealCandidateRecipeRequest> candidateRecipes, int topK) {
+    }
+
+    public record RecommendationFeedbackRequest(UUID mealRecommendationId, UUID recipeId, int rating,
+                                                String feedbackType, String comment) {
+    }
+
+    public record PersonalizedRecommendationRequest(Integer topK) {
+    }
+}

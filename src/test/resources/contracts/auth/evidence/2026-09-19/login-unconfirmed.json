@@ -3,7 +3,7 @@
   "request": {
     "path": "/api/Auth/login",
     "body": {
-      "email": "otp-wrong@test.local",
+      "email": "otp-wrong@test.dev",
       "password": "<redacted-test-password>"
     },
     "authenticated": false

@@ -49,7 +49,7 @@ Its startup configuration is responsible for:
 
 Legacy AI service default URL:
 
-`http://localhost:8000`
+`http://devhost:8000`
 
 The AI HTTP client is configured with an approximately 30-second timeout in the legacy host.
 
