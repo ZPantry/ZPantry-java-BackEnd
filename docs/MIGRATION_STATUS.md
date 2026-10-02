@@ -26,7 +26,7 @@ remain NOT_STARTED.
 | Cooking / Pantry Usage Logs | No business implementation | NOT_STARTED |
 | AI Integration / Embedding Backfill | HTTP client and ingredient/recipe embedding persistence implemented; Pantry text/receipt/food-image previews now pass a shared catalog-ID boundary; backfill command absent | IMPLEMENTED_NOT_VERIFIED |
 | Vector Search | No implementation; legacy service remains a stub | NOT_STARTED |
-| Docker / Deployment | Test image configured; no application deployment configuration | NOT_STARTED |
+| Docker / Deployment | Java 21 multi-stage backend Dockerfile and workspace Compose build wiring implemented; production deployment configuration remains environment-owned | IMPLEMENTED_NOT_VERIFIED |
 
 ## Foundation inventory
 

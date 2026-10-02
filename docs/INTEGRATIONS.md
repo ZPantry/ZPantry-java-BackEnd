@@ -96,6 +96,24 @@ The existing Docker Compose environment includes at least:
 
 The Java Dockerfile should be introduced only after the Java application runs reliably outside Docker.
 
+## Java backend container
+
+`Dockerfile` is a multi-stage Java 21 build. It resolves Maven dependencies, packages the Spring
+Boot executable jar, then runs it in a Java 21 JRE image as the non-root `zpantry` user. It contains
+no database, JWT, Cloudinary, or Gemini secrets. The workspace Compose stack builds it through
+`D:/zpantry/compose.yaml` and provides development-only database and AI-service endpoints as
+environment variables.
+
+From `D:/zpantry`, start the development stack with:
+
+```powershell
+docker compose up --build
+```
+
+For a non-development deployment, provide an explicit Spring profile and all required datasource,
+JWT, AI-service, media, and CORS environment variables through the deployment platform; do not copy
+a private `.env` file into the image.
+
 During transition, avoid changing all container orchestration concerns at the same time as core API migration.
 
 ---

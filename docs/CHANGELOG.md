@@ -1,5 +1,12 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-02 — Java backend Dockerfile
+
+- Added a multi-stage Java 21 Dockerfile that builds the Spring Boot jar and runs it as a non-root
+  user, plus a Docker build-context ignore file that excludes secrets and local build artifacts.
+- Replaced the duplicate inline backend image definition in the workspace Compose file with the
+  repository Dockerfile. Runtime configuration remains environment-only.
+
 ## 2026-10-02 — Receipt product-label resolution repair
 
 - Normalized Gemini image payloads that use `ingredients`, root arrays, or alternate item name
