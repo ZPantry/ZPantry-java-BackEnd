@@ -12,4 +12,5 @@ public final class AuthenticationDtos {
     public record RefreshTokenRequest(String refreshToken) {}
     public record AuthResponse(String accessToken, Instant expiresAt, String fullName,
             String email, String refreshToken, String role) {}
+    public record GoogleLoginRequest(String idToken) {}
 }

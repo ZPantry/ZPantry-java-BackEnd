@@ -27,8 +27,8 @@ public class IngredientController {
         return s.create(r);
     }
 
-    @PostMapping( "/api/v2/ingredients")
-    public ApiResponse<IngredientResponse> createV2(@RequestBody IngredientFormRequest r) {
+    @PostMapping(value = "/api/v2/ingredients", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<IngredientResponse> createV2(@ModelAttribute IngredientFormRequest r) {
         return s.createForm(r);
     }
 
@@ -37,7 +37,7 @@ public class IngredientController {
         return s.update(id, r);
     }
 
-    @PutMapping("/api/v2/ingredients/{id}")
+    @PutMapping(value = "/api/v2/ingredients/{id}", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<IngredientResponse> updateV2(@PathVariable UUID id, @ModelAttribute IngredientFormRequest r) {
         return s.updateForm(id, r);
     }

@@ -15,4 +15,5 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID> {
     Optional<UserEntity> findByRefreshTokenHashAndDeletedFalse(String refreshTokenHash);
     boolean existsByRoleIgnoreCaseAndDeletedFalse(String role);
     boolean existsByRoleIgnoreCase(String role);
+    boolean existsByEmail(String email);
 }

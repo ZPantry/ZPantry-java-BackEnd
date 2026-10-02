@@ -36,6 +36,9 @@ public class SuperAdminBootstrap implements ApplicationRunner {
         if (!EMAIL.matcher(email).matches() || password == null || password.isBlank()) {
             throw new IllegalStateException("Initial SUPER_ADMIN bootstrap requires valid ADMIN_EMAIL and ADMIN_PASSWORD");
         }
+        if (users.existsByEmail(email)) {
+            return;
+        }
         users.save(UserEntity.bootstrapSuperAdmin(email, passwords.hash(password)));
     }
 }

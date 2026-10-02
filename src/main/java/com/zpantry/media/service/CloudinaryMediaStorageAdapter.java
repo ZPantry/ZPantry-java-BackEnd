@@ -7,7 +7,8 @@ import java.util.*;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,17 +30,17 @@ public class CloudinaryMediaStorageAdapter implements MediaStoragePort {
         try {
             long ts = Instant.now().getEpochSecond();
             String sig = sha1("folder=" + folder + "&timestamp=" + ts + secret);
-            MultipartBodyBuilder mb = new MultipartBodyBuilder();
-            mb.part("file", new ByteArrayResource(f.getBytes()) {
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("file", new ByteArrayResource(f.getBytes()) {
                 public String getFilename() {
                     return f.getOriginalFilename();
                 }
             });
-            mb.part("folder", folder);
-            mb.part("timestamp", ts);
-            mb.part("api_key", key);
-            mb.part("signature", sig);
-            Map<?, ?> m = client.post().uri("/auto/upload").body(mb.build()).retrieve().body(Map.class);
+            body.add("folder", folder);
+            body.add("timestamp", ts);
+            body.add("api_key", key);
+            body.add("signature", sig);
+            Map<?, ?> m = client.post().uri("/auto/upload").body(body).retrieve().body(Map.class);
             return new UploadResult((String) m.get("public_id"), (String) m.get("url"), (String) m.get("secure_url"), (String) m.get("resource_type"), (String) m.get("format"), (Integer) m.get("width"), (Integer) m.get("height"));
         } catch (Exception e) {
             throw new IllegalStateException("Media upload failed", e);
