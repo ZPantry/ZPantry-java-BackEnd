@@ -702,3 +702,20 @@ user profile on the server, then apply allergy and diet filters before requestin
 values are controlled enums: `UserGoal`, `DietPreference`, and `FoodAllergen`. Unknown enum values
 are rejected with a client error; no free-text fallback is accepted. The existing recommendation
 route remains unchanged until V2 is implemented and verified.
+
+## [MIG-008] Catalog-backed Pantry AI previews
+
+**Status:** IMPLEMENTED_NOT_VERIFIED
+
+`POST /api/me/pantry/parse` and the image import analysis endpoints now share one catalog-resolution
+contract. Every item included in a preview has a non-null `ingredientId`, canonical database name,
+database unit, and canonical Ingredient object. AI/Ollama names, units, and IDs are never trusted.
+Missing or non-positive quantities are replaced by the Ingredient `defaultQuantity`. Image rows that
+cannot be matched unambiguously to an active catalog record are omitted; their presence is conveyed
+through a warning, not a fabricated ID. The text endpoint returns the same preview-item fields as
+image analysis, wrapped in its existing `ApiResponse` list.
+
+Ollama schema parsing accepts `ingredients`, `items`, and a root array. Unknown response schemas
+return a bounded service-unavailable response without exposing parser internals. This is a
+deliberate contract enhancement for the approved Pantry AI import feature, not captured legacy
+behavior; live Ollama/Gemini verification remains pending and must use deployment-owned credentials.

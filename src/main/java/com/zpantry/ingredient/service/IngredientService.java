@@ -133,6 +133,6 @@ public class IngredientService {
     }
 
     private IngredientResponse dto(IngredientEntity e) {
-        return new IngredientResponse(e.getId(), e.name, e.normalizedName, e.category, e.unit, e.caloriesPerUnit, e.proteinPerUnit, e.fatPerUnit, e.carbPerUnit, e.imageUrl, e.gradientFrom, e.gradientTo, e.allergens == null || e.allergens.isBlank() ? java.util.Set.of() : java.util.Arrays.stream(e.allergens.split(",")).map(com.zpantry.user.domain.FoodAllergen::valueOf).collect(java.util.stream.Collectors.toUnmodifiableSet()));
+        return new IngredientResponse(e.getId(), e.name, e.normalizedName, e.category, e.unit, e.caloriesPerUnit, e.proteinPerUnit, e.fatPerUnit, e.carbPerUnit, e.defaultQuantity, e.imageUrl, e.gradientFrom, e.gradientTo, e.allergens == null || e.allergens.isBlank() ? java.util.Set.of() : java.util.Arrays.stream(e.allergens.split(",")).map(com.zpantry.user.domain.FoodAllergen::valueOf).collect(java.util.stream.Collectors.toUnmodifiableSet()));
     }
 }

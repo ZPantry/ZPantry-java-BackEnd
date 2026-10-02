@@ -13,7 +13,7 @@ public final class IngredientDtos {
 
     public record IngredientResponse(UUID id, String name, String normalizedName, String category, String unit,
                                      BigDecimal caloriesPerUnit, BigDecimal proteinPerUnit, BigDecimal fatPerUnit,
-                                     BigDecimal carbPerUnit, String imageUrl, String gradientFrom, String gradientTo,
+                                     BigDecimal carbPerUnit, BigDecimal defaultQuantity, String imageUrl, String gradientFrom, String gradientTo,
                                      Set<FoodAllergen> allergens) {
     }
 

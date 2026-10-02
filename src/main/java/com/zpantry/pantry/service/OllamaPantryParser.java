@@ -12,9 +12,12 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 public class OllamaPantryParser {
+    private static final Logger log = LoggerFactory.getLogger(OllamaPantryParser.class);
     private final RestClient client;
     private final String model;
     private final ObjectMapper json;
@@ -26,20 +29,20 @@ public class OllamaPantryParser {
         this.json = json;
     }
 
-    public List<ParsedItem> parse(String text) {
+    public List<ParsedItem> parse(String text, List<String> catalogNames) {
         try {
-            String prompt = "You are an ingredient extraction component for ZPantry. Extract only food ingredients explicitly mentioned in the input. Never invent, infer, recommend, answer questions, or infer ingredients from dishes. If no food ingredient is explicitly present, return {\\\"isRelevant\\\":false,\\\"reason\\\":\\\"No ingredient information found.\\\",\\\"ingredients\\\":[]}. Otherwise return {\\\"isRelevant\\\":true,\\\"reason\\\":null,\\\"ingredients\\\":[{\\\"name\\\":\\\"string without a leading number\\\",\\\"quantity\\\":number|null,\\\"unit\\\":\\\"string|null\\\"}]}. Quantity and unit must be null when not explicitly stated. Return JSON only. Input: " + text;
+            String prompt = "You are an ingredient extraction component for ZPantry. Extract only food ingredients explicitly mentioned in the input. Never invent, infer, recommend, answer questions, or infer ingredients from dishes. Match each extracted item to exactly one catalog name below and return that catalog name verbatim; omit items with no unambiguous catalog match. If no food ingredient is explicitly present, return {\\\"isRelevant\\\":false,\\\"reason\\\":\\\"No ingredient information found.\\\",\\\"ingredients\\\":[]}. Otherwise return {\\\"isRelevant\\\":true,\\\"reason\\\":null,\\\"ingredients\\\":[{\\\"name\\\":\\\"exact catalog name\\\",\\\"quantity\\\":number|null,\\\"unit\\\":\\\"string|null\\\"}]}. Quantity and unit must be null when not explicitly stated. Return JSON only. Catalog: " + String.join(" | ", catalogNames) + ". Input: " + text;
             Map<?, ?> reply = client.post().uri("/api/generate")
                     .body(Map.of("model", model, "prompt", prompt, "stream", false, "format", "json"))
                     .retrieve().body(Map.class);
             Object response = reply == null ? null : reply.get("response");
             if (!(response instanceof String body))
                 throw new IllegalArgumentException("Ollama returned no JSON response");
-            JsonNode items = json.readTree(body).path("ingredients");
-            if (!items.isArray()) throw new IllegalArgumentException("Ollama response does not contain items");
+            JsonNode items = ingredientItems(body, json);
             List<ParsedItem> result = new ArrayList<>();
             for (JsonNode item : items) {
-                String name = item.path("name").asText("").replaceFirst("^\\s*\\d+(?:[.,]\\d+)?\\s*", "").trim();
+                String name = item.path("name").asText(item.path("item").asText(""))
+                        .replaceFirst("^\\s*\\d+(?:[.,]\\d+)?\\s*", "").trim();
                 if (!name.isEmpty()) {
                     BigDecimal quantity = item.hasNonNull("quantity") ? item.get("quantity").decimalValue() : null;
                     String parsedUnit = item.hasNonNull("unit") ? item.get("unit").asText().trim() : null;
@@ -48,8 +51,25 @@ public class OllamaPantryParser {
             }
             return List.copyOf(result);
         } catch (Exception exception) {
-            throw new IllegalStateException("Unable to parse pantry text with Ollama", exception);
+            log.warn("Ollama pantry response rejected: {}", exception.getMessage());
+            throw new PantryTextAnalysisUnavailableException();
         }
+    }
+
+    public List<ParsedItem> parse(String text) {
+        return parse(text, List.of());
+    }
+
+    static JsonNode ingredientItems(String body, ObjectMapper json) throws java.io.IOException {
+        JsonNode root = json.readTree(body);
+        if (root == null || root.isNull()) throw new IllegalArgumentException("Ollama returned an empty JSON value");
+        if (root.isArray()) return root;
+        JsonNode ingredients = root.path("ingredients");
+        if (ingredients.isArray()) return ingredients;
+        JsonNode items = root.path("items");
+        if (items.isArray()) return items;
+        if (root.path("isRelevant").asBoolean(false) == false && root.has("isRelevant")) return json.createArrayNode();
+        throw new IllegalArgumentException("Ollama response has no ingredient array");
     }
 
     private static String normalizeUnit(String name, String parsedUnit) {

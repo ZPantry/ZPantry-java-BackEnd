@@ -17,6 +17,7 @@ import java.math.BigDecimal;
     @Column(columnDefinition = "text")
     public String allergens;
  @Column(name="calories_per_unit",precision=18,scale=4) public BigDecimal caloriesPerUnit;@Column(name="protein_per_unit",precision=18,scale=4) public BigDecimal proteinPerUnit;@Column(name="fat_per_unit",precision=18,scale=4) public BigDecimal fatPerUnit;@Column(name="carb_per_unit",precision=18,scale=4) public BigDecimal carbPerUnit;
+ @Column(name="default_quantity",precision=18,scale=4) public BigDecimal defaultQuantity;
  @Column(name="image_url",length=500) public String imageUrl;@Column(name="gradient_from",length=32) public String gradientFrom;@Column(name="gradient_to",length=32) public String gradientTo;
  @JdbcTypeCode(SqlTypes.VECTOR) @Column(columnDefinition="vector(1536)") public float[] embedding; protected IngredientEntity(){} public IngredientEntity(String n){name=n.trim();normalizedName=n.trim().toLowerCase();}
 }

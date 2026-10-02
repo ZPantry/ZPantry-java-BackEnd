@@ -1,5 +1,6 @@
 package com.zpantry.pantryimport.api;
 
+import com.zpantry.ingredient.api.IngredientDtos.IngredientResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
@@ -10,7 +11,7 @@ public final class PantryImportDtos {
     private PantryImportDtos() {
     }
 
-    public enum SourceType {RECEIPT, FOOD_IMAGE}
+    public enum SourceType {TEXT, RECEIPT, FOOD_IMAGE}
 
     public enum ResolverStatus {RESOLVED, AMBIGUOUS, UNRESOLVED}
 
@@ -20,7 +21,8 @@ public final class PantryImportDtos {
 
     public record PantryImportPreviewItem(String rawName, String normalizedName, UUID ingredientId,
                                           String canonicalIngredientName, BigDecimal quantity, String unit,
-                                          BigDecimal price, BigDecimal confidence, ResolverStatus resolverStatus) {
+                                          BigDecimal price, BigDecimal confidence, ResolverStatus resolverStatus,
+                                          IngredientResponse ingredient) {
     }
 
     public record ConfirmPantryImportRequest(@NotEmpty List<@Valid ConfirmPantryImportItem> items) {

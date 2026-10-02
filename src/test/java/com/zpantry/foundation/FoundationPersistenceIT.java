@@ -39,7 +39,7 @@ class FoundationPersistenceIT {
         var jdbc = new JdbcTemplate(dataSource);
         assertThat(jdbc.queryForObject("SELECT extversion FROM pg_extension WHERE extname='vector'", String.class)).isEqualTo("0.8.2");
         assertThat(jdbc.queryForObject("SELECT to_regclass('flyway_schema_history')", String.class)).isEqualTo("flyway_schema_history");
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM flyway_schema_history WHERE success", Integer.class)).isEqualTo(3);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM flyway_schema_history WHERE success", Integer.class)).isEqualTo(5);
     }
 
     @Test

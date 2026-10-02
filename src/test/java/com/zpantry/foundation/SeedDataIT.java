@@ -14,7 +14,8 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 @SpringBootTest(classes = ZPantryBackendApplication.class, properties = {
         "spring.jpa.hibernate.ddl-auto=validate", "spring.flyway.enabled=true",
-        "spring.flyway.baseline-on-migrate=false", "spring.sql.init.mode=never"})
+        "spring.flyway.baseline-on-migrate=false", "spring.sql.init.mode=never",
+        "zpantry.admin.bootstrap.enabled=false"})
 @Import(IsolatedPostgres.class)
 class SeedDataIT {
     @Autowired DataSource dataSource;
@@ -27,9 +28,16 @@ class SeedDataIT {
         assertThat(jdbc.queryForObject("SELECT role FROM users WHERE email='admin@test.local'", String.class)).isEqualTo("ADMIN");
         assertThat(jdbc.queryForObject("SELECT role FROM users WHERE email='manager@test.local'", String.class)).isEqualTo("MANAGER");
         assertThat(jdbc.queryForObject("SELECT count(*) FROM users", Integer.class)).isEqualTo(5);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM ingredients", Integer.class)).isEqualTo(3);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM ingredients WHERE id IN (" +
+                "'00000000-0000-0000-0000-000000000201', " +
+                "'00000000-0000-0000-0000-000000000202', " +
+                "'00000000-0000-0000-0000-000000000203')", Integer.class)).isEqualTo(3);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM ingredient_aliases a JOIN ingredients i ON i.id=a.ingredient_id", Integer.class)).isEqualTo(2);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM recipe_ingredients ri JOIN recipes r ON r.id=ri.recipe_id JOIN ingredients i ON i.id=ri.ingredient_id", Integer.class)).isEqualTo(4);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM recipe_ingredients WHERE id IN (" +
+                "'00000000-0000-0000-0000-000000000311', " +
+                "'00000000-0000-0000-0000-000000000312', " +
+                "'00000000-0000-0000-0000-000000000313', " +
+                "'00000000-0000-0000-0000-000000000314')", Integer.class)).isEqualTo(4);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM user_pantry_items WHERE user_id='00000000-0000-0000-0000-000000000102'", Integer.class)).isEqualTo(2);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM user_pantry_items WHERE user_id='00000000-0000-0000-0000-000000000103'", Integer.class)).isEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM today_menu_items WHERE recipe_id='00000000-0000-0000-0000-000000000301'", Integer.class)).isEqualTo(1);

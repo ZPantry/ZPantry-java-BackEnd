@@ -24,7 +24,7 @@ remain NOT_STARTED.
 | Today Menu | Owner-scoped menu, completion, cooking/pantry logs implemented | IMPLEMENTED_NOT_VERIFIED |
 | Media | Cloudinary port/adapter and upload/delete routes implemented | IMPLEMENTED_NOT_VERIFIED |
 | Cooking / Pantry Usage Logs | No business implementation | NOT_STARTED |
-| AI Integration / Embedding Backfill | HTTP client and ingredient/recipe embedding persistence implemented; backfill command absent | IMPLEMENTED_NOT_VERIFIED |
+| AI Integration / Embedding Backfill | HTTP client and ingredient/recipe embedding persistence implemented; Pantry text/receipt/food-image previews now pass a shared catalog-ID boundary; backfill command absent | IMPLEMENTED_NOT_VERIFIED |
 | Vector Search | No implementation; legacy service remains a stub | NOT_STARTED |
 | Docker / Deployment | Test image configured; no application deployment configuration | NOT_STARTED |
 

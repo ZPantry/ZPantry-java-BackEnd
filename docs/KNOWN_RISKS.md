@@ -497,8 +497,10 @@ for detail, completion and cooking-log endpoints.
 The Java HTTP adapter wraps `RestClientException`, but no configured connect/read timeout or typed
 validation exists. Empty, malformed and structurally incomplete responses are not distinguished,
 and Recommendation currently exposes adapter exceptions through generic application handling.
-Status: CONFIRMED VERIFICATION/IMPLEMENTATION GAP; production AI connectivity remains a separate
-deployment check.
+Pantry text, receipt, and food-image flows now have a bounded catalog-preview contract: malformed
+text-model schemas produce a safe 503 response, while unresolvable image detections are omitted
+instead of emitting fabricated IDs. Recommendation and other AI clients still lack the same typed
+timeout/response contract. Production AI connectivity remains a separate deployment check.
 
 ## R-036 — Shared Catalog May Differ From the Java V1 Baseline
 

@@ -33,15 +33,16 @@ public class VietnameseCatalogSeed implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments arguments) {
-        if (recipes.count() > 0) return;
         Map<String, IngredientEntity> catalog = new HashMap<>();
         add(catalog, "Trứng gà", "protein", "quả", "EGG");
         add(catalog, "Thịt ức gà", "protein", "g", "");
+        add(catalog, "Thịt heo", "protein", "g", "");
         add(catalog, "Thịt heo nạc", "protein", "g", "");
         add(catalog, "Cá hồi", "protein", "g", "FISH");
         add(catalog, "Tôm", "protein", "g", "SHELLFISH");
         add(catalog, "Đậu hũ", "protein", "g", "SOY");
         add(catalog, "Cơm trắng", "carbohydrate", "g", "");
+        add(catalog, "Gạo", "carbohydrate", "g", "");
         add(catalog, "Bún tươi", "carbohydrate", "g", "WHEAT");
         add(catalog, "Phở", "carbohydrate", "g", "WHEAT");
         add(catalog, "Khoai lang", "carbohydrate", "g", "");
@@ -50,15 +51,21 @@ public class VietnameseCatalogSeed implements ApplicationRunner {
         add(catalog, "Rau muống", "vegetable", "g", "");
         add(catalog, "Dưa leo", "vegetable", "g", "");
         add(catalog, "Hành tây", "vegetable", "g", "");
+        add(catalog, "Hành lá", "vegetable", "g", "");
         add(catalog, "Tỏi", "seasoning", "g", "");
         add(catalog, "Nước mắm", "seasoning", "ml", "FISH");
         add(catalog, "Dầu ăn", "seasoning", "ml", "");
         add(catalog, "Đậu phộng", "nut", "g", "PEANUT");
         add(catalog, "Sữa tươi", "dairy", "ml", "MILK");
+        add(catalog, "Táo", "fruit", "quả", "");
         // English aliases keep the existing AI test account's Pantry compatible with the seed catalog.
         add(catalog, "Egg", "protein", "piece", "EGG");
         add(catalog, "Tomato", "vegetable", "g", "");
         add(catalog, "Rice", "carbohydrate", "g", "");
+
+        // Keep catalogue upserts independent from recipe seeding: a long-lived dev database
+        // must receive newly introduced generic Pantry ingredients on its next restart.
+        if (recipes.count() > 0) return;
 
         recipe(catalog, "Cơm gà rau cải", "Bữa giàu đạm với ức gà và rau cải.", "Cắt gà, áp chảo với tỏi; luộc rau; dùng cùng cơm.", "", "Thịt ức gà", "Rau cải xanh", "Cơm trắng", "Tỏi");
         recipe(catalog, "Trứng chiên cà chua", "Món nhanh từ trứng và cà chua.", "Đánh trứng, xào cà chua rồi chiên chín.", "EGG", "Trứng gà", "Cà chua", "Hành tây", "Dầu ăn");
@@ -80,7 +87,19 @@ public class VietnameseCatalogSeed implements ApplicationRunner {
             created.allergens = allergens;
             return ingredients.save(created);
         });
+        if (ingredient.defaultQuantity == null) {
+            ingredient.defaultQuantity = defaultQuantity(unit);
+            ingredient = ingredients.save(ingredient);
+        }
         catalog.put(name, ingredient);
+    }
+
+    private static BigDecimal defaultQuantity(String unit) {
+        return switch (unit) {
+            case "g" -> new BigDecimal("100");
+            case "ml" -> new BigDecimal("100");
+            default -> BigDecimal.ONE;
+        };
     }
 
     private void recipe(Map<String, IngredientEntity> catalog, String name, String description, String instructions,

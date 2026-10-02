@@ -4,9 +4,12 @@ import com.zpantry.authentication.service.AuthenticationService;
 import com.zpantry.authentication.service.EmailVerificationPort;
 import com.zpantry.foundation.IsolatedPostgres;
 import com.zpantry.ingredient.service.IngredientService;
+import com.zpantry.ingredient.persistence.IngredientRepository;
 import com.zpantry.integration.ai.AiClient;
 import com.zpantry.media.service.MediaStoragePort;
 import com.zpantry.pantry.service.PantryService;
+import com.zpantry.pantryimport.api.PantryImportDtos.SourceType;
+import com.zpantry.pantryimport.service.PantryImportService;
 import com.zpantry.recipe.service.RecipeService;
 import com.zpantry.user.persistence.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -45,9 +48,13 @@ class RemainingFeaturesIT {
     @org.springframework.beans.factory.annotation.Autowired
     IngredientService ingredients;
     @org.springframework.beans.factory.annotation.Autowired
+    IngredientRepository ingredientRepository;
+    @org.springframework.beans.factory.annotation.Autowired
     RecipeService recipes;
     @org.springframework.beans.factory.annotation.Autowired
     PantryService pantry;
+    @org.springframework.beans.factory.annotation.Autowired
+    PantryImportService pantryImport;
 
     @Test
     void authenticationRegisterVerifyLoginRefreshAndRotation() {
@@ -95,11 +102,29 @@ class RemainingFeaturesIT {
     }
 
     @Test
+    void imageImportResolvesAReceiptProductLabelToTheCanonicalCatalogIngredient() {
+        var ingredient = ingredientRepository.findByNormalizedNameAndDeletedFalse("gạo").orElseThrow();
+        var image = new MockMultipartFile("image", "rice.png", "image/png", new byte[] {1, 2, 3});
+
+        var preview = pantryImport.analyze(SourceType.FOOD_IMAGE, image);
+
+        assertThat(preview.items()).singleElement().satisfies(item -> {
+            assertThat(item.ingredientId()).isEqualTo(ingredient.getId());
+            assertThat(item.rawName()).isEqualTo("Gạo ST25 2kg");
+            assertThat(item.canonicalIngredientName()).isEqualTo("Gạo");
+            assertThat(item.ingredient()).isNotNull();
+            assertThat(item.ingredient().id()).isEqualTo(item.ingredientId());
+            assertThat(item.unit()).isEqualTo("g");
+            assertThat(item.quantity()).isPositive();
+        });
+    }
+
+    @Test
     void ingredientSearchFiltersBeforePagingAndReportsFilteredTotal() {
-        ingredients.create(new CreateIngredientRequest("Parity Apple", "fruit", null, null, null, null, null, null, null, null));
-        ingredients.create(new CreateIngredientRequest("Parity Banana", "fruit", null, null, null, null, null, null, null, null));
+        ingredients.create(new CreateIngredientRequest("Parity Apple", "parity-fruit", null, null, null, null, null, null, null, null));
+        ingredients.create(new CreateIngredientRequest("Parity Banana", "parity-fruit", null, null, null, null, null, null, null, null));
         ingredients.create(new CreateIngredientRequest("Parity Carrot", "vegetable", null, null, null, null, null, null, null, null));
-        var result = ingredients.list(1, 1, "fruit");
+        var result = ingredients.list(1, 1, "parity-fruit");
         assertThat(result.data()).hasSize(1);
         assertThat(result.totalItems()).isEqualTo(2);
         assertThat(result.totalPages()).isEqualTo(2);
@@ -138,7 +163,9 @@ class RemainingFeaturesIT {
 
                 @Override
                 public Map<String, Object> postImage(String path, byte[] image, String filename, String contentType) {
-                    return Map.of();
+                    return Map.of("success", true, "data", Map.of("items", List.of(Map.of(
+                            "name", "Gạo ST25 2kg", "quantity", 0, "unit", "piece",
+                            "food", true))));
                 }
             };
         }

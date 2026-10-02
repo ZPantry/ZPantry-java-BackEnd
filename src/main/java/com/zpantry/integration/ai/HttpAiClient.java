@@ -5,12 +5,8 @@ import tools.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 import java.util.Map;
@@ -18,6 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -25,13 +22,11 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class HttpAiClient implements AiClient {
     private static final Logger log = LoggerFactory.getLogger(HttpAiClient.class);
-    private final RestClient client;
     private final ObjectMapper objectMapper;
     private final String baseUrl;
 
     public HttpAiClient(@Value("${zpantry.ai.service-url:http://localhost:8000}") String url, ObjectMapper objectMapper) {
         this.baseUrl = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
-        this.client = RestClient.builder().baseUrl(baseUrl).build();
         this.objectMapper = objectMapper;
     }
 
@@ -64,15 +59,31 @@ public class HttpAiClient implements AiClient {
     @SuppressWarnings("unchecked")
     public Map<String, Object> postImage(String path, byte[] image, String filename, String contentType) {
         try {
-            var body = new LinkedMultiValueMap<String, Object>();
-            body.add("image", new ByteArrayResource(image) {
-                @Override
-                public String getFilename() {
-                    return filename;
-                }
-            });
-            return client.post().uri(path).contentType(MediaType.MULTIPART_FORM_DATA).body(body).retrieve().body(Map.class);
-        } catch (RestClientException exception) {
+            String boundary = "----ZPantry" + UUID.randomUUID();
+            String safeFilename = filename == null ? "image" : filename.replace("\"", "");
+            String mimeType = contentType == null ? MediaType.APPLICATION_OCTET_STREAM_VALUE : contentType;
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            bytes.write(("--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
+            bytes.write(("Content-Disposition: form-data; name=\"image\"; filename=\"" + safeFilename + "\"\r\n")
+                    .getBytes(StandardCharsets.UTF_8));
+            bytes.write(("Content-Type: " + mimeType + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
+            bytes.write(image);
+            bytes.write(("\r\n--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
+            byte[] payload = bytes.toByteArray();
+            var connection = (HttpURLConnection) URI.create(baseUrl + path).toURL().openConnection();
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            connection.setRequestProperty("Content-Type", MediaType.MULTIPART_FORM_DATA_VALUE + "; boundary=" + boundary);
+            connection.setFixedLengthStreamingMode(payload.length);
+            try (var output = connection.getOutputStream()) {
+                output.write(payload);
+            }
+            int status = connection.getResponseCode();
+            InputStream responseBody = status >= 200 && status < 300 ? connection.getInputStream() : connection.getErrorStream();
+            String response = responseBody == null ? "" : new String(responseBody.readAllBytes(), StandardCharsets.UTF_8);
+            if (status < 200 || status >= 300) throw new AiIntegrationException("AI service responded with HTTP " + status, null);
+            return objectMapper.readValue(response, Map.class);
+        } catch (JacksonException | IOException exception) {
             throw new AiIntegrationException("AI image analysis failed", exception);
         }
     }

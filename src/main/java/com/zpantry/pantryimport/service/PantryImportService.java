@@ -11,16 +11,19 @@ import java.util.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class PantryImportService {
+    private static final Logger log = LoggerFactory.getLogger(PantryImportService.class);
     private final AiClient ai;
-    private final IngredientResolver resolver;
+    private final CatalogPreviewFactory previews;
     private final PantryService pantry;
 
-    public PantryImportService(AiClient a, IngredientResolver r, PantryService p) {
+    public PantryImportService(AiClient a, CatalogPreviewFactory previews, PantryService p) {
         ai = a;
-        resolver = r;
+        this.previews = previews;
         pantry = p;
     }
 
@@ -31,16 +34,20 @@ public class PantryImportService {
             if (!(data instanceof Map<?, ?> map) || !(map.get("items") instanceof List<?> items))
                 throw new IllegalStateException("AI returned incomplete analysis");
             var result = new ArrayList<PantryImportPreviewItem>();
+            int unmatched = 0;
             for (Object x : items)
                 if (x instanceof Map<?, ?> row && !Boolean.FALSE.equals(row.get("food"))) {
-                    String raw = String.valueOf(row.get("rawName"));
-                    if (raw.equals("null")) continue;
-                    var resolved = resolver.resolve(raw);
-                    var i = resolved.ingredient();
-                    result.add(new PantryImportPreviewItem(raw, resolved.normalizedName(), i == null ? null : i.getId(), i == null ? null : i.name, num(row.get("quantity")), str(row.get("unit")), num(row.get("price")), num(row.get("confidence")), resolved.status()));
+                    String raw = rawName(row);
+                    if (raw == null) { unmatched++; continue; }
+                    var preview = previews.resolved(raw, num(row.get("quantity")), num(row.get("price")), num(row.get("confidence")));
+                    if (preview.isPresent()) result.add(preview.get()); else unmatched++;
                 }
-            return new PantryImportPreviewResponse(type, List.copyOf(result), result.isEmpty() ? List.of("No food ingredients were detected.") : List.of());
+            var warnings = new ArrayList<String>();
+            if (result.isEmpty()) warnings.add("No catalog ingredients were detected.");
+            else if (unmatched > 0) warnings.add("Some detected items were not found in the ingredient catalog and were omitted.");
+            return new PantryImportPreviewResponse(type, List.copyOf(result), List.copyOf(warnings));
         } catch (Exception e) {
+            log.warn("Image analysis request failed: {}", e.getMessage());
             throw new IllegalStateException("Image analysis is currently unavailable");
         }
     }
@@ -52,8 +59,12 @@ public class PantryImportService {
             pantry.upsert(userId, new UpsertPantryItemRequest(item.ingredientId(), item.quantity(), item.unit(), null, null, null));
     }
 
-    private static String str(Object x) {
-        return x == null ? null : String.valueOf(x);
+    private static String rawName(Map<?, ?> item) {
+        for (String field : List.of("rawName", "name", "item", "productName", "product")) {
+            Object value = item.get(field);
+            if (value instanceof String text && !text.isBlank()) return text.trim();
+        }
+        return null;
     }
 
     private static BigDecimal num(Object x) {

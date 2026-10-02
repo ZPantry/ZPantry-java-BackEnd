@@ -1,5 +1,38 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-02 — Receipt product-label resolution repair
+
+- Normalized Gemini image payloads that use `ingredients`, root arrays, or alternate item name
+  properties before sending them to the Java backend.
+- Made the backend accept those safe name aliases and resolve a uniquely embedded catalog name in
+  branded/package receipt labels, while retaining the no-ambiguous-ID rule.
+- Verified offline with `Sữa tươi TH 1L` resolving to the active `Sữa tươi` catalog ingredient;
+  no Gemini request or API key was used.
+
+## 2026-10-02 — Generic Vietnamese Pantry catalog terms
+
+- Added generic `Gạo`, `Thịt heo`, `Hành lá`, and `Táo` catalog ingredients so branded, cut, and
+  varietal receipt labels resolve to a manageable Pantry staple instead of becoming separate stock
+  records.
+- Made development catalog ingredient upserts run independently of one-time recipe seeding, so
+  existing dev databases receive new generic terms at the next backend restart.
+
+## 2026-10-01 — Unified catalog-safe Pantry AI previews
+
+- Added a shared catalog resolution boundary for text, receipt, and food-image analysis previews.
+- Returned rows now use the active database Ingredient ID, canonical name, canonical unit, complete
+  Ingredient object, and persisted default quantity; model-supplied IDs and units are never trusted.
+- Made Ollama text-schema handling tolerant of `ingredients`, `items`, and root arrays, with a safe
+  unavailable response for malformed output and no model/request content in logs.
+- Added offline parser and image-preview tests; no Gemini or Ollama API request was made.
+
+## 2026-10-01 — Catalog-backed Pantry Text Parsing
+
+- Added persisted Ingredient `default_quantity` and backfilled catalog defaults by unit.
+- Changed Pantry text parsing to resolve only explicitly mentioned, unambiguous catalog Ingredients,
+  returning the canonical Ingredient object and ID rather than an unlinked model string.
+- Verified Vietnamese input returns `Trứng gà` with `1 quả` and `Thịt ức gà` with `100 g`.
+
 ## 2026-09-29 — Audit security and pantry validation repairs
 
 - Restricted JSON/v2 catalog mutations and media upload/delete to `SUPER_ADMIN`, `ADMIN`, or `MANAGER`; anonymous and ordinary users are rejected by the security filter chain.

@@ -118,3 +118,23 @@ The independent AI service exposes `POST /ai/analyze-receipt` and
 `POST /ai/recognize-food-image`. It reads `GEMINI_API_KEY` and optional `GEMINI_MODEL` from its
 local `.env`; these values must never be present in Java configuration, frontend code, logs, or Git.
 The Java backend calls the AI service through `AI_SERVICE_URL` using multipart image uploads.
+
+### Pantry AI catalog boundary
+
+`POST /api/me/pantry/parse`, `/api/me/pantry-import/receipt/analyze`, and
+`/api/me/pantry-import/food-image/analyze` treat model output as untrusted extraction hints. A
+shared backend catalog boundary resolves every returned row to exactly one active `ingredients`
+record before it is exposed: `ingredientId`, `canonicalIngredientName`, `ingredient` and `unit`
+therefore come from PostgreSQL, never from Ollama or Gemini. Suggested quantities are used only
+when positive; otherwise the persisted `defaultQuantity` is returned. AI detections that cannot be
+resolved unambiguously are omitted and reported only as a preview warning for image flows.
+
+The text parser accepts the documented `ingredients` JSON property and compatible `items` or root
+array forms from Ollama. Malformed model output is logged as schema metadata server-side and returns
+an opaque service-unavailable response; request text, model output, and API keys are never logged.
+
+For Gemini image analysis, the AI service additionally canonicalizes `items`, `ingredients`, or a
+root array, and accepts item names delivered as `rawName`, `name`, `item`, `productName`, or
+`product`. The backend accepts the same name fields as a defence-in-depth boundary. A unique
+canonical catalog name embedded in a receipt product label is valid (for example `Sữa tươi` in
+`Sữa tươi TH 1L`); ambiguous labels remain omitted rather than being guessed.
