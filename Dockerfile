@@ -21,4 +21,4 @@ USER zpantry
 EXPOSE 8080
 
 # Runtime secrets and deployment configuration are supplied as environment variables.
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java","-Xmx256m","-XX:MaxMetaspaceSize=128m","-XX:+UseSerialGC","-XX:TieredStopAtLevel=1","-Xss512k","-jar","app.jar"]
