@@ -2,7 +2,6 @@ package com.zpantry.pantryimport.api;
 
 import com.zpantry.common.api.ApiResponse;
 import com.zpantry.pantry.api.NaturalLanguagePantryController;
-import com.zpantry.pantry.service.PantryTextAnalysisUnavailableException;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.time.Instant;
@@ -11,7 +10,7 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
-@RestControllerAdvice(assignableTypes = {PantryImportController.class, NaturalLanguagePantryController.class})
+@RestControllerAdvice(assignableTypes = {PantryImportController.class, IngredientImageV2Controller.class, NaturalLanguagePantryController.class})
 public class PantryImportExceptionHandler {
     @ExceptionHandler({IllegalArgumentException.class, MaxUploadSizeExceededException.class})
     ResponseEntity<ApiResponse<Void>> invalid(RuntimeException exception, HttpServletRequest request) {
@@ -22,12 +21,6 @@ public class PantryImportExceptionHandler {
     @ExceptionHandler(IllegalStateException.class)
     ResponseEntity<ApiResponse<Void>> unavailable(IllegalStateException exception, HttpServletRequest request) {
         return response(HttpStatus.SERVICE_UNAVAILABLE, "Image analysis is currently unavailable.", request);
-    }
-
-    @ExceptionHandler(PantryTextAnalysisUnavailableException.class)
-    ResponseEntity<ApiResponse<Void>> textUnavailable(PantryTextAnalysisUnavailableException exception,
-            HttpServletRequest request) {
-        return response(HttpStatus.SERVICE_UNAVAILABLE, exception.getMessage(), request);
     }
 
     private ResponseEntity<ApiResponse<Void>> response(HttpStatus status, String message, HttpServletRequest request) {

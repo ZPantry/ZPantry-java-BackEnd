@@ -1,5 +1,19 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-03 — Canonical Food and provider-independent Pantry pipeline
+
+- Made `ingredients` the canonical-food catalog and added maintained Food Alias administration
+  endpoints for exact controlled matching.
+- Replaced Ollama-based pantry text parsing with local explicit-text extraction; removed its Java
+  client, configuration, Compose services, and parser tests. No text request can consume an AI key.
+- Disabled Spring Boot's legacy per-repository Compose auto-start so it cannot recreate removed
+  Ollama services or conflict with the workspace-owned PostgreSQL port.
+- Added `ExtractedIngredient`, `ResolvedIngredient`, and one deterministic resolution pipeline shared
+  by text, receipt, and food-photo imports. Gemini remains only the image extraction provider and
+  cannot select a Pantry ID or unit.
+- Added an offline local-text extraction test and integration coverage for alias-to-canonical pipeline
+  reuse; no Gemini call is made by either test.
+
 ## 2026-10-02 — Java backend Dockerfile
 
 - Added a multi-stage Java 21 Dockerfile that builds the Spring Boot jar and runs it as a non-root
@@ -317,3 +331,18 @@ Keep entries concise and focused on meaningful migration changes.
   support for allergen declarations.
 - Added Recommendation V2 server-derived Pantry/Profile context and allergen candidate exclusion.
 - Verified Java `test` and `clean verify`; diet/goal hard filtering remains pending recipe metadata.
+
+# 2026-10-03 — Structured Profile V2 foundation
+
+- Added authenticated `GET`/`PUT /api/me/profile/v2` without changing the legacy profile API.
+- Added additive Flyway V6 profile fields and deterministic BMI/BMR/TDEE/calorie/protein calculations.
+- Added V2 controlled goals/diets/allergen sentinel validation and an underweight weight-loss guard.
+- Added unit tests for metric safety and quantity/unit canonical conversion; HTTP integration coverage
+  remains pending.
+
+# 2026-10-03 — Recommendation ranker V2 contract
+
+- Added the strict, privacy-minimized Java-to-Python ranking contract at `/ai/recommend-meals/v2`.
+- Added deterministic Python score components and retained the legacy recommendation route.
+- Removed a Java-only candidate sort field from the outbound payload after gateway verification proved
+  strict Python validation correctly rejected it.

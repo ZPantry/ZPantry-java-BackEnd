@@ -23,6 +23,10 @@ public final class RecommendationDtos {
                                                 String feedbackType, String comment) {
     }
 
-    public record PersonalizedRecommendationRequest(Integer topK) {
+    public enum RecommendationMode { AUTO, PANTRY_BASED, PROFILE_BASED }
+
+    public record PersonalizedRecommendationRequest(Integer topK, RecommendationMode mode,
+                                                    String mealType, Integer maxCookTimeMinutes,
+                                                    Integer servings, Boolean includeIngredients) {
     }
 }

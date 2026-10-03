@@ -17,4 +17,10 @@ public class IngredientAliasEntity extends BaseEntity {
 
     protected IngredientAliasEntity() {
     }
+
+    public IngredientAliasEntity(UUID ingredientId, String aliasName, String normalizedAliasName) {
+        this.ingredientId = ingredientId;
+        this.aliasName = aliasName;
+        this.normalizedAliasName = normalizedAliasName;
+    }
 }

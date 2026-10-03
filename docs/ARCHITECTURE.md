@@ -291,3 +291,31 @@ JWT -> Java Recommendation V2 -> Profile + Pantry -> allergen filter -> AI servi
 Java never stores a Gemini key and never writes AI extraction directly to Pantry. The AI service owns
 provider calls. Recommendation V2 derives user context from the validated JWT and server-side data;
 the client supplies only an optional result limit.
+
+## Canonical food resolution pipeline — 2026-10-03
+
+`ingredients` is the canonical-food catalog; `ingredient_aliases` is a controlled vocabulary that
+maps alternate product, brand, language, or colloquial labels to one canonical food. The backend owns
+the following pipeline:
+
+```text
+text local extraction OR Gemini image extraction
+        -> ExtractedIngredient[]
+        -> FoodMatchingService (canonical exact -> alias exact -> unique phrase match)
+        -> ResolvedIngredient
+        -> PantryIngredientPipeline preview
+        -> explicit user confirmation
+        -> PantryService upsert
+```
+
+No category search, fuzzy matching, provider-supplied ID, or provider-supplied unit can select a
+catalog ingredient. Ambiguous or unknown data produces no preview row. Text parsing does not call an
+AI provider. Gemini remains isolated to receipt/food-photo extraction through the AI service.
+
+## Structured profile V2 — 2026-10-03
+
+The additive `/api/me/profile/v2` boundary belongs to the User feature and shares the existing
+`user_profiles` row without changing the legacy profile route. The controller obtains the UUID only
+from the validated JWT, the service normalizes controlled enum values, and
+`ProfileMetricsCalculator` deterministically derives BMR, TDEE and targets. Recommendation V2 will
+read this server-owned profile; clients do not submit derived targets or a user ID to recommendation.

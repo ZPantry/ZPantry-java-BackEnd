@@ -10,6 +10,8 @@ import com.zpantry.media.service.MediaStoragePort;
 import com.zpantry.pantry.service.PantryService;
 import com.zpantry.pantryimport.api.PantryImportDtos.SourceType;
 import com.zpantry.pantryimport.service.PantryImportService;
+import com.zpantry.pantryimport.service.PantryIngredientPipeline;
+import com.zpantry.pantry.service.PantryTextExtractionService;
 import com.zpantry.recipe.service.RecipeService;
 import com.zpantry.user.persistence.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -55,6 +57,10 @@ class RemainingFeaturesIT {
     PantryService pantry;
     @org.springframework.beans.factory.annotation.Autowired
     PantryImportService pantryImport;
+    @org.springframework.beans.factory.annotation.Autowired
+    PantryIngredientPipeline pantryPipeline;
+    @org.springframework.beans.factory.annotation.Autowired
+    PantryTextExtractionService pantryTextExtraction;
 
     @Test
     void authenticationRegisterVerifyLoginRefreshAndRotation() {
@@ -117,6 +123,20 @@ class RemainingFeaturesIT {
             assertThat(item.unit()).isEqualTo("g");
             assertThat(item.quantity()).isPositive();
         });
+    }
+
+    @Test
+    void localTextExtractionReusesAliasMatchingAndTheSamePantryPipeline() {
+        var rows = pantryTextExtraction.extract("I have 500g white rice and 2 chicken egg").stream()
+                .map(pantryPipeline::resolve)
+                .flatMap(Optional::stream)
+                .toList();
+
+        assertThat(rows).hasSize(2);
+        assertThat(rows).extracting(item -> item.canonicalIngredientName()).containsExactly("Rice", "Egg");
+        assertThat(rows).extracting(item -> item.ingredientId()).doesNotContainNull();
+        assertThat(rows.getFirst().quantity()).isEqualByComparingTo("500");
+        assertThat(rows.get(1).quantity()).isEqualByComparingTo("2");
     }
 
     @Test

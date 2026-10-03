@@ -208,3 +208,38 @@ values are rejected at the API boundary. The existing varchar/text columns remai
 enum names are persisted as strings and allergens as a comma-separated canonical enum list. No
 implicit mapping of unknown legacy values is permitted. Recommendation V2 must obtain profile and
 Pantry data server-side from the authenticated UUID before AI ranking.
+
+## ADR-016 — Canonical food resolution is provider-independent
+
+**Status:** Accepted
+
+**Date:** 2026-10-03
+
+**Decision:** Treat the existing `ingredients` table as the canonical-food catalog and
+`ingredient_aliases` as its controlled alternate-name vocabulary. A single deterministic service
+resolves raw labels in this fixed order: exact canonical name, exact alias, then exactly one canonical
+or alias phrase embedded in a product label. Category/fuzzy search and model-selected IDs are forbidden.
+The text endpoint performs local extraction only; Ollama and text AI are removed. Image providers may
+return `ExtractedIngredient[]`, but must reuse the same resolution and confirm-before-upsert pipeline.
+
+**Consequences:** A catalog alias can be administered without changing a provider prompt, and inputs
+that cannot be uniquely linked to a real ingredient are safely omitted. Product-label recognition is
+bounded by catalog/alias quality rather than hallucinated AI output. Existing parse response fields and
+image endpoint paths are preserved.
+
+## ADR-017 — Additive structured profile API for Recommendation V2
+
+**Status:** Accepted
+
+**Date:** 2026-10-03
+
+**Decision:** Keep the legacy user profile contract unchanged and add `/api/me/profile/v2` for the
+structured recommendation profile. Store `birth_date`, activity level, goals and derived targets in
+the existing `user_profiles` record. Calculate age only when deriving metrics; do not persist a
+stale V2 age. The Mifflin–St Jeor formula uses `+5` for `MALE`, `-161` for `FEMALE`, and the documented
+neutral `-78` for `OTHER`. A weight-loss target is a 15% TDEE deficit but can never fall below BMR;
+it is disabled for BMI below 18.5.
+
+**Consequences:** Existing consumers remain compatible. The V2 response is transparent about derived
+values and health protection. Recipe candidate filtering/reranking remains a later Recommendation V2
+phase and must use these stored values, not client-provided copies.
