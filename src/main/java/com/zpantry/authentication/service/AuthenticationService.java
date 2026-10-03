@@ -31,4 +31,17 @@ public class AuthenticationService {
     @Transactional public AuthResponse refresh(RefreshTokenRequest r){if(r.refreshToken()==null||r.refreshToken().isBlank())throw new AuthenticationFailure("Refresh token is required.");var u=users.findByRefreshTokenHashAndDeletedFalse(tokens.hash(r.refreshToken())).orElseThrow(()->new AuthenticationFailure("Invalid refresh token."));if(!u.isActive()||!u.isEmailConfirmed())throw new AuthenticationFailure("Account is not allowed to refresh token.");if(u.getRefreshTokenExpiresAt()==null||!u.getRefreshTokenExpiresAt().isAfter(Instant.now())){u.clearRefreshToken(Instant.now(),false);throw new AuthenticationFailure("Refresh token has expired.");}return issue(u);}
     @Transactional public void logout(String email,String jti,Instant expiresAt){if(email==null||jti==null)throw new AuthenticationFailure("Token is invalid.");users.findByEmailAndDeletedFalse(email).ifPresent(u->u.clearRefreshToken(Instant.now(),true));var service=revocations.getIfAvailable();if(service==null)throw new IllegalStateException("Writable token revocation is unavailable");service.revoke(jti,expiresAt);}
     private AuthResponse issue(UserEntity u){var issued=tokens.issue(u);u.replaceRefreshToken(issued.refreshHash(),issued.refreshExpiry(),Instant.now());return issued.response();}
+
+    @Transactional
+    public AuthResponse googleLogin(String email, String name, String pictureUrl) {
+        var u = users.findByEmailAndDeletedFalse(email).orElseGet(() -> {
+            var newUser = new UserEntity(java.util.UUID.randomUUID(), Instant.now(), name, email,
+                    passwords.hash(java.util.UUID.randomUUID().toString()), true, true, "user");
+            newUser.updateProfile(name, pictureUrl, null, Instant.now());
+            return users.save(newUser);
+        });
+        if (!u.isActive()) throw new AuthenticationFailure("Account is inactive.");
+        if (!u.isEmailConfirmed()) u.confirmEmail(Instant.now());
+        return issue(u);
+    }
 }

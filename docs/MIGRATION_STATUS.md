@@ -19,12 +19,12 @@ remain NOT_STARTED.
 | Authentication | Register/OTP/login/JWT/refresh/logout implemented with approved corrections and dev revocation | IMPLEMENTED_NOT_VERIFIED |
 | Ingredient | CRUD, multipart media and embedding persistence implemented; catalog writes now role-protected and creation persists UUID before best-effort embedding | IMPLEMENTED_NOT_VERIFIED |
 | Recipe | CRUD, ingredient links, multipart media and embedding persistence implemented | IMPLEMENTED_NOT_VERIFIED |
-| Pantry | Authenticated owner-scoped list/upsert/update/delete implemented; positive quantity, active ingredient and unit validation enforced | IMPLEMENTED_NOT_VERIFIED |
+| Pantry | Authenticated owner-scoped list/upsert/update/delete implemented; canonical-food/alias matching resolves text and image extraction before confirmation; text uses no AI | IMPLEMENTED_NOT_VERIFIED |
 | Recommendation | Routes, persistence boundary and external AI orchestration implemented | IMPLEMENTED_NOT_VERIFIED |
 | Today Menu | Owner-scoped menu, completion, cooking/pantry logs implemented | IMPLEMENTED_NOT_VERIFIED |
 | Media | Cloudinary port/adapter and upload/delete routes implemented | IMPLEMENTED_NOT_VERIFIED |
 | Cooking / Pantry Usage Logs | No business implementation | NOT_STARTED |
-| AI Integration / Embedding Backfill | HTTP client and ingredient/recipe embedding persistence implemented; Pantry text/receipt/food-image previews now pass a shared catalog-ID boundary; backfill command absent | IMPLEMENTED_NOT_VERIFIED |
+| AI Integration / Embedding Backfill | HTTP client and ingredient/recipe embedding persistence implemented; Gemini receipt/food-image extraction passes the canonical catalog-ID boundary; text import is local (no Ollama/text AI); backfill command absent | IMPLEMENTED_NOT_VERIFIED |
 | Vector Search | No implementation; legacy service remains a stub | NOT_STARTED |
 | Docker / Deployment | Java 21 multi-stage backend Dockerfile and workspace Compose build wiring implemented; production deployment configuration remains environment-owned | IMPLEMENTED_NOT_VERIFIED |
 
@@ -254,3 +254,10 @@ deterministic test seed covers users and core relationships without external ser
 
 Existing legacy database adoption remains BLOCKED. Default Flyway remains disabled and
 `baseline-on-migrate=false`; no shared database was contacted or changed.
+
+## Recommendation V2 profile foundation — 2026-10-03
+
+The additive Profile V2 endpoint and V6 profile columns are implemented. The deterministic metric
+calculator has unit coverage for the documented `OTHER` gender constant and the BMI underweight
+guard. HTTP contract/integration verification and the candidate-selection/reranking phases remain
+open; this does not promote the Recommendation feature to parity-complete.

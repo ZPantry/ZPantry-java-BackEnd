@@ -35,8 +35,7 @@ public class RecommendationController {
 
     @PostMapping("/v2/meals")
     public ApiResponse<Map<String, Object>> personalized(Authentication a, @RequestBody(required = false) PersonalizedRecommendationRequest request) {
-        int topK = request == null || request.topK() == null ? 5 : request.topK();
-        return new ApiResponse<>(true, "Personalized meal recommendations generated.", personalized.recommend(id(a), topK), null, "", java.time.Instant.now());
+        return new ApiResponse<>(true, "Personalized meal recommendations generated.", personalized.recommend(id(a), request), null, "", java.time.Instant.now());
     }
 
     @PostMapping("/missing-ingredients")

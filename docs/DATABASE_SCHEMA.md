@@ -130,6 +130,11 @@ normalized_alias_name
 
 The lightweight skeleton SQL shows IDs but does not necessarily express the final relational constraints. Verify real FK/index definitions.
 
+For Pantry import, `ingredients` is the canonical-food table and each active alias must resolve to
+exactly one active canonical ingredient. The application rejects active alias/canonical name conflicts;
+production adoption should add and verify an equivalent database uniqueness constraint only after the
+shared legacy catalog has been inspected.
+
 ---
 
 ## 6. recipes
@@ -543,3 +548,11 @@ media_assets, today_menu_items, cooking_logs and pantry_usage_logs. IDs remain U
 inherit audit/soft-delete columns. Ingredient/Recipe embeddings map to `vector(1536)`. These mappings
 passed Hibernate validation only against the disposable Testcontainers schema; the shared legacy
 catalog remains unverified and no production migration was run.
+
+## Profile V2 additive columns — 2026-10-03
+
+Flyway V6 adds nullable `birth_date`, `activity_level`, `goals`, `bmr`, `tdee`,
+`daily_calorie_target`, and `daily_protein_target` columns to `user_profiles`. They are additive and
+used only by the V2 profile/recommendation work; existing `age`, `goal`, `diet_preference`, and
+`allergies` retain their legacy meaning. Flyway must only be run against a Java-owned fresh/development
+database until the existing-catalog baseline policy is approved.

@@ -703,19 +703,96 @@ values are controlled enums: `UserGoal`, `DietPreference`, and `FoodAllergen`. U
 are rejected with a client error; no free-text fallback is accepted. The existing recommendation
 route remains unchanged until V2 is implemented and verified.
 
-## [MIG-008] Catalog-backed Pantry AI previews
+## [MIG-008] Canonical-food Pantry previews
 
 **Status:** IMPLEMENTED_NOT_VERIFIED
 
-`POST /api/me/pantry/parse` and the image import analysis endpoints now share one catalog-resolution
+`POST /api/me/pantry/parse` and the image import analysis endpoints share one catalog-resolution
 contract. Every item included in a preview has a non-null `ingredientId`, canonical database name,
-database unit, and canonical Ingredient object. AI/Ollama names, units, and IDs are never trusted.
+database unit, and canonical Ingredient object. Provider names, units, and IDs are never trusted.
 Missing or non-positive quantities are replaced by the Ingredient `defaultQuantity`. Image rows that
 cannot be matched unambiguously to an active catalog record are omitted; their presence is conveyed
 through a warning, not a fabricated ID. The text endpoint returns the same preview-item fields as
 image analysis, wrapped in its existing `ApiResponse` list.
 
-Ollama schema parsing accepts `ingredients`, `items`, and a root array. Unknown response schemas
-return a bounded service-unavailable response without exposing parser internals. This is a
-deliberate contract enhancement for the approved Pantry AI import feature, not captured legacy
-behavior; live Ollama/Gemini verification remains pending and must use deployment-owned credentials.
+The text endpoint no longer calls Ollama or any text AI. It locally segments explicit input and
+uses deterministic canonical-name/alias matching. Its route and preview response shape are unchanged.
+Receipt and food-image endpoints continue to obtain only `ExtractedIngredient[]` from the external
+Gemini service before reusing this exact backend pipeline.
+
+## [MIG-009] Food alias administration
+
+**Status:** IMPLEMENTED_NOT_VERIFIED
+
+**Breaking Change:** NO
+
+**Date:** 2026-10-03
+
+### New API
+
+```http
+GET    /api/ingredients/{ingredientId}/aliases
+POST   /api/ingredients/{ingredientId}/aliases
+DELETE /api/ingredients/{ingredientId}/aliases/{aliasId}
+```
+
+`POST` accepts `{ "aliasName": "..." }`. An alias is normalized before persistence and is rejected
+when it conflicts with an active canonical Ingredient or active alias. Catalog mutation authorization
+is the same existing `SUPER_ADMIN`, `ADMIN`, or `MANAGER` policy as Ingredient mutation. `GET` returns
+the normal `ApiResponse` envelope with `id`, `ingredientId`, `aliasName`, and `normalizedAliasName`.
+
+### Frontend Action Required
+
+No existing client needs to change. Catalog administration can use these optional endpoints to maintain
+the matching vocabulary.
+
+## [MIG-010] Unified ingredient image analysis V2
+
+**Status:** IMPLEMENTED_NOT_VERIFIED
+
+**Breaking Change:** NO
+
+**Date:** 2026-10-03
+
+### New API
+
+```http
+POST /api/v2/ingredients/analyze-image
+Content-Type: multipart/form-data
+```
+
+The request has one required field, `image` (JPEG, PNG, or WEBP, maximum 10 MB), and requires an
+authenticated user. The response contains `imageType` (`RECEIPT`, `FOOD_IMAGE`, or `UNKNOWN`),
+provider confidence, catalog-resolved preview `ingredients`, and warnings. `UNKNOWN` is HTTP 200 with
+an empty ingredient list. The endpoint analyses only and never writes Pantry data. Existing V1 receipt
+and food-image endpoints remain active and unchanged.
+
+## [MIG-011] Structured user profile V2 for recommendations
+
+**Status:** IMPLEMENTED_NOT_VERIFIED
+
+**Breaking Change:** NO
+
+**Date:** 2026-10-03
+
+### New API
+
+```http
+GET /api/me/profile/v2
+PUT /api/me/profile/v2
+```
+
+Both routes require the authenticated user and never accept a user identifier in the request.
+`PUT` replaces the V2 profile with `birthDate`, `gender` (`MALE`, `FEMALE`, `OTHER`), `heightCm`,
+`weightKg`, `activityLevel`, zero or more `goals`, `dietPreference`, and `allergies`. Enum values
+outside the declared sets are rejected by JSON binding. `NO_ALLERGIES` is accepted only by itself;
+combining it with a real allergen returns a client error.
+
+The response retains the submitted profile and includes derived `bmi`, `bmr`, `tdee`, daily and
+per-meal calorie/protein targets, `weightLossAllowed`, and a health warning where applicable.
+The legacy `/api/users/{userId}/profile` API remains active and unchanged.
+
+### Frontend Action Required
+
+No existing client needs to migrate. A Recommendation V2 client may create or replace its structured
+profile through this optional V2 endpoint before requesting meal suggestions.

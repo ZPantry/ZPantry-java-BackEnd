@@ -4,6 +4,7 @@ import com.zpantry.common.api.ApiResponse;
 import com.zpantry.common.api.PagedResponse;
 import com.zpantry.ingredient.domain.IngredientEntity;
 import com.zpantry.ingredient.persistence.IngredientRepository;
+import com.zpantry.ingredient.persistence.IngredientAliasRepository;
 import com.zpantry.integration.ai.AiClient;
 import com.zpantry.media.service.MediaStoragePort;
 import org.springframework.data.domain.Page;
@@ -22,11 +23,13 @@ import static com.zpantry.ingredient.api.IngredientDtos.*;
 public class IngredientService {
     private static final Logger log = LoggerFactory.getLogger(IngredientService.class);
     private final IngredientRepository repo;
+    private final IngredientAliasRepository aliases;
     private final AiClient ai;
     private final MediaStoragePort media;
 
-    public IngredientService(IngredientRepository r, AiClient a, MediaStoragePort m) {
+    public IngredientService(IngredientRepository r, IngredientAliasRepository aliases, AiClient a, MediaStoragePort m) {
         repo = r;
+        this.aliases = aliases;
         ai = a;
         media = m;
     }
@@ -51,8 +54,8 @@ public class IngredientService {
     @Transactional
     public ApiResponse<IngredientResponse> create(CreateIngredientRequest r) {
         if (r.name() == null || r.name().isBlank()) return fail("Ingredient name is required.");
-        String n = r.name().trim().toLowerCase();
-        if (repo.existsByNormalizedNameAndDeletedFalse(n)) return fail("Ingredient already exists.");
+        String n = FoodNameNormalizer.normalize(r.name());
+        if (repo.existsByNormalizedNameAndDeletedFalse(n) || aliases.existsByNormalizedAliasNameAndDeletedFalse(n)) return fail("Ingredient already exists.");
         IngredientEntity e = new IngredientEntity(r.name());
         apply(e, r);
         e = repo.save(e);
@@ -77,8 +80,9 @@ public class IngredientService {
         var e = repo.findByIdAndDeletedFalse(id).orElse(null);
         if (e == null) return fail("Ingredient not found.");
         if (r.name() != null && !r.name().isBlank()) {
-            var normalized = r.name().trim().toLowerCase();
-            if (repo.existsByNormalizedNameAndDeletedFalseAndIdNot(normalized, id))
+            var normalized = FoodNameNormalizer.normalize(r.name());
+            if (repo.existsByNormalizedNameAndDeletedFalseAndIdNot(normalized, id)
+                    || aliases.existsByNormalizedAliasNameAndDeletedFalse(normalized))
                 return fail("Ingredient already exists.");
             e.name = r.name().trim();
             e.normalizedName = normalized;

@@ -6,6 +6,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.math.BigDecimal;
 import java.util.Set;
 import java.util.UUID;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public final class IngredientDtos {
     private IngredientDtos() {
@@ -41,5 +43,12 @@ public final class IngredientDtos {
                                         BigDecimal proteinPerUnit, BigDecimal fatPerUnit, BigDecimal carbPerUnit,
                                         String imageUrl, String gradientFrom, String gradientTo,
                                         MultipartFile imageFile) {
+    }
+
+    public record IngredientAliasResponse(UUID id, UUID ingredientId, String aliasName, String normalizedAliasName) {
+    }
+
+    public record CreateIngredientAliasRequest(
+            @NotBlank @Size(max = 200) String aliasName) {
     }
 }

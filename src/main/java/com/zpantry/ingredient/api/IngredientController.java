@@ -4,6 +4,8 @@ import static com.zpantry.ingredient.api.IngredientDtos.*;
 
 import com.zpantry.common.api.*;
 import com.zpantry.ingredient.service.IngredientService;
+import com.zpantry.ingredient.service.IngredientAliasService;
+import jakarta.validation.Valid;
 
 import java.util.UUID;
 
@@ -12,9 +14,11 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class IngredientController {
     private final IngredientService s;
+    private final IngredientAliasService aliases;
 
-    public IngredientController(IngredientService s) {
+    public IngredientController(IngredientService s, IngredientAliasService aliases) {
         this.s = s;
+        this.aliases = aliases;
     }
 
     @GetMapping("/api/ingredients")
@@ -27,8 +31,8 @@ public class IngredientController {
         return s.create(r);
     }
 
-    @PostMapping( "/api/v2/ingredients")
-    public ApiResponse<IngredientResponse> createV2(@RequestBody IngredientFormRequest r) {
+    @PostMapping(value = "/api/v2/ingredients", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<IngredientResponse> createV2(@ModelAttribute IngredientFormRequest r) {
         return s.createForm(r);
     }
 
@@ -37,7 +41,7 @@ public class IngredientController {
         return s.update(id, r);
     }
 
-    @PutMapping("/api/v2/ingredients/{id}")
+    @PutMapping(value = "/api/v2/ingredients/{id}", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<IngredientResponse> updateV2(@PathVariable UUID id, @ModelAttribute IngredientFormRequest r) {
         return s.updateForm(id, r);
     }
@@ -45,5 +49,21 @@ public class IngredientController {
     @DeleteMapping("/api/ingredients/{id}")
     public ApiResponse<Object> delete(@PathVariable UUID id) {
         return s.delete(id);
+    }
+
+    @GetMapping("/api/ingredients/{id}/aliases")
+    public ApiResponse<java.util.List<IngredientAliasResponse>> aliases(@PathVariable UUID id) {
+        return aliases.list(id);
+    }
+
+    @PostMapping("/api/ingredients/{id}/aliases")
+    public ApiResponse<IngredientAliasResponse> createAlias(@PathVariable UUID id,
+            @Valid @RequestBody CreateIngredientAliasRequest request) {
+        return aliases.create(id, request);
+    }
+
+    @DeleteMapping("/api/ingredients/{id}/aliases/{aliasId}")
+    public ApiResponse<Object> deleteAlias(@PathVariable UUID id, @PathVariable UUID aliasId) {
+        return aliases.delete(id, aliasId);
     }
 }

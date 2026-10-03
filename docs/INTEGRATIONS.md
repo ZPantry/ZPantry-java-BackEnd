@@ -140,19 +140,29 @@ The Java backend calls the AI service through `AI_SERVICE_URL` using multipart i
 ### Pantry AI catalog boundary
 
 `POST /api/me/pantry/parse`, `/api/me/pantry-import/receipt/analyze`, and
-`/api/me/pantry-import/food-image/analyze` treat model output as untrusted extraction hints. A
+`/api/me/pantry-import/food-image/analyze` pass untrusted extraction hints through a
 shared backend catalog boundary resolves every returned row to exactly one active `ingredients`
 record before it is exposed: `ingredientId`, `canonicalIngredientName`, `ingredient` and `unit`
-therefore come from PostgreSQL, never from Ollama or Gemini. Suggested quantities are used only
+therefore come from PostgreSQL, never from Gemini. Suggested quantities are used only
 when positive; otherwise the persisted `defaultQuantity` is returned. AI detections that cannot be
 resolved unambiguously are omitted and reported only as a preview warning for image flows.
 
-The text parser accepts the documented `ingredients` JSON property and compatible `items` or root
-array forms from Ollama. Malformed model output is logged as schema metadata server-side and returns
-an opaque service-unavailable response; request text, model output, and API keys are never logged.
+Text parsing is local and deterministic: it segments explicit comma/newline/conjunction-separated
+items and then matches canonical food names or maintained aliases. It makes no AI-service, Ollama,
+or provider-key call. A text item that does not map uniquely to the active catalog is not returned.
 
 For Gemini image analysis, the AI service additionally canonicalizes `items`, `ingredients`, or a
 root array, and accepts item names delivered as `rawName`, `name`, `item`, `productName`, or
 `product`. The backend accepts the same name fields as a defence-in-depth boundary. A unique
 canonical catalog name embedded in a receipt product label is valid (for example `Sữa tươi` in
 `Sữa tươi TH 1L`); ambiguous labels remain omitted rather than being guessed.
+
+## Recommendation ranker V2 contract
+
+Java calls `POST /ai/recommend-meals/v2` with `contractVersion: "1"`. The payload contains only a
+generated request ID, derived meal targets, controlled preference values, Pantry labels and bounded
+candidate metadata; it does not include a user ID, date of birth, height, or weight. Python validates
+the strict contract and returns ranking-only data (`recipeId`, rank, score, components, optional
+advice, model metadata). Java remains responsible for catalog data and for rejecting untrusted IDs
+before a response reaches the client. The legacy `/ai/recommend-meals` route remains available for
+non-V2 callers.
