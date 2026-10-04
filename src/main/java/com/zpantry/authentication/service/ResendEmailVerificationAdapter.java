@@ -24,12 +24,21 @@ public class ResendEmailVerificationAdapter implements EmailVerificationPort {
 
     @Override
     public void sendVerification(String email, String fullName, String otp) {
+        send(email, fullName, otp, "ZPantry OTP Verification", "your account verification OTP is");
+    }
+
+    @Override
+    public void sendPasswordReset(String email, String fullName, String otp) {
+        send(email, fullName, otp, "ZPantry Password Reset OTP", "your password reset OTP is");
+    }
+
+    private void send(String email, String fullName, String otp, String subject, String message) {
         if (key.isBlank() || from.isBlank()) {
             throw new IllegalStateException("Email delivery is not configured");
         }
         client.post().uri("/emails").header("Authorization", "Bearer " + key).body(Map.of(
-                "from", from, "to", List.of(email), "subject", "ZPantry OTP Verification",
-                "html", "Hello " + (fullName == null ? "" : fullName) + ", your OTP is <b>" + otp + "</b>"))
+                "from", from, "to", List.of(email), "subject", subject,
+                "html", "Hello " + (fullName == null ? "" : fullName) + ", " + message + " <b>" + otp + "</b>"))
                 .retrieve().toBodilessEntity();
     }
 }

@@ -104,6 +104,32 @@ public class UserEntity extends BaseEntity {
         emailConfirmed = true; otpCode = null; otpExpiredAt = null; updatedAt = now;
     }
 
+    public void issueOtp(String otpCode, Instant otpExpiresAt, Instant now) {
+        this.otpCode = otpCode;
+        this.otpExpiredAt = otpExpiresAt;
+        this.otpRetryCount = 0;
+        this.updatedAt = now;
+    }
+
+    public void resetPassword(String passwordHash, Instant now) {
+        this.passwordHashed = passwordHash;
+        this.otpCode = null;
+        this.otpExpiredAt = null;
+        this.otpRetryCount = 0;
+        this.refreshTokenHash = null;
+        this.refreshTokenExpiresAt = null;
+        this.updatedAt = now;
+    }
+
+    public void recordResetOtpFailure(Instant now) {
+        otpRetryCount++;
+        if (otpRetryCount >= 5) {
+            otpCode = null;
+            otpExpiredAt = null;
+        }
+        updatedAt = now;
+    }
+
     public void replaceRefreshToken(String hash, Instant expiresAt, Instant now) {
         refreshTokenHash = hash; refreshTokenExpiresAt = expiresAt; updatedAt = now;
     }

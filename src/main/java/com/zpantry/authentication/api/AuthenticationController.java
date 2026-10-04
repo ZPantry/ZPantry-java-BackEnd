@@ -55,6 +55,24 @@ public class AuthenticationController {
         return ResponseEntity.status(success ? 200 : 400).body(success ? ok(null, "Xác thực tài khoản thành công! Bạn hiện đã có thể đăng nhập.", req) : fail("Mã OTP không chính xác, đã hết hạn hoặc tài khoản đã được xác thực trước đó.", req));
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Object>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest body, HttpServletRequest req) {
+        try {
+            service.forgotPassword(body);
+            return ResponseEntity.ok(ok(null, "Nếu email tồn tại, mã OTP đặt lại mật khẩu đã được gửi.", req));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(fail("Không thể gửi mã OTP đặt lại mật khẩu.", req));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Object>> resetPassword(@Valid @RequestBody ResetPasswordRequest body, HttpServletRequest req) {
+        boolean success = service.resetPassword(body);
+        return ResponseEntity.status(success ? 200 : 400).body(success
+                ? ok(null, "Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.", req)
+                : fail("Mã OTP không hợp lệ, đã hết hạn hoặc mật khẩu xác nhận không khớp.", req));
+    }
+
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@RequestBody LoginRequest body, HttpServletRequest req) {
         return auth(() -> service.login(body), req);

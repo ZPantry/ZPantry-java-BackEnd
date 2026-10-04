@@ -11,4 +11,10 @@ public class DevResendEmailVerficationAdapter implements EmailVerificationPort {
         System.out.println("Sending verification email... to "+fullName +" with email "+email+"\n");
         System.out.println("your otp demo: "+otp);
     }
+
+    @Override
+    public void sendPasswordReset(String email, String fullName, String otp) {
+        System.out.println("Sending password-reset email... to " + fullName + " with email " + email + "\n");
+        System.out.println("your reset otp demo: " + otp);
+    }
 }
