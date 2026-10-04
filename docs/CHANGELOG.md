@@ -1,5 +1,10 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-04 — Pantry JSON update compatibility repair
+
+- Aligned the Pantry update controller's `JsonNode` and `ObjectMapper` with the Jackson 3 types
+  supplied by Spring Boot 4, preventing request-body conversion failures in production.
+
 ## 2026-10-04 — Initial Vietnamese ingredient and recipe catalog migration
 
 - Added Flyway V7 for an empty Java-owned production database: 15 catalog ingredients, five
