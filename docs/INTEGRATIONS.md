@@ -157,12 +157,25 @@ root array, and accepts item names delivered as `rawName`, `name`, `item`, `prod
 canonical catalog name embedded in a receipt product label is valid (for example `Sữa tươi` in
 `Sữa tươi TH 1L`); ambiguous labels remain omitted rather than being guessed.
 
-## Recommendation ranker V2 contract
+## Recommendation V2 and future analysis boundary
 
-Java calls `POST /ai/recommend-meals/v2` with `contractVersion: "1"`. The payload contains only a
-generated request ID, derived meal targets, controlled preference values, Pantry labels and bounded
-candidate metadata; it does not include a user ID, date of birth, height, or weight. Python validates
-the strict contract and returns ranking-only data (`recipeId`, rank, score, components, optional
-advice, model metadata). Java remains responsible for catalog data and for rejecting untrusted IDs
-before a response reaches the client. The legacy `/ai/recommend-meals` route remains available for
-non-V2 callers.
+`POST /api/recommendations/v2/meals` is now provider-independent: Java ranks active catalog recipes
+using authenticated Pantry data, declared recipe allergens, required ingredient coverage and an
+expiring-soon bonus. It makes no AI-service call, so provider outage, quota exhaustion and malformed
+model output cannot prevent a user from receiving their ranked catalog results. The legacy
+`/ai/recommend-meals` route remains available only for the legacy recommendation path.
+
+A future conversational-analysis operation may call the AI service only after the backend has fixed
+the ranked recipe set. Its payload must be privacy-minimized and contain server-derived recipe IDs,
+their ingredient facts and the permitted profile context; the response must be validated against those
+IDs before it is shown. It is not implemented by the deterministic ranking endpoint.
+
+## Image-analysis usage limit
+
+Before forwarding a food image, receipt image or unified image to the AI service, Java atomically
+consumes one authenticated user's monthly allowance. The default is three requests per calendar month
+in the configured Vietnam time zone. The limit is configured with
+`ZPANTRY_AI_IMAGE_ANALYSIS_MONTHLY_LIMIT`; subscription work can assign a different allowance through
+the future entitlement boundary without changing the AI client. A provider failure still consumes a
+request because the provider call was attempted. When exhausted, Java returns HTTP 429 without making
+the provider call.

@@ -29,4 +29,16 @@ public final class RecommendationDtos {
                                                     String mealType, Integer maxCookTimeMinutes,
                                                     Integer servings, Boolean includeIngredients) {
     }
+
+    public record RankedMealRecommendationResponse(UUID recipeId, String recipeName, Integer cookTimeMinutes,
+                                                    int score, double pantryMatchRatio,
+                                                    List<String> matchingIngredients,
+                                                    List<String> missingIngredients,
+                                                    List<String> expiringSoonIngredients,
+                                                    List<String> reasons) {
+    }
+
+    public record PersonalizedRecommendationResponse(RecommendationMode mode,
+                                                      List<RankedMealRecommendationResponse> recommendations) {
+    }
 }

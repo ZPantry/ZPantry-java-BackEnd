@@ -34,7 +34,7 @@ public class RecommendationController {
     }
 
     @PostMapping("/v2/meals")
-    public ApiResponse<Map<String, Object>> personalized(Authentication a, @RequestBody(required = false) PersonalizedRecommendationRequest request) {
+    public ApiResponse<PersonalizedRecommendationResponse> personalized(Authentication a, @RequestBody(required = false) PersonalizedRecommendationRequest request) {
         return new ApiResponse<>(true, "Personalized meal recommendations generated.", personalized.recommend(id(a), request), null, "", java.time.Instant.now());
     }
 

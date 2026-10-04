@@ -4,6 +4,7 @@ import static com.zpantry.pantryimport.api.PantryImportDtos.*;
 
 import com.zpantry.common.api.ApiResponse;
 import com.zpantry.pantryimport.service.PantryImportService;
+import com.zpantry.pantryimport.service.ImageAnalysisQuotaService;
 import com.zpantry.user.security.AuthenticatedUserResolver;
 import jakarta.validation.Valid;
 
@@ -19,10 +20,12 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/me/pantry-import")
 public class PantryImportController {
     private final PantryImportService service;
+    private final ImageAnalysisQuotaService quota;
     private final AuthenticatedUserResolver users;
 
-    public PantryImportController(PantryImportService s, AuthenticatedUserResolver u) {
+    public PantryImportController(PantryImportService s, ImageAnalysisQuotaService quota, AuthenticatedUserResolver u) {
         service = s;
+        this.quota = quota;
         users = u;
     }
 
@@ -32,14 +35,14 @@ public class PantryImportController {
 
     @PostMapping(value = "/receipt/analyze", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public PantryImportPreviewResponse receipt(Authentication a, @RequestPart("image") MultipartFile image) {
-        id(a);
+        quota.consume(id(a));
         validate(image);
         return service.analyze(SourceType.RECEIPT, image);
     }
 
     @PostMapping(value = "/food-image/analyze", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public PantryImportPreviewResponse food(Authentication a, @RequestPart("image") MultipartFile image) {
-        id(a);
+        quota.consume(id(a));
         validate(image);
         return service.analyze(SourceType.FOOD_IMAGE, image);
     }

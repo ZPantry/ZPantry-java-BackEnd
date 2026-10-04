@@ -20,11 +20,11 @@ remain NOT_STARTED.
 | Ingredient | CRUD, multipart media and embedding persistence implemented; catalog writes now role-protected and creation persists UUID before best-effort embedding | IMPLEMENTED_NOT_VERIFIED |
 | Recipe | CRUD, ingredient links, multipart media and embedding persistence implemented | IMPLEMENTED_NOT_VERIFIED |
 | Pantry | Authenticated owner-scoped list/upsert/update/delete implemented; canonical-food/alias matching resolves text and image extraction before confirmation; text uses no AI | IMPLEMENTED_NOT_VERIFIED |
-| Recommendation | Routes, persistence boundary and external AI orchestration implemented | IMPLEMENTED_NOT_VERIFIED |
+| Recommendation | Legacy routes/persistence boundary plus a server-derived, deterministic V2 ranker implemented; optional AI analysis/chat remains unimplemented | IMPLEMENTED_NOT_VERIFIED |
 | Today Menu | Owner-scoped menu, completion, cooking/pantry logs implemented | IMPLEMENTED_NOT_VERIFIED |
 | Media | Cloudinary port/adapter and upload/delete routes implemented | IMPLEMENTED_NOT_VERIFIED |
 | Cooking / Pantry Usage Logs | No business implementation | NOT_STARTED |
-| AI Integration / Embedding Backfill | HTTP client and ingredient/recipe embedding persistence implemented; Gemini receipt/food-image extraction passes the canonical catalog-ID boundary; text import is local (no Ollama/text AI); backfill command absent | IMPLEMENTED_NOT_VERIFIED |
+| AI Integration / Embedding Backfill | HTTP client and ingredient/recipe embedding persistence implemented; Gemini receipt/food-image extraction passes the canonical catalog-ID boundary; text import is local (no Ollama/text AI); image analysis has a configurable per-account monthly quota; backfill command absent | IMPLEMENTED_NOT_VERIFIED |
 | Vector Search | No implementation; legacy service remains a stub | NOT_STARTED |
 | Docker / Deployment | Java 21 multi-stage backend Dockerfile and workspace Compose build wiring implemented; production deployment configuration remains environment-owned | IMPLEMENTED_NOT_VERIFIED |
 
@@ -125,8 +125,8 @@ Authentication implementation from this record. Foundation remains COMPLETE with
 Profile recommendation inputs are now controlled Java enums: `UserGoal`, `DietPreference`, and
 `FoodAllergen`. Existing columns are retained; enum names are persisted as canonical text values.
 The next implementation phase is MIG-007: an authenticated, server-derived recommendation flow
-using Pantry/Profile data, deterministic allergy/diet filtering, and AI ranking. It is PLANNED and
-not yet endpoint- or integration-verified.
+using Pantry/Profile data, deterministic allergy/diet filtering, and AI ranking. This plan was replaced by
+the deterministic V2 ranker below; endpoint/integration verification remains open.
 
 ## User evidence-closure result — 2026-09-18
 
@@ -262,3 +262,14 @@ The additive Profile V2 endpoint and V6 profile columns are implemented. The det
 calculator has unit coverage for the documented `OTHER` gender constant and the BMI underweight
 guard. HTTP contract/integration verification and the candidate-selection/reranking phases remain
 open; this does not promote the Recommendation feature to parity-complete.
+
+## Deterministic Recommendation V2 ranker — 2026-10-04
+
+`POST /api/recommendations/v2/meals` now selects active catalog recipes with server-owned Profile
+and Pantry state, removes declared allergen conflicts, and ranks the remaining recipes locally. The
+default is a maximum of ten results. The score rewards required pantry matches and ingredients
+expiring in the next three days and penalizes missing required ingredients. The response exposes the
+score inputs as structured matched, missing and expiring-soon ingredient lists; no AI provider is
+called. Unit tests cover the priority and missing-ingredient rules. AI conversational analysis remains
+a separate, unimplemented enhancement constrained to the returned recipe set. Full HTTP/database
+verification remains required, so Recommendation stays IMPLEMENTED_NOT_VERIFIED.

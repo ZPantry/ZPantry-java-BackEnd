@@ -718,13 +718,22 @@ and `defaultQuantity` for frontend quantity forms. A missing positive `defaultQu
 
 ## [MIG-007] Recommendation V2 personalization
 
-**Status:** PLANNED
+**Status:** IMPLEMENTED_NOT_VERIFIED
 
-Recommendation V2 is a new, versioned API. It will derive pantry ingredients and the authenticated
-user profile on the server, then apply allergy and diet filters before requesting AI ranking. Profile
-values are controlled enums: `UserGoal`, `DietPreference`, and `FoodAllergen`. Unknown enum values
-are rejected with a client error; no free-text fallback is accepted. The existing recommendation
-route remains unchanged until V2 is implemented and verified.
+Recommendation V2 is a new, versioned API. `POST /api/recommendations/v2/meals` derives Pantry
+ingredients and the authenticated user profile on the server, then excludes declared recipe allergies
+and ranks catalog recipes locally. It returns at most ten catalog recipes with a deterministic score,
+Pantry-match ratio, matched/missing/expiring-soon ingredient names and short structured reasons.
+It does not call the AI service. Profile values are controlled enums: `UserGoal`, `DietPreference`,
+and `FoodAllergen`; unknown enum values are rejected at the profile boundary. The existing legacy
+recommendation route remains unchanged.
+
+The current score is intentionally transparent: each available required ingredient adds 30 points,
+each missing required ingredient subtracts 10 points, and each matched ingredient expiring in the
+next three days adds 20 points. Recipes with no required links use all of their linked ingredients.
+Diet and nutrition targets are not yet hard filters because recipe suitability metadata is absent.
+AI-backed conversational analysis is a separate future operation: it may receive only the already
+ranked recipe IDs and their server-derived context, and may not introduce recipes outside that list.
 
 ## [MIG-008] Canonical-food Pantry previews
 
@@ -742,6 +751,14 @@ The text endpoint no longer calls Ollama or any text AI. It locally segments exp
 uses deterministic canonical-name/alias matching. Its route and preview response shape are unchanged.
 Receipt and food-image endpoints continue to obtain only `ExtractedIngredient[]` from the external
 Gemini service before reusing this exact backend pipeline.
+
+### Monthly image-analysis allowance
+
+The Java extension applies one authenticated-account allowance to receipt analysis, food-image
+analysis and unified image analysis. The default is three requests per calendar month, resetting at
+the start of a new month in the configured application zone. Exhaustion returns HTTP 429 and does not
+call the AI provider. The current global default is configuration-owned; per-subscription allowances
+are a future entitlement enhancement.
 
 ### Pantry batch-upsert extension
 

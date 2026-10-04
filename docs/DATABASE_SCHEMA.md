@@ -6,6 +6,11 @@
 databases. It creates pgvector and the 13 mapped tables. V2–V6 add Java-owned columns and V7
 inserts the initial ingredient/recipe catalog. Hibernate remains validation-only.
 
+V8 adds `image_analysis_monthly_usage`, which records the number of image-analysis requests for one
+user in one calendar month. Its unique `(user_id, month_start)` constraint allows an atomic shared
+counter across concurrent requests and instances. It is Java-owned for empty databases only; existing
+database adoption remains subject to the documented read-only comparison and baseline process.
+
 The former test `foundation.sql` duplicated the schema and had drift, so it was removed. Every
 Testcontainers persistence context now starts empty and runs V1 before Hibernate validation. Test
 seed data is separate under `src/test/resources/db/seed/`.
