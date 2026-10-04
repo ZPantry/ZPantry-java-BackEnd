@@ -2,6 +2,7 @@ package com.zpantry.pantryimport.api;
 
 import com.zpantry.common.api.ApiResponse;
 import com.zpantry.pantry.api.NaturalLanguagePantryController;
+import com.zpantry.pantryimport.service.ImageAnalysisQuotaExceededException;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.time.Instant;
@@ -21,6 +22,11 @@ public class PantryImportExceptionHandler {
     @ExceptionHandler(IllegalStateException.class)
     ResponseEntity<ApiResponse<Void>> unavailable(IllegalStateException exception, HttpServletRequest request) {
         return response(HttpStatus.SERVICE_UNAVAILABLE, "Image analysis is currently unavailable.", request);
+    }
+
+    @ExceptionHandler(ImageAnalysisQuotaExceededException.class)
+    ResponseEntity<ApiResponse<Void>> quotaExceeded(ImageAnalysisQuotaExceededException exception, HttpServletRequest request) {
+        return response(HttpStatus.TOO_MANY_REQUESTS, "Monthly image analysis limit reached. Try again next month.", request);
     }
 
     private ResponseEntity<ApiResponse<Void>> response(HttpStatus status, String message, HttpServletRequest request) {

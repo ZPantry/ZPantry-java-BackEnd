@@ -285,12 +285,14 @@ still validates schema and never creates or updates it.
 
 ```text
 Client image -> Java Pantry Import -> AI service -> Gemini -> preview -> user confirm -> Pantry
-JWT -> Java Recommendation V2 -> Profile + Pantry -> allergen filter -> AI service -> ranked recipes
+JWT -> Java Recommendation V2 -> Profile + Pantry -> allergen filter -> deterministic ranker -> top catalog recipes
 ```
 
 Java never stores a Gemini key and never writes AI extraction directly to Pantry. The AI service owns
 provider calls. Recommendation V2 derives user context from the validated JWT and server-side data;
-the client supplies only an optional result limit.
+the client supplies only an optional result limit. Its default ranking is deterministic and does not
+call AI. A future recommendation chatbot belongs behind a separate analysis boundary and is limited
+to explaining the already selected catalog recipes.
 
 ## Canonical food resolution pipeline — 2026-10-03
 

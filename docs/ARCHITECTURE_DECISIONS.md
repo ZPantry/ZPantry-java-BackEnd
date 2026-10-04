@@ -243,3 +243,19 @@ it is disabled for BMI below 18.5.
 **Consequences:** Existing consumers remain compatible. The V2 response is transparent about derived
 values and health protection. Recipe candidate filtering/reranking remains a later Recommendation V2
 phase and must use these stored values, not client-provided copies.
+
+## ADR-018 — Deterministic catalog ranking before optional AI analysis
+
+**Status:** Accepted
+
+**Date:** 2026-10-04
+
+**Decision:** The Recommendation V2 default endpoint ranks catalog recipes locally from validated
+Pantry/Profile state and never calls an LLM. The ranker produces the top ten catalog recipes with
+explainable scoring facts. Any future AI capability is a separate opt-in analysis/chat operation that
+receives only this fixed set and can explain or compare it, but cannot create or select recipes.
+
+**Consequences:** Recommendation remains available without an AI provider and incurs no default
+token cost. Results are bounded to known recipe IDs. Conversation design, AI response validation,
+timeouts and its independent API contract are deferred; this decision does not repair the existing
+legacy recommendation persistence gaps.

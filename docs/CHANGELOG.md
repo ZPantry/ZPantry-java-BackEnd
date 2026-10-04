@@ -1,5 +1,21 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-04 — Monthly image-analysis allowance
+
+- Added a database-backed monthly allowance for food-image, receipt and unified image analysis.
+- Each account receives three attempts by default, resets at the start of the next month in Vietnam
+  time, and gets HTTP 429 once exhausted.
+- The global allowance is configuration-owned through `ZPANTRY_AI_IMAGE_ANALYSIS_MONTHLY_LIMIT`,
+  preparing a future subscription entitlement without modifying the AI client.
+
+## 2026-10-04 — Deterministic Recommendation V2
+
+- Replaced the V2 default AI reranking call with a server-side, explainable catalog ranker.
+- `POST /api/recommendations/v2/meals` now returns up to ten allergy-safe catalog recipes, including
+  match, missing and expiring-soon ingredient facts, without consuming AI tokens.
+- Recorded the separate future AI-analysis/chat boundary: it may explain only the already ranked
+  recipes and must not invent selections outside the catalog result set.
+
 ## 2026-10-04 — Batch pantry entry
 
 - Added authenticated `POST /api/me/pantry/items/batch` so a user can upsert several distinct
