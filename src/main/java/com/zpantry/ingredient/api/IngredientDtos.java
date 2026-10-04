@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.util.Set;
 import java.util.UUID;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 
 public final class IngredientDtos {
@@ -19,15 +20,24 @@ public final class IngredientDtos {
                                      Set<FoodAllergen> allergens) {
     }
 
-    public record CreateIngredientRequest(String name, String category, String unit, BigDecimal caloriesPerUnit,
+    public record CreateIngredientRequest(@NotBlank @Size(max = 200) String name, String category,
+                                          @NotBlank @Size(max = 50) String unit, BigDecimal caloriesPerUnit,
                                           BigDecimal protenPerUnit, BigDecimal fatPerUnit, BigDecimal carbPerUnit,
-                                          String imageUrl, String gradientFrom, String gradientTo,
+                                          BigDecimal defaultQuantity, String imageUrl, String gradientFrom, String gradientTo,
                                           Set<FoodAllergen> allergens) {
         public CreateIngredientRequest(String name, String category, String unit, BigDecimal calories,
                 BigDecimal protein, BigDecimal fat, BigDecimal carb, String image, String from, String to) {
-            this(name, category, unit, calories, protein, fat, carb, image, from, to, Set.of());
+            this(name, category, unit, calories, protein, fat, carb, null, image, from, to, Set.of());
+        }
+
+        public CreateIngredientRequest(String name, String category, String unit, BigDecimal calories,
+                BigDecimal protein, BigDecimal fat, BigDecimal carb, String image, String from, String to,
+                Set<FoodAllergen> allergens) {
+            this(name, category, unit, calories, protein, fat, carb, null, image, from, to, allergens);
         }
     }
+
+    public record CreateIngredientBatchRequest(@NotEmpty java.util.List<@jakarta.validation.Valid CreateIngredientRequest> ingredients) {}
 
     public record UpdateIngredientRequest(String name, String category, String unit, BigDecimal caloriesPerUnit,
                                           BigDecimal proteinPerUnit, BigDecimal fatPerUnit, BigDecimal carbPerUnit,

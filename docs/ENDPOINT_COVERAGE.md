@@ -15,6 +15,7 @@ Pinned legacy commit: `a010fdc5894176596bb195e4fef66db2c09496f1`. Updated 2026-0
 | DELETE `/api/users/{id}` | `UserController.delete` | PARITY |
 | GET `/api/ingredients` | `IngredientController.list` | PARTIALLY_VERIFIED: PostgreSQL search-before-paging, totals and vector-backed persistence covered; HTTP fixture parity missing |
 | POST `/api/ingredients` | `IngredientController.create` | IMPLEMENTED; endpoint parity not captured |
+| POST `/api/ingredients/batch` | `IngredientController.createBatch` | NEW JAVA EXTENSION: atomic JSON batch creation; every item requires a unit and returns unit/default quantity |
 | POST `/api/v2/ingredients` | `IngredientController.createV2` | IMPLEMENTED; external media unverified |
 | PUT `/api/ingredients/{id}` | `IngredientController.update` | PARTIALLY_VERIFIED: duplicate-name behavior covered; HTTP fixture parity missing |
 | PUT `/api/v2/ingredients/{id}` | `IngredientController.updateV2` | PARTIALLY_VERIFIED: deterministic fake upload persistence covered; HTTP fixture and real media remain unverified |
@@ -31,6 +32,7 @@ Pinned legacy commit: `a010fdc5894176596bb195e4fef66db2c09496f1`. Updated 2026-0
 | GET `/api/me/pantry` | `PantryController.get` | IMPLEMENTED; endpoint parity not captured |
 | GET `/api/me/pantry/items` | `PantryController.items` | IMPLEMENTED; endpoint parity not captured |
 | POST `/api/me/pantry/items` | `PantryController.upsert` | IMPLEMENTED; endpoint parity not captured |
+| POST `/api/me/pantry/items/batch` | `PantryController.upsertBatch` | NEW JAVA EXTENSION: atomic authenticated batch upsert; requires active ingredient, positive quantity and unit per item |
 | PUT `/api/me/pantry/items/{itemId}` | `PantryController.update` | IMPLEMENTED; endpoint parity not captured |
 | DELETE `/api/me/pantry/items/{itemId}` | `PantryController.delete` | IMPLEMENTED; endpoint parity not captured |
 | POST `/api/recommendations/meals` | `RecommendationController.meals` | IMPLEMENTED; upstream contract unverified |

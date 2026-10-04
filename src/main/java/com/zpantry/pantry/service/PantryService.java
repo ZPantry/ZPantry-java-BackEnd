@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static com.zpantry.pantry.api.PantryDtos.*;
@@ -47,6 +50,26 @@ public class PantryService {
         var e = repo.findByUserIdAndIngredientIdAndDeletedFalse(u, r.ingredientId()).orElseGet(() -> new PantryItemEntity(u, r.ingredientId()));
         apply(e, r.ingredientId(), r.quantity(), r.unit(), r.expiredAt(), r.storageLocation(), r.note());
         return ok(dto(repo.save(e)), "Pantry item saved.");
+    }
+
+    @Transactional
+    public ApiResponse<List<PantryItemResponse>> upsertBatch(UUID userId, List<UpsertPantryItemRequest> requests) {
+        if (requests == null || requests.isEmpty()) return fail("At least one pantry item is required.");
+        Set<UUID> ingredientIds = new HashSet<>();
+        for (UpsertPantryItemRequest request : requests) {
+            String invalid = invalidItem(request.ingredientId(), request.quantity(), request.unit());
+            if (invalid != null) return fail(invalid);
+            if (!ingredientIds.add(request.ingredientId())) return fail("Each ingredient can appear only once.");
+        }
+
+        var saved = requests.stream().map(request -> {
+            var item = repo.findByUserIdAndIngredientIdAndDeletedFalse(userId, request.ingredientId())
+                    .orElseGet(() -> new PantryItemEntity(userId, request.ingredientId()));
+            apply(item, request.ingredientId(), request.quantity(), request.unit(), request.expiredAt(),
+                    request.storageLocation(), request.note());
+            return dto(repo.save(item));
+        }).toList();
+        return ok(saved, "Pantry items saved.");
     }
 
     @Transactional

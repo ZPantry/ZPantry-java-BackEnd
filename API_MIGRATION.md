@@ -706,6 +706,16 @@ inactive ingredient, non-positive quantity, or blank/oversized unit. On pantry u
 No module covered by MIG-006 is parity-certified until legacy response capture, AI error-contract
 tests, media compensation tests and complete multi-entity behavior tests pass.
 
+### Ingredient batch-create extension
+
+`POST /api/ingredients/batch` is a Java-only additive catalog-management route. It accepts
+`{ "ingredients": [ ... ] }`, where each item uses the existing create-ingredient fields and
+requires a nonblank `name` and `unit`. The operation is all-or-nothing: duplicate names in the
+request or against an active canonical name/alias reject the whole list. On success, the normal
+`ApiResponse` envelope returns an ordered list of `IngredientResponse` values, including `unit`
+and `defaultQuantity` for frontend quantity forms. A missing positive `defaultQuantity` becomes
+`100` for `g`/`ml` and `1` for other units. Existing single-create routes remain available.
+
 ## [MIG-007] Recommendation V2 personalization
 
 **Status:** PLANNED
@@ -732,6 +742,15 @@ The text endpoint no longer calls Ollama or any text AI. It locally segments exp
 uses deterministic canonical-name/alias matching. Its route and preview response shape are unchanged.
 Receipt and food-image endpoints continue to obtain only `ExtractedIngredient[]` from the external
 Gemini service before reusing this exact backend pipeline.
+
+### Pantry batch-upsert extension
+
+`POST /api/me/pantry/items/batch` is a Java-only additive authenticated route. It accepts
+`{ "items": [ ... ] }`, where every item supplies an active `ingredientId`, positive `quantity`,
+and nonblank `unit`, plus optional expiration, location and note fields. All rows are validated
+before mutation; an invalid row or duplicate `ingredientId` rejects the entire request. A matching
+existing pantry row for that user is updated with the same upsert semantics as the single-item route.
+The normal `ApiResponse` envelope returns the saved rows in request order.
 
 ## [MIG-009] Food alias administration
 

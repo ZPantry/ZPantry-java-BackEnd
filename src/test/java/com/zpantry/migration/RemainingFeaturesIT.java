@@ -110,6 +110,36 @@ class RemainingFeaturesIT {
     }
 
     @Test
+    void ingredientBatchCreatesCanonicalUnitsAndDefaultQuantities() {
+        String suffix = UUID.randomUUID().toString();
+        var result = ingredients.createBatch(List.of(
+                new CreateIngredientRequest("Batch Rice " + suffix, "carbohydrate", "g", null, null, null, null, null, null, null),
+                new CreateIngredientRequest("Batch Egg " + suffix, "protein", "quả", null, null, null, null, null, null, null)));
+
+        assertThat(result.success()).isTrue();
+        assertThat(result.data()).hasSize(2);
+        assertThat(result.data()).extracting(item -> item.unit()).containsExactly("g", "quả");
+        assertThat(result.data()).extracting(item -> item.defaultQuantity()).satisfiesExactly(
+                quantity -> assertThat(quantity).isEqualByComparingTo("100"),
+                quantity -> assertThat(quantity).isEqualByComparingTo("1"));
+    }
+
+    @Test
+    void pantryBatchSavesAllDistinctItemsForOneUser() {
+        var first = ingredients.create(new CreateIngredientRequest("Pantry batch rice " + UUID.randomUUID(), "grain", "g", null, null, null, null, null, null, null));
+        var second = ingredients.create(new CreateIngredientRequest("Pantry batch egg " + UUID.randomUUID(), "protein", "quả", null, null, null, null, null, null, null));
+        UUID userId = UUID.randomUUID();
+
+        var result = pantry.upsertBatch(userId, List.of(
+                new UpsertPantryItemRequest(first.data().id(), BigDecimal.valueOf(500), "g", null, "kitchen", null),
+                new UpsertPantryItemRequest(second.data().id(), BigDecimal.valueOf(6), "quả", null, "kitchen", null)));
+
+        assertThat(result.success()).isTrue();
+        assertThat(result.data()).hasSize(2);
+        assertThat(pantry.list(userId, 1, 10).totalItems()).isEqualTo(2);
+    }
+
+    @Test
     void ingredientCreationPersistsBeforeEmbeddingAndPantryRejectsInvalidUpdates() {
         var ingredient = ingredients.create(new CreateIngredientRequest("Validated rice", "grain", "g", null, null, null, null, null, null, null));
         assertThat(ingredient.success()).isTrue();
