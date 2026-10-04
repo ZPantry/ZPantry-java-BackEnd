@@ -6,6 +6,7 @@ import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ public class ImageAnalysisQuotaService {
     private final ZoneId zoneId;
     private final Clock clock;
 
+    @Autowired
     public ImageAnalysisQuotaService(JdbcTemplate jdbc,
             @Value("${zpantry.ai.image-analysis.monthly-limit:3}") int monthlyLimit,
             @Value("${zpantry.ai.image-analysis.zone-id:Asia/Ho_Chi_Minh}") String zoneId) {

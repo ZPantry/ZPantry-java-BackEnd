@@ -1,5 +1,10 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-05 — Production quota-service startup repair
+
+- Explicitly marked the production constructor of the image-analysis quota service for Spring
+  injection, preventing production startup from failing when the test-only constructor is present.
+
 ## 2026-10-04 — Monthly image-analysis allowance
 
 - Added a database-backed monthly allowance for food-image, receipt and unified image analysis.
