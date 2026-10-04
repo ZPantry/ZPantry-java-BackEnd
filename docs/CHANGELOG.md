@@ -1,5 +1,12 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-04 — Initial Vietnamese ingredient and recipe catalog migration
+
+- Added Flyway V7 for an empty Java-owned production database: 15 catalog ingredients, five
+  Vietnamese recipes, and their recipe-ingredient links.
+- The migration is transaction-wrapped, idempotent if replayed manually, and performs no schema
+  operation. It must not be applied to an existing/shared legacy database.
+
 ## 2026-10-04 — Password reset with OTP
 
 - Added anonymous forgot-password and reset-password routes using a secure, five-minute OTP for

@@ -28,7 +28,10 @@ Flyway applies `V1__legacy_schema_baseline.sql`, then Hibernate validates the ma
 run `CREATE EXTENSION vector`, or an administrator must install the extension first.
 
 Tests apply `src/test/resources/db/seed/test-data.sql` explicitly. Spring never loads it
-automatically. No dev/demo seed is supplied because no separate demo-data lifecycle is approved.
+automatically. For an empty Java-owned database, Flyway V7 seeds 15 Vietnamese ingredients, five
+recipes and their required-ingredient links. The migration inserts data only and is idempotent if
+replayed manually. Do not enable this Flyway chain against an existing/shared legacy database
+without explicit approval.
 
 ## Existing legacy database
 

@@ -189,10 +189,10 @@ approval. No option is accepted or implemented by this analysis. Production cuto
 **Status:** Accepted  
 **Date:** 2026-09-19
 
-**Decision:** V1 is the Java schema authority for empty/new databases. Flyway is enabled only by an
-explicit fresh-database profile or test configuration. Hibernate validates and never creates or
-updates schema. Seed data remains outside production migrations. Existing EF databases require a
-read-only catalog comparison and an approved baseline action; `baseline-on-migrate` stays false.
+**Decision:** V1–V7 are the Java authority for empty/new databases. Flyway is enabled only for a
+Java-owned empty database or test configuration. Hibernate validates and never creates or updates
+schema. V7 inserts the initial catalog only; existing EF databases require a read-only catalog
+comparison and an approved baseline action; `baseline-on-migrate` stays false.
 
 **Consequences:** Clean environments are reproducible without weakening legacy-database safety.
 Production adoption remains blocked until the real catalog is verified.

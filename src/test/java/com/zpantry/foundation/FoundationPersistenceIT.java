@@ -39,7 +39,7 @@ class FoundationPersistenceIT {
         var jdbc = new JdbcTemplate(dataSource);
         assertThat(jdbc.queryForObject("SELECT extversion FROM pg_extension WHERE extname='vector'", String.class)).isEqualTo("0.8.2");
         assertThat(jdbc.queryForObject("SELECT to_regclass('flyway_schema_history')", String.class)).isEqualTo("flyway_schema_history");
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM flyway_schema_history WHERE success", Integer.class)).isEqualTo(5);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM flyway_schema_history WHERE success", Integer.class)).isEqualTo(7);
     }
 
     @Test
@@ -54,6 +54,9 @@ class FoundationPersistenceIT {
         assertThat(jdbc.queryForObject("SELECT format_type(a.atttypid,a.atttypmod) FROM pg_attribute a WHERE a.attrelid='recipes'::regclass AND a.attname='embedding'", String.class)).isEqualTo("vector(1536)");
         assertThat(jdbc.queryForObject("SELECT data_type FROM information_schema.columns WHERE table_name='users' AND column_name='id'", String.class)).isEqualTo("uuid");
         assertThat(jdbc.queryForObject("SELECT data_type FROM information_schema.columns WHERE table_name='users' AND column_name='created_at'", String.class)).isEqualTo("timestamp with time zone");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM ingredients WHERE is_deleted=false", Integer.class)).isGreaterThanOrEqualTo(15);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM recipes WHERE source_type='sql-development-seed' AND is_deleted=false", Integer.class)).isEqualTo(5);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM recipe_ingredients ri JOIN recipes r ON r.id=ri.recipe_id WHERE r.source_type='sql-development-seed' AND ri.is_deleted=false", Integer.class)).isEqualTo(21);
     }
 
     @Test
