@@ -1,5 +1,14 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-04 — Password reset with OTP
+
+- Added anonymous forgot-password and reset-password routes using a secure, five-minute OTP for
+  active confirmed accounts, with a five-attempt OTP limit.
+- Reset requires matching new-password confirmation, writes the compatible ASP.NET Identity hash,
+  consumes the OTP, and invalidates the stored refresh token so the account must sign in again.
+- Preserved database safety by reusing the existing OTP columns; recorded this as a Java-only
+  extension because the pinned legacy API has no equivalent routes.
+
 ## 2026-10-03 — Canonical Food and provider-independent Pantry pipeline
 
 - Made `ingredients` the canonical-food catalog and added maintained Food Alias administration

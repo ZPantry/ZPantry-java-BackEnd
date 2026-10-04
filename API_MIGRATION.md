@@ -679,6 +679,19 @@ implemented with the approved blank-input rejection, secure OTP RNG and bounded 
 but remains unverified until Java endpoints pass fixture parity.
 Production cutover is BLOCKED by cross-runtime revocation and actual shared-catalog verification.
 
+### Password-reset extension (new Java capability)
+
+This capability is not present in the pinned legacy contract and is therefore an intentional,
+documented extension rather than a migration-parity claim.
+
+| Route | Request | Result |
+|---|---|---|
+| `POST /api/Auth/forgot-password` | `email` | Always returns the same 200 envelope after valid request validation, avoiding account enumeration. For an active, confirmed account, a cryptographically generated six-digit OTP is sent and expires after five minutes. |
+| `POST /api/Auth/reset-password` | `email`, six-digit `otpCode`, `newPassword` (8–200 chars), `confirmPassword` | Returns 200 only when the OTP is valid, unexpired and both password fields match; otherwise returns the existing 400 failure envelope. Five incorrect OTP attempts consume the code. Success writes an ASP.NET Identity-compatible hash, consumes the OTP, and clears the stored refresh token. |
+
+The existing `users.otp_code` and `users.otp_expired_at` fields are reused only for active,
+confirmed accounts, so no schema migration or destructive database operation is introduced.
+
 ## [MIG-006] Remaining legacy controller surface — batch implementation
 
 **Status:** IMPLEMENTED_NOT_VERIFIED

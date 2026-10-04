@@ -1,6 +1,6 @@
 # ZPantry Java Migration Status
 
-Last update: 2026-09-19 — Authentication contract captured; implementation not started
+Last update: 2026-10-04 — Password-reset OTP extension added; Authentication parity remains unverified
 
 ## Current conclusion
 
@@ -16,7 +16,7 @@ remain NOT_STARTED.
 |---|---|---|
 | Foundation | Java 21 enforced, safe persistence defaults, response records, validation, contract directories, container integration tests | COMPLETE (Foundation readiness scope only) |
 | User | Persistence, DTOs, service, routes, legacy password hashing and Option-B identity boundary implemented and container verified | COMPLETE (dev migration scope); production cutover BLOCKED |
-| Authentication | Register/OTP/login/JWT/refresh/logout implemented with approved corrections and dev revocation | IMPLEMENTED_NOT_VERIFIED |
+| Authentication | Register/OTP/login/JWT/refresh/logout plus a documented Java-only password-reset OTP extension implemented with approved corrections and dev revocation | IMPLEMENTED_NOT_VERIFIED |
 | Ingredient | CRUD, multipart media and embedding persistence implemented; catalog writes now role-protected and creation persists UUID before best-effort embedding | IMPLEMENTED_NOT_VERIFIED |
 | Recipe | CRUD, ingredient links, multipart media and embedding persistence implemented | IMPLEMENTED_NOT_VERIFIED |
 | Pantry | Authenticated owner-scoped list/upsert/update/delete implemented; canonical-food/alias matching resolves text and image extraction before confirmation; text uses no AI | IMPLEMENTED_NOT_VERIFIED |

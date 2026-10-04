@@ -36,6 +36,7 @@ import static com.zpantry.pantry.api.PantryDtos.UpdatePantryItemRequest;
 import static com.zpantry.recipe.api.RecipeDtos.RecipeIngredientRequest;
 import static com.zpantry.recipe.api.RecipeDtos.RecipeRequest;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest(properties = {"spring.jpa.hibernate.ddl-auto=validate", "spring.flyway.enabled=true", "spring.flyway.baseline-on-migrate=false",
         "zpantry.security.jwt.enabled=false", "zpantry.security.jwt.secret=TEST_ONLY_batch_migration_key_longer_than_32_bytes"})
@@ -73,6 +74,24 @@ class RemainingFeaturesIT {
         assertThat(login.refreshToken()).hasSize(86);
         var refreshed = auth.refresh(new RefreshTokenRequest(login.refreshToken()));
         assertThat(refreshed.refreshToken()).isNotEqualTo(login.refreshToken());
+    }
+
+    @Test
+    void passwordResetUsesOtpChangesPasswordAndInvalidatesRefreshToken() {
+        String address = "reset-auth-" + UUID.randomUUID() + "@test.dev";
+        auth.register(new RegisterRequest("Reset", address, "old-password"));
+        assertThat(auth.verify(new VerifyOtpRequest(email.otp, address))).isTrue();
+        var login = auth.login(new LoginRequest(address, "old-password"));
+
+        auth.forgotPassword(new ForgotPasswordRequest(address));
+        String otp = email.otp;
+        String wrongOtp = "000000".equals(otp) ? "000001" : "000000";
+        assertThat(auth.resetPassword(new ResetPasswordRequest(address, otp, "new-password", "different-password"))).isFalse();
+        assertThat(auth.resetPassword(new ResetPasswordRequest(address, wrongOtp, "new-password", "new-password"))).isFalse();
+        assertThat(auth.resetPassword(new ResetPasswordRequest(address, otp, "new-password", "new-password"))).isTrue();
+        assertThatThrownBy(() -> auth.refresh(new RefreshTokenRequest(login.refreshToken())))
+                .isInstanceOf(com.zpantry.authentication.service.AuthenticationFailure.class);
+        assertThat(auth.login(new LoginRequest(address, "new-password")).email()).isEqualTo(address);
     }
 
     @Test
