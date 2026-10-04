@@ -27,8 +27,14 @@ public class IngredientController {
     }
 
     @PostMapping("/api/ingredients")
-    public ApiResponse<IngredientResponse> create(@RequestBody CreateIngredientRequest r) {
+    public ApiResponse<IngredientResponse> create(@Valid @RequestBody CreateIngredientRequest r) {
         return s.create(r);
+    }
+
+    @PostMapping("/api/ingredients/batch")
+    public ApiResponse<java.util.List<IngredientResponse>> createBatch(
+            @Valid @RequestBody CreateIngredientBatchRequest request) {
+        return s.createBatch(request.ingredients());
     }
 
     @PostMapping(value = "/api/v2/ingredients", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)

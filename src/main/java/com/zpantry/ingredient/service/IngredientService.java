@@ -16,6 +16,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static com.zpantry.ingredient.api.IngredientDtos.*;
 
@@ -53,7 +57,7 @@ public class IngredientService {
 
     @Transactional
     public ApiResponse<IngredientResponse> create(CreateIngredientRequest r) {
-        if (r.name() == null || r.name().isBlank()) return fail("Ingredient name is required.");
+        if (!hasRequiredNameAndUnit(r)) return fail("Ingredient name and unit are required.");
         String n = FoodNameNormalizer.normalize(r.name());
         if (repo.existsByNormalizedNameAndDeletedFalse(n) || aliases.existsByNormalizedAliasNameAndDeletedFalse(n)) return fail("Ingredient already exists.");
         IngredientEntity e = new IngredientEntity(r.name());
@@ -61,6 +65,31 @@ public class IngredientService {
         e = repo.save(e);
         embed(e);
         return ok(dto(e), "Ingredient created.");
+    }
+
+    @Transactional
+    public ApiResponse<List<IngredientResponse>> createBatch(List<CreateIngredientRequest> requests) {
+        if (requests == null || requests.isEmpty()) return fail("At least one ingredient is required.");
+
+        Set<String> normalizedNames = new HashSet<>();
+        for (CreateIngredientRequest request : requests) {
+            if (!hasRequiredNameAndUnit(request)) return fail("Each ingredient must have a name and unit.");
+            String normalizedName = FoodNameNormalizer.normalize(request.name());
+            if (!normalizedNames.add(normalizedName)
+                    || repo.existsByNormalizedNameAndDeletedFalse(normalizedName)
+                    || aliases.existsByNormalizedAliasNameAndDeletedFalse(normalizedName)) {
+                return fail("Ingredient already exists: " + request.name().trim());
+            }
+        }
+
+        var created = requests.stream().map(request -> {
+            IngredientEntity ingredient = new IngredientEntity(request.name());
+            apply(ingredient, request);
+            ingredient = repo.save(ingredient);
+            embed(ingredient);
+            return dto(ingredient);
+        }).toList();
+        return ok(created, "Ingredients created.");
     }
 
     @Transactional
@@ -120,11 +149,28 @@ public class IngredientService {
         if (r.protenPerUnit() != null) e.proteinPerUnit = r.protenPerUnit();
         if (r.fatPerUnit() != null) e.fatPerUnit = r.fatPerUnit();
         if (r.carbPerUnit() != null) e.carbPerUnit = r.carbPerUnit();
+        if (r.defaultQuantity() != null && r.defaultQuantity().signum() > 0) {
+            e.defaultQuantity = r.defaultQuantity();
+        } else if (e.defaultQuantity == null) {
+            e.defaultQuantity = defaultQuantityFor(r.unit());
+        }
         if (r.imageUrl() != null) e.imageUrl = r.imageUrl();
         if (r.gradientFrom() != null) e.gradientFrom = r.gradientFrom();
         if (r.gradientTo() != null) e.gradientTo = r.gradientTo();
         if (r.allergens() != null)
             e.allergens = r.allergens().stream().map(Enum::name).sorted().collect(java.util.stream.Collectors.joining(","));
+    }
+
+    private static boolean hasRequiredNameAndUnit(CreateIngredientRequest request) {
+        return request != null && request.name() != null && !request.name().isBlank()
+                && request.unit() != null && !request.unit().isBlank();
+    }
+
+    private static BigDecimal defaultQuantityFor(String unit) {
+        return switch (unit.trim().toLowerCase()) {
+            case "g", "gram", "grams", "ml", "milliliter", "milliliters" -> BigDecimal.valueOf(100);
+            default -> BigDecimal.ONE;
+        };
     }
 
     private void embed(IngredientEntity ingredient) {

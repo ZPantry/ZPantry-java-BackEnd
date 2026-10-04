@@ -1,5 +1,19 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-04 — Batch pantry entry
+
+- Added authenticated `POST /api/me/pantry/items/batch` so a user can upsert several distinct
+  pantry ingredients at once without cross-user access.
+- All items are validated before writes. A bad item or duplicate ingredient rejects the whole
+  batch; successful responses return the saved quantity and unit for each row.
+
+## 2026-10-04 — Batch ingredient catalog creation
+
+- Added atomic `POST /api/ingredients/batch` for catalog administrators to create a list of
+  ingredients in one request while keeping the single-create route available.
+- A name and unit are now required for JSON ingredient creation. Responses always expose `unit`
+  and `defaultQuantity`; missing defaults become 100 for gram/millilitre units and 1 otherwise.
+
 ## 2026-10-04 — Pantry JSON update compatibility repair
 
 - Aligned the Pantry update controller's `JsonNode` and `ObjectMapper` with the Jackson 3 types
