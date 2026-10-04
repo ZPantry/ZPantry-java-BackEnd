@@ -44,8 +44,9 @@ remain NOT_STARTED.
 - Explicit validation starter and provider test. Global exception handling and trace-ID
   generation were audited and deferred until actual endpoint/error fixtures justify policy;
   traceId remains a response field. No new header contract or blanket error mapping.
-- JPA uses validate; SQL initialization never; Flyway disabled, auto-baseline false, clean
-  disabled; Open Session in View false. No runtime migration/schema/extension creation.
+- JPA uses validate; SQL initialization never; Flyway auto-baseline false and clean disabled.
+  V1–V7 may run only for an explicitly selected empty Java-owned database; V7 seeds the initial
+  ingredient/recipe catalog and performs no schema operation. Open Session in View is false.
 - Datasource configuration is external only, with no developer/legacy URL default. Private
   .env and application-dev files are ignored. No secrets copied.
 - Removed unused Spring AI BOM/vector-store starter. JDBC PostgreSQL driver and Flyway

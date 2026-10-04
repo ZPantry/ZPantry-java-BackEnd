@@ -3,8 +3,8 @@
 ## Java migration ownership — 2026-09-19
 
 `src/main/resources/db/migration/V1__legacy_schema_baseline.sql` is authoritative for empty/new
-databases. It creates pgvector and the 13 mapped tables. Hibernate remains validation-only.
-Default configuration keeps Flyway disabled; `application-fresh.properties` is the explicit opt-in.
+databases. It creates pgvector and the 13 mapped tables. V2–V6 add Java-owned columns and V7
+inserts the initial ingredient/recipe catalog. Hibernate remains validation-only.
 
 The former test `foundation.sql` duplicated the schema and had drift, so it was removed. Every
 Testcontainers persistence context now starts empty and runs V1 before Hibernate validation. Test

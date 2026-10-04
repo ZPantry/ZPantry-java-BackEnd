@@ -2,9 +2,9 @@
 
 ## Schema ownership for new databases
 
-Flyway owns schema creation for explicitly selected fresh databases. Hibernate owns mapping
-validation (`ddl-auto=validate`). Default runtime configuration keeps Flyway disabled to protect
-unverified EF databases; the `fresh` profile opts in. Synthetic seed data is outside Flyway.
+Flyway owns schema creation for explicitly selected Java-owned empty databases. Hibernate owns
+mapping validation (`ddl-auto=validate`). Existing/unverified EF databases must keep Flyway
+disabled. V7 seeds only the initial ingredient/recipe catalog for empty Java-owned databases.
 
 Developer launches without an explicitly active profile use the `dev` default and repository
 `compose.yaml`. Deployments must activate their environment profile and provide their datasource.
