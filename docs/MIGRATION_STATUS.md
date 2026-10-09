@@ -1,6 +1,6 @@
 # ZPantry Java Migration Status
 
-Last update: 2026-10-04 — Password-reset OTP extension added; Authentication parity remains unverified
+Last update: 2026-10-09 — PayOS mobile deep-link return added; payment activation parity remains unverified
 
 ## Current conclusion
 
@@ -21,12 +21,13 @@ remain NOT_STARTED.
 | Recipe | CRUD, ingredient links, multipart media and embedding persistence implemented | IMPLEMENTED_NOT_VERIFIED |
 | Pantry | Authenticated owner-scoped list/upsert/update/delete implemented; canonical-food/alias matching resolves text and image extraction before confirmation; text uses no AI | IMPLEMENTED_NOT_VERIFIED |
 | Recommendation | Legacy routes/persistence boundary plus a server-derived, deterministic V2 ranker implemented; optional AI analysis/chat remains unimplemented | IMPLEMENTED_NOT_VERIFIED |
-| Today Menu | Owner-scoped menu, completion, cooking/pantry logs implemented | IMPLEMENTED_NOT_VERIFIED |
+| Today Menu | Owner-scoped menu, scaled pantry availability, shopping-list handoff, completion, cooking/pantry logs implemented | IMPLEMENTED_NOT_VERIFIED |
 | Media | Cloudinary port/adapter and upload/delete routes implemented | IMPLEMENTED_NOT_VERIFIED |
-| Cooking / Pantry Usage Logs | No business implementation | NOT_STARTED |
+| Cooking / Pantry Usage Logs | Completion persists pantry-usage rows and cooking-log reads return them | IMPLEMENTED_NOT_VERIFIED |
 | AI Integration / Embedding Backfill | HTTP client and ingredient/recipe embedding persistence implemented; Gemini receipt/food-image extraction passes the canonical catalog-ID boundary; text import is local (no Ollama/text AI); image analysis has a configurable per-account monthly quota; backfill command absent | IMPLEMENTED_NOT_VERIFIED |
 | Vector Search | No implementation; legacy service remains a stub | NOT_STARTED |
 | Docker / Deployment | Java 21 multi-stage backend Dockerfile and workspace Compose build wiring implemented; production deployment configuration remains environment-owned | IMPLEMENTED_NOT_VERIFIED |
+| Subscription / PayOS return | Pending PayOS checkout records now use public backend return/cancel pages that return an installed mobile app through the `zpantry` scheme; provider webhook activation remains outstanding | IMPLEMENTED_NOT_VERIFIED |
 
 ## Foundation inventory
 

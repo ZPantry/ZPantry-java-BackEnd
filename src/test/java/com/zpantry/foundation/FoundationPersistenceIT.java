@@ -39,7 +39,7 @@ class FoundationPersistenceIT {
         var jdbc = new JdbcTemplate(dataSource);
         assertThat(jdbc.queryForObject("SELECT extversion FROM pg_extension WHERE extname='vector'", String.class)).isEqualTo("0.8.2");
         assertThat(jdbc.queryForObject("SELECT to_regclass('flyway_schema_history')", String.class)).isEqualTo("flyway_schema_history");
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM flyway_schema_history WHERE success", Integer.class)).isEqualTo(7);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM flyway_schema_history WHERE success", Integer.class)).isEqualTo(10);
     }
 
     @Test
@@ -47,7 +47,7 @@ class FoundationPersistenceIT {
         var jdbc = new JdbcTemplate(dataSource);
         var expected = java.util.Set.of("users", "ingredients", "ingredient_aliases", "recipes", "recipe_ingredients",
                 "user_pantry_items", "meal_recommendations", "meal_recommendation_items", "recommendation_feedbacks",
-                "media_assets", "today_menu_items", "cooking_logs", "pantry_usage_logs");
+                "media_assets", "today_menu_items", "cooking_logs", "pantry_usage_logs", "shopping_list_items");
         var actual = new java.util.HashSet<>(jdbc.queryForList("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'", String.class));
         assertThat(actual).containsAll(expected);
         assertThat(jdbc.queryForObject("SELECT format_type(a.atttypid,a.atttypmod) FROM pg_attribute a WHERE a.attrelid='ingredients'::regclass AND a.attname='embedding'", String.class)).isEqualTo("vector(1536)");

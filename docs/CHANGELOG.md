@@ -1,5 +1,26 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-09 — PayOS mobile deep-link return
+
+- Added public, no-cache browser landing pages at `/payment/success` and `/payment/cancel`.
+  They only return the user to the installed `zpantry` application and do not activate a plan.
+- Documented public HTTPS `returnUrl`/`cancelUrl` examples in `.env.example` and the PayOS
+  integration guide. Provider webhook verification remains required before a payment is accepted.
+
+## 2026-10-09 — Quick AI meal suggestion quota ordering
+
+- Meal-suggestion quota consumption now occurs only after the recommendation service produces a
+  successful response. A failed recommendation no longer consumes a subscription allowance.
+
+## 2026-10-09 — Today-menu pantry availability and shopping-list handoff
+
+- Added owner-scoped availability for a today-menu item, calculated from compatible pantry rows
+  after scaling every recipe quantity to the selected servings.
+- Added an idempotent server-derived action that stores missing ingredients in a pending shopping
+  list; the client cannot provide or alter shortage quantities.
+- Completion continues when a user confirms a shortage, consumes only stock that exists, and now
+  scales pantry deduction with serving size. Cooking-log reads include saved pantry-usage rows.
+
 ## 2026-10-05 — Production quota-service startup repair
 
 - Explicitly marked the production constructor of the image-analysis quota service for Spring

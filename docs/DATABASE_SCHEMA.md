@@ -561,3 +561,11 @@ Flyway V6 adds nullable `birth_date`, `activity_level`, `goals`, `bmr`, `tdee`,
 used only by the V2 profile/recommendation work; existing `age`, `goal`, `diet_preference`, and
 `allergies` retain their legacy meaning. Flyway must only be run against a Java-owned fresh/development
 database until the existing-catalog baseline policy is approved.
+
+## Shopping-list rows — 2026-10-09
+
+Flyway V10 adds `shopping_list_items` for shortages calculated from an owner's today-menu item.
+Each row retains the source item, canonical ingredient, requested quantity/unit, and `PENDING`
+status. The unique key on `(user_id, today_menu_item_id, ingredient_id, unit)` makes repeat adds
+idempotent. This is additive Java-owned schema and remains subject to the baseline policy for
+shared legacy databases.

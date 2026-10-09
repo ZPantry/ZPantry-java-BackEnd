@@ -5,6 +5,7 @@ import com.zpantry.recommendation.api.RecommendationDtos.*;
 import com.zpantry.recommendation.service.RecommendationService;
 import com.zpantry.recommendation.service.PersonalizedRecommendationService;
 import com.zpantry.user.security.AuthenticatedUserResolver;
+import com.zpantry.subscription.service.SubscriptionService;
 
 import java.util.*;
 
@@ -17,11 +18,13 @@ public class RecommendationController {
     private final RecommendationService s;
     private final AuthenticatedUserResolver ids;
     private final PersonalizedRecommendationService personalized;
+    private final SubscriptionService subscriptions;
 
-    public RecommendationController(RecommendationService s, AuthenticatedUserResolver i, PersonalizedRecommendationService personalized) {
+    public RecommendationController(RecommendationService s, AuthenticatedUserResolver i, PersonalizedRecommendationService personalized, SubscriptionService subscriptions) {
         this.s = s;
         ids = i;
         this.personalized = personalized;
+        this.subscriptions = subscriptions;
     }
 
     private UUID id(Authentication a) {
@@ -30,12 +33,16 @@ public class RecommendationController {
 
     @PostMapping("/meals")
     public ApiResponse<Map<String, Object>> meals(Authentication a, @RequestBody RecommendMealRequest r) {
-        return s.recommend(id(a), r);
+        var result = s.recommend(id(a), r);
+        if (result.success()) subscriptions.consume(id(a), SubscriptionService.MEAL_SUGGESTION);
+        return result;
     }
 
     @PostMapping("/v2/meals")
     public ApiResponse<PersonalizedRecommendationResponse> personalized(Authentication a, @RequestBody(required = false) PersonalizedRecommendationRequest request) {
-        return new ApiResponse<>(true, "Personalized meal recommendations generated.", personalized.recommend(id(a), request), null, "", java.time.Instant.now());
+        var result = personalized.recommend(id(a), request);
+        subscriptions.consume(id(a), SubscriptionService.MEAL_SUGGESTION);
+        return new ApiResponse<>(true, "Personalized meal recommendations generated.", result, null, "", java.time.Instant.now());
     }
 
     @PostMapping("/missing-ingredients")

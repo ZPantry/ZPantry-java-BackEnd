@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
+import java.sql.Timestamp;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ public class ImageAnalysisQuotaService {
         LocalDate monthStart = YearMonth.now(clock.withZone(zoneId)).atDay(1);
         try {
             Integer used = jdbc.queryForObject(CONSUME_SQL, Integer.class, UUID.randomUUID(),
-                    clock.instant(), userId, monthStart, monthlyLimit);
+                    Timestamp.from(clock.instant()), userId, monthStart, monthlyLimit);
             if (used == null) throw new ImageAnalysisQuotaExceededException();
         } catch (EmptyResultDataAccessException exception) {
             throw new ImageAnalysisQuotaExceededException();

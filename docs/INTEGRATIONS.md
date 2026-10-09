@@ -51,6 +51,27 @@ Java configuration must use environment variables or externalized configuration.
 
 Do not copy legacy Cloudinary secrets.
 
+## Subscription payments
+
+Subscription checkout currently uses PayOS. Merchant credentials are environment-owned. The Java
+backend records pending transactions but does not treat a browser redirect as payment proof; an
+authenticated provider webhook must activate Z-Plus.
+
+PayOS `returnUrl` and `cancelUrl` must be public HTTPS backend URLs, not mobile deep links directly:
+
+```text
+https://api.example.com/payment/success
+https://api.example.com/payment/cancel
+```
+
+Those public pages immediately open `zpantry://payment/success` or
+`zpantry://payment/cancel`, with a visible “Mở Z-Pantry” fallback link. Configure them through
+`ZPANTRY_PAYMENT_PAYOS_RETURN_URL` and `ZPANTRY_PAYMENT_PAYOS_CANCEL_URL`. Redirect parameters
+are intentionally ignored; the redirect is not trusted payment evidence.
+
+Configure provider-specific webhook verification before accepting live payments. Never expose
+merchant secrets to the mobile application.
+
 ---
 
 ## 3. Email / OTP
