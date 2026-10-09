@@ -27,8 +27,9 @@ public class TodayMenuService {
     private final RecipeIngredientRepository recipeIngredients;
     private final PantryItemRepository pantry;
     private final IngredientRepository ingredients;
+    private final ShoppingListItemRepository shoppingList;
 
-    public TodayMenuService(TodayMenuItemRepository m, CookingLogRepository l, PantryUsageLogRepository u, MediaStoragePort s, RecipeRepository recipes, RecipeIngredientRepository recipeIngredients, PantryItemRepository pantry, IngredientRepository ingredients) {
+    public TodayMenuService(TodayMenuItemRepository m, CookingLogRepository l, PantryUsageLogRepository u, MediaStoragePort s, RecipeRepository recipes, RecipeIngredientRepository recipeIngredients, PantryItemRepository pantry, IngredientRepository ingredients, ShoppingListItemRepository shoppingList) {
         menus = m;
         logs = l;
         usage = u;
@@ -37,6 +38,7 @@ public class TodayMenuService {
         this.recipeIngredients = recipeIngredients;
         this.pantry = pantry;
         this.ingredients = ingredients;
+        this.shoppingList = shoppingList;
     }
 
     private static <T> ApiResponse<T> ok(T d, String m) {
@@ -57,6 +59,38 @@ public class TodayMenuService {
     public ApiResponse<TodayMenuItemResponse> get(UUID u, UUID id) {
         var e = menus.findByIdAndUserIdAndDeletedFalse(id, u).orElse(null);
         return e == null ? fail("Today menu item not found.") : ok(dto(e), "");
+    }
+
+    public ApiResponse<IngredientAvailabilityResponse> ingredientAvailability(UUID userId, UUID itemId) {
+        var item = menus.findByIdAndUserIdAndDeletedFalse(itemId, userId).orElse(null);
+        if (item == null) return fail("Today menu item not found.");
+        var recipeId = resolvedRecipeId(item);
+        if (recipeId == null || recipes.findByIdAndDeletedFalse(recipeId).isEmpty()) return fail("Recipe not found.");
+        return ok(availability(userId, item, recipeId), "");
+    }
+
+    @Transactional
+    public ApiResponse<List<ShoppingListItemResponse>> addMissingIngredientsToShoppingList(UUID userId, UUID itemId) {
+        var item = menus.findByIdAndUserIdAndDeletedFalse(itemId, userId).orElse(null);
+        if (item == null) return fail("Today menu item not found.");
+        var recipeId = resolvedRecipeId(item);
+        if (recipeId == null || recipes.findByIdAndDeletedFalse(recipeId).isEmpty()) return fail("Recipe not found.");
+        var missing = availability(userId, item, recipeId).ingredients().stream()
+                .filter(line -> line.missingQuantity().signum() > 0).toList();
+        var saved = missing.stream().map(line -> {
+            var entity = shoppingList.findByUserIdAndTodayMenuItemIdAndIngredientIdAndUnitAndDeletedFalse(
+                    userId, item.getId(), line.ingredientId(), line.unit()).orElseGet(ShoppingListItemEntity::new);
+            entity.userId = userId;
+            entity.todayMenuItemId = item.getId();
+            entity.ingredientId = line.ingredientId();
+            entity.ingredientName = line.ingredientName();
+            entity.quantity = line.missingQuantity();
+            entity.unit = line.unit();
+            entity.status = "PENDING";
+            entity.touch();
+            return shoppingDto(shoppingList.save(entity));
+        }).toList();
+        return ok(saved, saved.isEmpty() ? "Pantry already has all required ingredients." : "Missing ingredients added to shopping list.");
     }
 
     @Transactional
@@ -89,7 +123,7 @@ public class TodayMenuService {
         var e = menus.findByIdAndUserIdAndDeletedFalse(id, u).orElse(null);
         if (e == null) return fail("Today menu item not found.");
         if ("Cooked".equals(e.status)) return fail("This meal has already been completed.");
-        UUID recipeId = e.recipeId != null ? e.recipeId : e.mealId;
+        UUID recipeId = resolvedRecipeId(e);
         if (recipeId == null) return fail("This today menu item does not have a resolved recipe.");
         if (recipes.findByIdAndDeletedFalse(recipeId).isEmpty()) return fail("Recipe not found.");
         var up = media.upload(r.imageFile(), "cooking");
@@ -107,6 +141,7 @@ public class TodayMenuService {
         List<Object> consumed = new ArrayList<>(), updated = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
         var pantryRows = pantry.findAllByUserIdAndDeletedFalseOrderByExpiredAtAscCreatedAtAsc(u);
+        var recipe = recipes.findByIdAndDeletedFalse(recipeId).orElseThrow();
         for (var needed : recipeIngredients.findAllByRecipeIdAndDeletedFalse(recipeId)) {
             if (!needed.required) continue;
             String name = ingredients.findById(needed.ingredientId).map(x -> x.name).orElse(needed.ingredientId.toString());
@@ -114,7 +149,7 @@ public class TodayMenuService {
                 warnings.add("Ingredient " + name + " does not have a usable quantity.");
                 continue;
             }
-            var remaining = needed.quantity;
+            var remaining = scaledQuantity(needed.quantity, e.servingSize, recipe.servingSize);
             for (var item : pantryRows) {
                 if (remaining.signum() <= 0) break;
                 if (!item.ingredientId.equals(needed.ingredientId)) continue;
@@ -153,11 +188,56 @@ public class TodayMenuService {
         pi = Math.max(1, pi);
         ps = ps <= 0 ? 10 : Math.min(ps, 100);
         var p = logs.findAllByUserIdAndDeletedFalse(u, PageRequest.of(pi - 1, ps, Sort.by("cookedAt").descending()));
-        var d = p.stream().map(l -> new CookingLogResponse(l.getId(), l.todayMenuItemId, l.mealId, l.recipeId, l.mealName, l.imageUrl, l.imagePublicId, l.cookedAt, l.rating, l.note, List.of())).toList();
+        var d = p.stream().map(l -> new CookingLogResponse(l.getId(), l.todayMenuItemId, l.mealId, l.recipeId, l.mealName, l.imageUrl, l.imagePublicId, l.cookedAt, l.rating, l.note, usage.findAllByCookingLogIdAndDeletedFalseOrderByCreatedAtAsc(l.getId()).stream().<Object>map(this::usageDto).toList())).toList();
         return PagedResponse.successPage(d, pi, ps, (int) p.getTotalElements(), "", "", Instant.now());
     }
 
     private TodayMenuItemResponse dto(TodayMenuItemEntity e) {
         return new TodayMenuItemResponse(e.getId(), e.mealId, e.recipeId, e.mealName, e.mealType, e.servingSize, e.plannedDate, e.status, e.note, e.cookedAt, e.imageUrl, e.imagePublicId, e.getCreatedAt());
+    }
+
+    private UUID resolvedRecipeId(TodayMenuItemEntity item) {
+        return item.recipeId != null ? item.recipeId : item.mealId;
+    }
+
+    private IngredientAvailabilityResponse availability(UUID userId, TodayMenuItemEntity item, UUID recipeId) {
+        var recipe = recipes.findByIdAndDeletedFalse(recipeId).orElseThrow();
+        var pantryRows = pantry.findAllByUserIdAndDeletedFalseOrderByExpiredAtAscCreatedAtAsc(userId);
+        var lines = new ArrayList<IngredientAvailability>();
+        for (var needed : recipeIngredients.findAllByRecipeIdAndDeletedFalse(recipeId)) {
+            if (!needed.required || needed.quantity == null || needed.quantity.signum() <= 0) continue;
+            var required = scaledQuantity(needed.quantity, item.servingSize, recipe.servingSize);
+            var matching = pantryRows.stream().filter(row -> row.ingredientId.equals(needed.ingredientId)).toList();
+            var compatible = matching.stream().filter(row -> unitsMatch(row.unit, needed.unit))
+                    .map(row -> row.quantity == null ? java.math.BigDecimal.ZERO : row.quantity)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+            var missing = required.subtract(compatible).max(java.math.BigDecimal.ZERO);
+            var name = ingredients.findById(needed.ingredientId).map(x -> x.name).orElse(needed.ingredientId.toString());
+            var unitMismatch = !matching.isEmpty() && compatible.signum() == 0;
+            lines.add(new IngredientAvailability(needed.ingredientId, name, required, compatible, missing,
+                    needed.unit == null ? "" : needed.unit, unitMismatch));
+        }
+        return new IngredientAvailabilityResponse(item.getId(), lines.stream().allMatch(line -> line.missingQuantity().signum() == 0), lines);
+    }
+
+    private java.math.BigDecimal scaledQuantity(java.math.BigDecimal quantity, Integer selectedServings, Integer recipeServings) {
+        if (selectedServings == null || selectedServings <= 0 || recipeServings == null || recipeServings <= 0) return quantity;
+        return quantity.multiply(java.math.BigDecimal.valueOf(selectedServings))
+                .divide(java.math.BigDecimal.valueOf(recipeServings), 4, java.math.RoundingMode.HALF_UP);
+    }
+
+    private boolean unitsMatch(String pantryUnit, String recipeUnit) {
+        return pantryUnit == null || recipeUnit == null || pantryUnit.equalsIgnoreCase(recipeUnit);
+    }
+
+    private Map<String, Object> usageDto(PantryUsageLogEntity row) {
+        return Map.of("id", row.getId(), "ingredientId", row.ingredientId, "ingredientName", row.ingredientName,
+                "quantityUsed", row.quantityUsed, "unit", row.unit == null ? "" : row.unit,
+                "actionType", row.actionType, "warning", row.warning == null ? "" : row.warning);
+    }
+
+    private ShoppingListItemResponse shoppingDto(ShoppingListItemEntity item) {
+        return new ShoppingListItemResponse(item.getId(), item.todayMenuItemId, item.ingredientId,
+                item.ingredientName, item.quantity, item.unit, item.status, item.getCreatedAt());
     }
 }

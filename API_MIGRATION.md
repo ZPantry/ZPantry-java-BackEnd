@@ -845,3 +845,55 @@ The legacy `/api/users/{userId}/profile` API remains active and unchanged.
 
 No existing client needs to migrate. A Recommendation V2 client may create or replace its structured
 profile through this optional V2 endpoint before requesting meal suggestions.
+
+## [MIG-012] Today-menu ingredient availability and shopping-list action
+
+**Status:** IMPLEMENTED_NOT_VERIFIED
+
+**Breaking Change:** NO
+
+**Date:** 2026-10-09
+
+### New API
+
+```http
+GET  /api/me/today-menu/items/{itemId}/ingredient-availability
+POST /api/me/today-menu/items/{itemId}/missing-ingredients
+```
+
+Both routes require the authenticated owner. Availability returns `sufficient` and each required
+ingredient's required, compatible available, and missing quantities after scaling for selected
+servings. The POST operation recomputes shortages on the server and creates or refreshes pending
+shopping-list rows; it never accepts a client-supplied quantity. Completion remains possible after
+the client obtains confirmation, and only compatible quantities that actually exist are consumed.
+
+### Frontend Action Required
+
+Show shortages before completion and offer the shopping-list action. Keep the completion action
+available after a user confirms that the meal was still cooked.
+
+## [MIG-013] PayOS browser-to-mobile return pages
+
+**Status:** IMPLEMENTED_NOT_VERIFIED
+
+**Breaking Change:** NO
+
+**Date:** 2026-10-09
+
+### New API
+
+```http
+GET /payment/success
+GET /payment/cancel
+```
+
+These are public `text/html` browser landing pages used as the PayOS return and cancellation URLs.
+They immediately attempt to open `zpantry://payment/success` or `zpantry://payment/cancel` and
+also render an explicit fallback link for the installed Z-Pantry app. They ignore all redirect
+parameters and do not change a payment or subscription state.
+
+### Frontend Action Required
+
+Configure the mobile `zpantry` URL scheme to route `payment/success` and `payment/cancel` to the
+subscription screen, then reload the current subscription after the app returns. The server webhook
+remains the only trusted path that may activate Z-Plus.

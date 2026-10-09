@@ -3,6 +3,9 @@ package com.zpantry.pantryimport.api;
 import com.zpantry.common.api.ApiResponse;
 import com.zpantry.pantry.api.NaturalLanguagePantryController;
 import com.zpantry.pantryimport.service.ImageAnalysisQuotaExceededException;
+import com.zpantry.subscription.api.SubscriptionController;
+import com.zpantry.recommendation.api.RecommendationController;
+import com.zpantry.subscription.service.SubscriptionLimitExceededException;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.time.Instant;
@@ -11,7 +14,7 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
-@RestControllerAdvice(assignableTypes = {PantryImportController.class, IngredientImageV2Controller.class, NaturalLanguagePantryController.class})
+@RestControllerAdvice(assignableTypes = {PantryImportController.class, IngredientImageV2Controller.class, NaturalLanguagePantryController.class, SubscriptionController.class, RecommendationController.class})
 public class PantryImportExceptionHandler {
     @ExceptionHandler({IllegalArgumentException.class, MaxUploadSizeExceededException.class})
     ResponseEntity<ApiResponse<Void>> invalid(RuntimeException exception, HttpServletRequest request) {
@@ -27,6 +30,11 @@ public class PantryImportExceptionHandler {
     @ExceptionHandler(ImageAnalysisQuotaExceededException.class)
     ResponseEntity<ApiResponse<Void>> quotaExceeded(ImageAnalysisQuotaExceededException exception, HttpServletRequest request) {
         return response(HttpStatus.TOO_MANY_REQUESTS, "Monthly image analysis limit reached. Try again next month.", request);
+    }
+
+    @ExceptionHandler(SubscriptionLimitExceededException.class)
+    ResponseEntity<ApiResponse<Void>> subscriptionQuotaExceeded(SubscriptionLimitExceededException exception, HttpServletRequest request) {
+        return response(HttpStatus.TOO_MANY_REQUESTS, "Usage quota reached. Upgrade to Z-Plus or wait for the next reset.", request);
     }
 
     private ResponseEntity<ApiResponse<Void>> response(HttpStatus status, String message, HttpServletRequest request) {

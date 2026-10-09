@@ -1,6 +1,7 @@
 package com.zpantry.todaymenu.api;
 
 import java.time.*;
+import java.math.BigDecimal;
 import java.util.*;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -28,5 +29,19 @@ public final class TodayMenuDtos {
 
     public record TodayMenuCompletionResponse(CookingLogResponse cookingLog, List<Object> consumedIngredients,
                                               List<Object> updatedPantryItems, List<String> warnings) {
+    }
+
+    public record IngredientAvailabilityResponse(UUID todayMenuItemId, boolean sufficient,
+                                                 List<IngredientAvailability> ingredients) {
+    }
+
+    public record IngredientAvailability(UUID ingredientId, String ingredientName, BigDecimal requiredQuantity,
+                                         BigDecimal availableQuantity, BigDecimal missingQuantity, String unit,
+                                         boolean unitMismatch) {
+    }
+
+    public record ShoppingListItemResponse(UUID id, UUID todayMenuItemId, UUID ingredientId,
+                                           String ingredientName, BigDecimal quantity, String unit,
+                                           String status, Instant createdAt) {
     }
 }

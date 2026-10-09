@@ -22,10 +22,12 @@ import static com.zpantry.pantry.api.PantryDtos.*;
 public class PantryService {
     private final PantryItemRepository repo;
     private final IngredientRepository ingredients;
+    private final ExpiredPantryCleanupService cleanup;
 
-    public PantryService(PantryItemRepository r, IngredientRepository i) {
+    public PantryService(PantryItemRepository r, IngredientRepository i, ExpiredPantryCleanupService cleanup) {
         repo = r;
         ingredients = i;
+        this.cleanup = cleanup;
     }
 
     private static <T> ApiResponse<T> ok(T d, String m) {
@@ -37,6 +39,8 @@ public class PantryService {
     }
 
     public PagedResponse<PantryItemResponse> list(UUID u, int pi, int ps) {
+        // Ensures overdue rows are never returned even before the scheduled midnight sweep.
+        cleanup.removeExpiredMoreThanOneDayAgo();
         pi = Math.max(1, pi);
         ps = ps <= 0 ? 10 : Math.min(ps, 100);
         var p = repo.findAllByUserIdAndDeletedFalse(u, PageRequest.of(pi - 1, ps, Sort.by("expiredAt").ascending().and(Sort.by("createdAt"))));
