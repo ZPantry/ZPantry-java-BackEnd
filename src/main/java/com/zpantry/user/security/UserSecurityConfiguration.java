@@ -33,7 +33,7 @@ public class UserSecurityConfiguration {
         http.cors(org.springframework.security.config.Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/Auth/register", "/api/Auth/verify-otp", "/api/Auth/login", "/api/Auth/refresh-token").permitAll()
+                        .requestMatchers("/api/Auth/register", "/api/Auth/verify-otp", "/api/Auth/login", "/api/Auth/refresh-token", "/api/payment/payos/webhook").permitAll()
                         .requestMatchers("/api/Auth/logout", "/api/me/**", "/api/recommendations/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v2/ingredients/analyze-image").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/ingredients", "/api/ingredients/**", "/api/v2/ingredients", "/api/recipes", "/api/v2/recipes", "/api/media/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "MANAGER")
@@ -56,7 +56,7 @@ public class UserSecurityConfiguration {
         http.cors(org.springframework.security.config.Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/Auth/register", "/api/Auth/verify-otp", "/api/Auth/login", "/api/Auth/refresh-token").permitAll()
+                        .requestMatchers("/api/Auth/register", "/api/Auth/verify-otp", "/api/Auth/login", "/api/Auth/refresh-token", "/api/payment/payos/webhook").permitAll()
                         .requestMatchers("/api/Auth/logout", "/api/me/**", "/api/recommendations/**").denyAll()
                         .requestMatchers(HttpMethod.POST, "/api/v2/ingredients/analyze-image").denyAll()
                         .requestMatchers(HttpMethod.POST, "/api/ingredients", "/api/ingredients/**", "/api/v2/ingredients", "/api/recipes", "/api/v2/recipes", "/api/media/**").denyAll()

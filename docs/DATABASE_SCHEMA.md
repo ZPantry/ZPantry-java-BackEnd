@@ -569,3 +569,12 @@ Each row retains the source item, canonical ingredient, requested quantity/unit,
 status. The unique key on `(user_id, today_menu_item_id, ingredient_id, unit)` makes repeat adds
 idempotent. This is additive Java-owned schema and remains subject to the baseline policy for
 shared legacy databases.
+
+## Subscription and payment rows — 2026-10-10
+
+Flyway V9 adds `subscription_plans`, `user_subscriptions`, `subscription_usage`, and
+`payment_transactions` for the Java-owned Z-Plus checkout flow. PayOS payments start as `PENDING`.
+Only a verified provider callback may transition one to `PAID` or `FAILED`; the callback locks the
+row and treats terminal rows as idempotent. `provider_transaction_id`, `paid_at`, and
+`failure_reason` are provider-audit fields, not client input. These tables have not been matched to
+a legacy production catalog and remain governed by the existing baseline policy.

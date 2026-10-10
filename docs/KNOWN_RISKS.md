@@ -516,6 +516,16 @@ controlled profile enums but recipes do not yet declare diet suitability or nutr
 these values cannot safely be hard-filtered. Do not claim diet/goal compliance until that metadata
 and tests exist.
 
+## R-038 — PayOS live callback registration and provider parity remain unverified
+
+**Severity:** High (payment go-live blocker). The Java callback verifies the documented PayOS
+HMAC-SHA256 signature, locks matching payment rows, and has unit coverage for signed/invalid and
+failed callback boundaries. It has not yet been registered with a live PayOS merchant channel or
+validated against a live provider callback, retry policy, and production proxy/TLS configuration.
+Before enabling checkout, register the exact public HTTPS `/api/payment/payos/webhook` URL in PayOS,
+perform a sandbox/live controlled success and failure payment, and retain the redacted callback
+evidence. Do not substitute browser redirect parameters for the signed callback.
+
 ## R-037 — Password Reset Is a Java-Only Extension
 
 The pinned legacy contract has no forgot-password or reset-password route. Java provides

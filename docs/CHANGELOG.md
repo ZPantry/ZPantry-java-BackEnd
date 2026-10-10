@@ -1,5 +1,16 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-10 — PayOS signed webhook completion
+
+- Added the public `POST /api/payment/payos/webhook` callback, which accepts only PayOS payloads
+  with a valid HMAC-SHA256 signature over the provider `data` object.
+- Verified success now atomically marks the matching pending payment paid, closes an existing active
+  subscription, and grants Z-Plus for 30 days. Verified failures mark only the pending payment as
+  failed; redirect URLs still never alter payment state.
+- Callback processing locks the payment row and acknowledges retries without duplicating a plan.
+- Added unit coverage for signature verification and unsigned/failed webhook handling. Live PayOS
+  dashboard registration and end-to-end provider verification remain deployment work.
+
 ## 2026-10-09 — PayOS mobile deep-link return
 
 - Added public, no-cache browser landing pages at `/payment/success` and `/payment/cancel`.

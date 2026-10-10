@@ -872,7 +872,7 @@ the client obtains confirmation, and only compatible quantities that actually ex
 Show shortages before completion and offer the shopping-list action. Keep the completion action
 available after a user confirms that the meal was still cooked.
 
-## [MIG-013] PayOS browser-to-mobile return pages
+## [MIG-013] PayOS checkout completion and browser-to-mobile return
 
 **Status:** IMPLEMENTED_NOT_VERIFIED
 
@@ -885,6 +885,7 @@ available after a user confirms that the meal was still cooked.
 ```http
 GET /payment/success
 GET /payment/cancel
+POST /api/payment/payos/webhook
 ```
 
 These are public `text/html` browser landing pages used as the PayOS return and cancellation URLs.
@@ -892,8 +893,16 @@ They immediately attempt to open `zpantry://payment/success` or `zpantry://payme
 also render an explicit fallback link for the installed Z-Pantry app. They ignore all redirect
 parameters and do not change a payment or subscription state.
 
+`POST /api/payment/payos/webhook` is the public provider callback. It accepts only payloads whose
+PayOS HMAC-SHA256 signature validates against the configured checksum key. For an authenticated,
+successful callback, a matching pending transaction is marked `PAID` and activates Z-Plus for 30
+days. A verified unsuccessful callback marks a matching pending transaction `FAILED`. Replays and
+terminal transactions are idempotently acknowledged. Invalid signatures receive HTTP 400 and never
+change a transaction or subscription.
+
 ### Frontend Action Required
 
 Configure the mobile `zpantry` URL scheme to route `payment/success` and `payment/cancel` to the
 subscription screen, then reload the current subscription after the app returns. The server webhook
-remains the only trusted path that may activate Z-Plus.
+remains the only trusted path that may activate Z-Plus. Register the public HTTPS webhook URL in
+the PayOS merchant dashboard before enabling checkout in an environment.

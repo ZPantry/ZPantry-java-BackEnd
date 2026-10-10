@@ -1,6 +1,6 @@
 # ZPantry Java Migration Status
 
-Last update: 2026-10-09 — PayOS mobile deep-link return added; payment activation parity remains unverified
+Last update: 2026-10-10 — PayOS signed webhook completion implemented; live-provider parity remains unverified
 
 ## Current conclusion
 
@@ -27,7 +27,7 @@ remain NOT_STARTED.
 | AI Integration / Embedding Backfill | HTTP client and ingredient/recipe embedding persistence implemented; Gemini receipt/food-image extraction passes the canonical catalog-ID boundary; text import is local (no Ollama/text AI); image analysis has a configurable per-account monthly quota; backfill command absent | IMPLEMENTED_NOT_VERIFIED |
 | Vector Search | No implementation; legacy service remains a stub | NOT_STARTED |
 | Docker / Deployment | Java 21 multi-stage backend Dockerfile and workspace Compose build wiring implemented; production deployment configuration remains environment-owned | IMPLEMENTED_NOT_VERIFIED |
-| Subscription / PayOS return | Pending PayOS checkout records now use public backend return/cancel pages that return an installed mobile app through the `zpantry` scheme; provider webhook activation remains outstanding | IMPLEMENTED_NOT_VERIFIED |
+| Subscription / PayOS | PayOS checkout records, signed webhook completion/failure processing, idempotent subscription activation, and browser-to-mobile return pages implemented; live-provider parity remains outstanding | IMPLEMENTED_NOT_VERIFIED |
 
 ## Foundation inventory
 
