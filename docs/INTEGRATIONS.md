@@ -53,9 +53,9 @@ Do not copy legacy Cloudinary secrets.
 
 ## Subscription payments
 
-Subscription checkout currently uses PayOS. Merchant credentials are environment-owned. The Java
-backend records pending transactions but does not treat a browser redirect as payment proof; an
-authenticated provider webhook must activate Z-Plus.
+Subscription checkout uses PayOS. Merchant credentials are environment-owned. The Java backend
+records a pending transaction before requesting a checkout URL and does not treat a browser redirect
+as payment proof.
 
 PayOS `returnUrl` and `cancelUrl` must be public HTTPS backend URLs, not mobile deep links directly:
 
@@ -71,6 +71,20 @@ are intentionally ignored; the redirect is not trusted payment evidence.
 
 Configure provider-specific webhook verification before accepting live payments. Never expose
 merchant secrets to the mobile application.
+
+Register this public HTTPS webhook URL in the PayOS merchant dashboard:
+
+```text
+https://api.example.com/api/payment/payos/webhook
+```
+
+The callback verifies PayOS's HMAC-SHA256 signature over the alphabetically sorted `data` fields
+using `ZPANTRY_PAYMENT_PAYOS_CHECKSUM_KEY`. Only a verified successful callback with a matching
+merchant order and amount changes a `PENDING` transaction to `PAID`, expires prior active plans and
+creates a 30-day `Z_PLUS` subscription. A verified non-success callback changes only a pending
+transaction to `FAILED`. The row is locked during processing, so retried callbacks cannot create a
+second subscription. Unknown, amount-mismatched, or already-terminal payment rows acknowledge the
+callback without changing state; an invalid signature receives HTTP 400.
 
 ---
 
