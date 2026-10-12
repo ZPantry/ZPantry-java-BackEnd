@@ -1,17 +1,18 @@
 package com.zpantry.pantryimport.service;
 
 import com.zpantry.integration.ai.AiClient;
-import com.zpantry.pantry.api.PantryDtos.UpsertPantryItemRequest;
 import com.zpantry.pantry.service.PantryService;
 import com.zpantry.pantryimport.api.PantryImportDtos.*;
 import com.zpantry.pantryimport.domain.ExtractedIngredient;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.*;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,11 +22,13 @@ public class PantryImportService {
     private final AiClient ai;
     private final PantryIngredientPipeline pipeline;
     private final PantryService pantry;
+    private final JdbcTemplate jdbc;
 
-    public PantryImportService(AiClient a, PantryIngredientPipeline pipeline, PantryService p) {
+    public PantryImportService(AiClient a, PantryIngredientPipeline pipeline, PantryService p, JdbcTemplate jdbc) {
         ai = a;
         this.pipeline = pipeline;
         pantry = p;
+        this.jdbc = jdbc;
     }
 
     public PantryImportPreviewResponse analyze(SourceType type, MultipartFile image) {
@@ -55,14 +58,13 @@ public class PantryImportService {
     }
 
     /** Calls the unified provider endpoint, then reuses the same canonical-food pipeline as V1. */
-    public UnifiedImageAnalysisResponse analyzeUnifiedImage(MultipartFile image) {
+    public UnifiedImageAnalysisResponse analyzeUnifiedImage(UUID userId, MultipartFile image, ExpectedImageType expectedType) {
         try {
-            var response = ai.postImage("/ai/analyze-image", image.getBytes(), image.getOriginalFilename(), image.getContentType());
+            var response = ai.postImage("/ai/analyze-image", image.getBytes(), image.getOriginalFilename(), image.getContentType(), expectedType.name());
             Object data = response.get("data");
             if (!(data instanceof Map<?, ?> map)) throw new IllegalStateException("AI returned incomplete analysis");
             ImageType imageType = imageType(map.get("imageType"));
-            if (imageType == ImageType.UNKNOWN) return new UnifiedImageAnalysisResponse(imageType,
-                    num(map.get("confidence")), List.of(), List.of());
+            if (imageType == ImageType.UNKNOWN) return storeAnalysis(userId, response(imageType, map, List.of(), List.of()));
             Object source = map.get("ingredients");
             if (!(source instanceof List<?> items)) throw new IllegalStateException("AI returned incomplete analysis");
             var result = new ArrayList<PantryImportPreviewItem>();
@@ -76,7 +78,7 @@ public class PantryImportService {
             var warnings = new ArrayList<String>();
             if (result.isEmpty()) warnings.add("No catalog ingredients were detected.");
             else if (unmatched > 0) warnings.add("Some detected items were not found in the ingredient catalog and were omitted.");
-            return new UnifiedImageAnalysisResponse(imageType, num(map.get("confidence")), List.copyOf(result), List.copyOf(warnings));
+            return storeAnalysis(userId, response(imageType, map, List.copyOf(result), List.copyOf(warnings)));
         } catch (Exception exception) {
             log.warn("Unified image analysis request failed: {}", exception.getMessage());
             throw new IllegalStateException("Image analysis is currently unavailable");
@@ -84,10 +86,24 @@ public class PantryImportService {
     }
 
     @Transactional
-    public void confirm(UUID userId, ConfirmPantryImportRequest request) {
+    public void confirm(UUID userId, ConfirmPantryImportRequest request, String idempotencyKey) {
+        if (request.analysisId() != null && jdbc.queryForObject(
+                "select count(*) from pantry_import_analyses where id = ? and user_id = ? and expires_at > ?",
+                Integer.class, request.analysisId(), userId, Instant.now()) == 0) {
+            throw new IllegalArgumentException("Image analysis is expired or does not belong to this user.");
+        }
+        UUID operationId = null;
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            if (idempotencyKey.length() > 100) throw new IllegalArgumentException("Idempotency-Key must not exceed 100 characters.");
+            operationId = UUID.randomUUID();
+            int inserted = jdbc.update("insert into pantry_import_idempotency (id, created_at, user_id, idempotency_key, analysis_id) values (?, ?, ?, ?, ?) on conflict (user_id, idempotency_key) do nothing",
+                    operationId, Instant.now(), userId, idempotencyKey.trim(), request.analysisId());
+            if (inserted == 0) return;
+        }
         for (var item : request.items()) pantry.validateImportItem(item.ingredientId(), item.quantity(), item.unit());
         for (var item : request.items())
-            pantry.upsert(userId, new UpsertPantryItemRequest(item.ingredientId(), item.quantity(), item.unit(), null, null, null));
+            pantry.addFromImport(userId, item.ingredientId(), item.quantity(), item.unit());
+        if (operationId != null) jdbc.update("update pantry_import_idempotency set response_json = ? where id = ?", "{\"status\":\"CONFIRMED\"}", operationId);
     }
 
     private static String rawName(Map<?, ?> item) {
@@ -111,5 +127,20 @@ public class PantryImportService {
         if (!(value instanceof String text)) throw new IllegalStateException("AI returned invalid image type");
         try { return ImageType.valueOf(text.trim().toUpperCase(Locale.ROOT)); }
         catch (IllegalArgumentException exception) { throw new IllegalStateException("AI returned invalid image type"); }
+    }
+
+    private static UnifiedImageAnalysisResponse response(ImageType type, Map<?, ?> data,
+                                                          List<PantryImportPreviewItem> ingredients, List<String> warnings) {
+        BigDecimal confidence = num(data.get("imageTypeConfidence"));
+        return new UnifiedImageAnalysisResponse(type, confidence, ingredients, warnings, UUID.randomUUID(), confidence,
+                text(data.get("imageQuality")), confidence != null && confidence.compareTo(BigDecimal.valueOf(0.6)) < 0,
+                text(data.get("reason")));
+    }
+
+    private UnifiedImageAnalysisResponse storeAnalysis(UUID userId, UnifiedImageAnalysisResponse response) {
+        Instant now = Instant.now();
+        jdbc.update("insert into pantry_import_analyses (id, created_at, user_id, image_type, status, expires_at) values (?, ?, ?, ?, ?, ?)",
+                response.analysisId(), now, userId, response.imageType().name(), "ANALYZED", now.plusSeconds(30 * 60));
+        return response;
     }
 }

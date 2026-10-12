@@ -58,6 +58,12 @@ public class HttpAiClient implements AiClient {
 
     @SuppressWarnings("unchecked")
     public Map<String, Object> postImage(String path, byte[] image, String filename, String contentType) {
+        return postImage(path, image, filename, contentType, null);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> postImage(String path, byte[] image, String filename, String contentType, String expectedType) {
         try {
             String boundary = "----ZPantry" + UUID.randomUUID();
             String safeFilename = filename == null ? "image" : filename.replace("\"", "");
@@ -68,6 +74,11 @@ public class HttpAiClient implements AiClient {
                     .getBytes(StandardCharsets.UTF_8));
             bytes.write(("Content-Type: " + mimeType + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
             bytes.write(image);
+            if (expectedType != null && !expectedType.isBlank()) {
+                bytes.write(("\r\n--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
+                bytes.write(("Content-Disposition: form-data; name=\"expectedType\"\r\n\r\n" + expectedType.trim() + "\r\n")
+                        .getBytes(StandardCharsets.UTF_8));
+            }
             bytes.write(("\r\n--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
             byte[] payload = bytes.toByteArray();
             var connection = (HttpURLConnection) URI.create(baseUrl + path).toURL().openConnection();

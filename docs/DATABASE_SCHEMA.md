@@ -139,6 +139,15 @@ exactly one active canonical ingredient. The application rejects active alias/ca
 production adoption should add and verify an equivalent database uniqueness constraint only after the
 shared legacy catalog has been inspected.
 
+### Java-owned image import operations (V11)
+
+`V11__add_pantry_import_idempotency.sql` adds two Java-owned tables. `pantry_import_analyses`
+stores the authenticated owner, detected image type, status and a 30-minute expiry for a returned
+`analysisId`; it deliberately stores no image bytes. `pantry_import_idempotency` has a unique
+`(user_id, idempotency_key)` pair so a retry of the same import confirmation cannot add quantities
+twice. These tables are additive and have no foreign keys because the inspected legacy schema does
+not establish a compatible FK baseline.
+
 ---
 
 ## 6. recipes

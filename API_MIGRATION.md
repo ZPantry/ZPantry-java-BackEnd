@@ -414,6 +414,24 @@ response List<User>
 
 When uncertain, document the change.
 
+## [MIG-IMG-002] Unified image analysis and confirmation extension
+
+**Status:** `IMPLEMENTED_NOT_VERIFIED`
+**Breaking Change:** `NO` — all fields/header are additive
+**Date:** `2026-10-12`
+
+`POST /api/v2/ingredients/analyze-image` now returns `analysisId`, `imageTypeConfidence`,
+`imageQuality`, `needsUserChoice`, `reason` and per-item `flags` in addition to the existing
+resolved preview. `analysisId` is owner-bound and expires after 30 minutes. `POST
+/api/me/pantry-import/confirm` accepts optional JSON `analysisId` and optional `Idempotency-Key`.
+For new clients the key must be reused for a network retry; duplicate keys are treated as the
+already completed request and do not add inventory again. Old clients without either value retain
+the previous confirm behavior.
+
+This is a Java-specific extension; no matching route/contract has been verified in the pinned
+legacy source. Production use requires the additive V11 migration described in
+`docs/DATABASE_SCHEMA.md`.
+
 ---
 
 ## [MIG-004] User compatibility slice — source analysis only

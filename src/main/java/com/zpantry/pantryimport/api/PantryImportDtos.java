@@ -15,6 +15,8 @@ public final class PantryImportDtos {
 
     public enum ImageType {RECEIPT, FOOD_IMAGE, UNKNOWN}
 
+    public enum ExpectedImageType {AUTO, RECEIPT, FOOD_IMAGE}
+
     public enum ResolverStatus {RESOLVED, AMBIGUOUS, UNRESOLVED}
 
     public record PantryImportPreviewResponse(SourceType sourceType, List<PantryImportPreviewItem> items,
@@ -24,16 +26,20 @@ public final class PantryImportDtos {
     /** V2 unified image analysis. Items are catalog-resolved server-side, never provider IDs. */
     public record UnifiedImageAnalysisResponse(ImageType imageType, BigDecimal confidence,
                                                List<PantryImportPreviewItem> ingredients,
-                                               List<String> warnings) {
+                                               List<String> warnings, UUID analysisId,
+                                               BigDecimal imageTypeConfidence, String imageQuality,
+                                               boolean needsUserChoice, String reason) {
     }
 
     public record PantryImportPreviewItem(String rawName, String normalizedName, UUID ingredientId,
                                           String canonicalIngredientName, BigDecimal quantity, String unit,
                                           BigDecimal price, BigDecimal confidence, ResolverStatus resolverStatus,
-                                          IngredientResponse ingredient, boolean reviewRequired, String sourceUnit) {
+                                          IngredientResponse ingredient, boolean reviewRequired, String sourceUnit,
+                                          List<String> flags) {
     }
 
-    public record ConfirmPantryImportRequest(@NotEmpty List<@Valid ConfirmPantryImportItem> items) {
+    public record ConfirmPantryImportRequest(UUID analysisId,
+                                             @NotEmpty List<@Valid ConfirmPantryImportItem> items) {
     }
 
     public record ConfirmPantryImportItem(@NotNull UUID ingredientId,

@@ -6,6 +6,7 @@ import com.zpantry.ingredient.service.FoodMatchingService;
 import com.zpantry.pantryimport.api.PantryImportDtos.PantryImportPreviewItem;
 import com.zpantry.pantryimport.domain.ExtractedIngredient;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.springframework.stereotype.Component;
@@ -32,9 +33,13 @@ public class PantryIngredientPipeline {
         var normalized = QuantityUnitNormalizer.normalize(extracted.quantity(), extracted.unit(), ingredient.unit);
         BigDecimal quantity = normalized.quantity() == null ? defaultQuantity(ingredient) : normalized.quantity();
         if (!positive(quantity)) return Optional.empty();
+        var flags = new java.util.ArrayList<String>();
+        if (extracted.confidence() != null && extracted.confidence().compareTo(BigDecimal.valueOf(0.6)) < 0) flags.add("LOW_CONFIDENCE");
+        if (extracted.quantity() == null) flags.add("NO_QUANTITY");
+        if (normalized.reviewRequired()) flags.add("ANOMALY");
         return Optional.of(new PantryImportPreviewItem(extracted.rawName().trim(), resolved.normalizedInput(), ingredient.getId(),
                 ingredient.name, quantity, ingredient.unit, nonNegative(extracted.price()), extracted.confidence(),
-                resolved.status(), ingredientResponse(ingredient), normalized.reviewRequired(), extracted.unit()));
+                resolved.status(), ingredientResponse(ingredient), normalized.reviewRequired(), extracted.unit(), List.copyOf(flags)));
     }
 
     private static BigDecimal defaultQuantity(IngredientEntity ingredient) {

@@ -15,4 +15,8 @@ public interface AiClient {
     default Map<String, Object> postImage(String path, byte[] image, String filename, String contentType) {
         throw new UnsupportedOperationException("Image analysis is unavailable");
     }
+
+    default Map<String, Object> postImage(String path, byte[] image, String filename, String contentType, String expectedType) {
+        return postImage(path, image, filename, contentType);
+    }
 }

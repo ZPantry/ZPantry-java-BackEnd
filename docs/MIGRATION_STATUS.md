@@ -1,6 +1,6 @@
 # ZPantry Java Migration Status
 
-Last update: 2026-10-10 — PayOS signed webhook completion implemented; live-provider parity remains unverified
+Last update: 2026-10-12 — Unified image analysis has confirmation idempotency; database deployment remains required
 
 ## Current conclusion
 
@@ -19,7 +19,7 @@ remain NOT_STARTED.
 | Authentication | Register/OTP/login/JWT/refresh/logout plus a documented Java-only password-reset OTP extension implemented with approved corrections and dev revocation | IMPLEMENTED_NOT_VERIFIED |
 | Ingredient | CRUD, multipart media and embedding persistence implemented; catalog writes now role-protected and creation persists UUID before best-effort embedding | IMPLEMENTED_NOT_VERIFIED |
 | Recipe | CRUD, ingredient links, multipart media and embedding persistence implemented | IMPLEMENTED_NOT_VERIFIED |
-| Pantry | Authenticated owner-scoped list/upsert/update/delete implemented; canonical-food/alias matching resolves text and image extraction before confirmation; text uses no AI | IMPLEMENTED_NOT_VERIFIED |
+| Pantry | Authenticated owner-scoped list/upsert/update/delete implemented; canonical-food/alias matching resolves text and image extraction before confirmation; unified analysis has expiring analysis IDs and idempotent additive confirmation; text uses no AI | IMPLEMENTED_NOT_VERIFIED |
 | Recommendation | Legacy routes/persistence boundary plus a server-derived, deterministic V2 ranker implemented; optional AI analysis/chat remains unimplemented | IMPLEMENTED_NOT_VERIFIED |
 | Today Menu | Owner-scoped menu, scaled pantry availability, shopping-list handoff, completion, cooking/pantry logs implemented | IMPLEMENTED_NOT_VERIFIED |
 | Media | Cloudinary port/adapter and upload/delete routes implemented | IMPLEMENTED_NOT_VERIFIED |

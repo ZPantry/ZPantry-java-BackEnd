@@ -35,26 +35,37 @@ public class PantryImportController {
 
     @PostMapping(value = "/receipt/analyze", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public PantryImportPreviewResponse receipt(Authentication a, @RequestPart("image") MultipartFile image) {
-        quota.consume(id(a), SubscriptionService.OCR);
         validate(image);
-        return service.analyze(SourceType.RECEIPT, image);
+        return analyzeImage(id(a), SourceType.RECEIPT, image);
     }
 
     @PostMapping(value = "/food-image/analyze", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public PantryImportPreviewResponse food(Authentication a, @RequestPart("image") MultipartFile image) {
-        quota.consume(id(a), SubscriptionService.OCR);
         validate(image);
-        return service.analyze(SourceType.FOOD_IMAGE, image);
+        return analyzeImage(id(a), SourceType.FOOD_IMAGE, image);
     }
 
     @PostMapping("/confirm")
-    public ApiResponse<Void> confirm(Authentication a, @Valid @RequestBody ConfirmPantryImportRequest r) {
-        service.confirm(id(a), r);
+    public ApiResponse<Void> confirm(Authentication a, @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+                                     @Valid @RequestBody ConfirmPantryImportRequest r) {
+        service.confirm(id(a), r, idempotencyKey);
         return new ApiResponse<>(true, "Pantry import confirmed.", null, null, "", Instant.now());
     }
 
     private void validate(MultipartFile f) {
         if (f == null || f.isEmpty() || f.getSize() > 10 * 1024 * 1024 || f.getContentType() == null || !Set.of("image/jpeg", "image/png", "image/webp").contains(f.getContentType()))
             throw new IllegalArgumentException("A JPEG, PNG, or WEBP image up to 10 MB is required.");
+    }
+
+    private PantryImportPreviewResponse analyzeImage(java.util.UUID userId, SourceType type, MultipartFile image) {
+        quota.reserve(userId, SubscriptionService.OCR);
+        try {
+            var result = service.analyze(type, image);
+            if (result.items().isEmpty()) quota.refund(userId, SubscriptionService.OCR);
+            return result;
+        } catch (RuntimeException exception) {
+            quota.refund(userId, SubscriptionService.OCR);
+            throw exception;
+        }
     }
 }

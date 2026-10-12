@@ -553,3 +553,11 @@ The imported production catalog uses `MOLLUSCS`, plural `TREE_NUTS`, and some se
 allergen lists. Java now supports `MOLLUSCS` and reads those historical forms as the canonical
 `TREE_NUT` and comma-separated representation. New catalog SQL writes the canonical form. Unknown
 allergen codes remain rejected rather than silently omitted, because ignoring an allergen is unsafe.
+
+## R-041 — V11 image-import operation tables require explicit production migration
+
+The unified-image confirmation flow uses Java-owned `pantry_import_analyses` and
+`pantry_import_idempotency` tables. Runtime Flyway remains disabled to protect the shared legacy
+database, so a deployment that updates application code without applying V11 will fail image
+analysis/confirmation. Apply V11 to a reviewed Java-owned target (or through the approved database
+release procedure) before deploying this feature. Status: OPEN deployment requirement.

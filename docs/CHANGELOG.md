@@ -1,5 +1,20 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-12 — Idempotent unified image-import confirmation
+
+- Unified image analysis now records a 30-minute, owner-bound `analysisId`; confirmation can use
+  that identifier plus an `Idempotency-Key` to safely retry a request without adding pantry items
+  twice.
+- Confirmed image quantities now add to an existing pantry line only if the ingredient and unit
+  match. Different units remain separate; the service never invents a conversion.
+- Added additive V11 operation tables. Because production Flyway is intentionally disabled, the
+  migration must be applied through the approved database release path before deployment.
+
+## 2026-10-12 — Image-analysis quota compensation
+
+- Image routes now validate uploads before reserving an OCR quota slot. The slot is refunded when
+  the AI call fails, identifies an unknown image, or returns no catalog-resolved ingredients.
+
 ## 2026-10-12 — Production catalog allergen compatibility
 
 - Added the `MOLLUSCS` allergen category and backward-compatible parsing for imported catalog
