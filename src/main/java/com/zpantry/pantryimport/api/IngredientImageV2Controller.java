@@ -1,6 +1,7 @@
 package com.zpantry.pantryimport.api;
 
 import com.zpantry.pantryimport.api.PantryImportDtos.UnifiedImageAnalysisResponse;
+import com.zpantry.pantryimport.api.PantryImportDtos.ExpectedImageType;
 import com.zpantry.pantryimport.service.PantryImportService;
 import com.zpantry.subscription.service.SubscriptionService;
 import com.zpantry.user.security.AuthenticatedUserResolver;
@@ -10,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,12 +31,13 @@ public class IngredientImageV2Controller {
 
     @PostMapping(value = "/analyze-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public UnifiedImageAnalysisResponse analyze(Authentication authentication,
-            @RequestPart("image") MultipartFile image) {
+            @RequestPart("image") MultipartFile image,
+            @RequestParam(value = "expectedType", defaultValue = "AUTO") ExpectedImageType expectedType) {
         validate(image);
         var userId = users.resolve(authentication).orElseThrow().userId();
         subscriptions.reserve(userId, SubscriptionService.OCR);
         try {
-            var result = imports.analyzeUnifiedImage(image);
+            var result = imports.analyzeUnifiedImage(userId, image, expectedType);
             if (result.imageType() == com.zpantry.pantryimport.api.PantryImportDtos.ImageType.UNKNOWN
                     || result.ingredients().isEmpty()) subscriptions.refund(userId, SubscriptionService.OCR);
             return result;

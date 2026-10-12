@@ -46,8 +46,9 @@ public class PantryImportController {
     }
 
     @PostMapping("/confirm")
-    public ApiResponse<Void> confirm(Authentication a, @Valid @RequestBody ConfirmPantryImportRequest r) {
-        service.confirm(id(a), r);
+    public ApiResponse<Void> confirm(Authentication a, @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+                                     @Valid @RequestBody ConfirmPantryImportRequest r) {
+        service.confirm(id(a), r, idempotencyKey);
         return new ApiResponse<>(true, "Pantry import confirmed.", null, null, "", Instant.now());
     }
 

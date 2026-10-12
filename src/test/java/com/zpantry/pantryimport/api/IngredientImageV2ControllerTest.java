@@ -29,10 +29,10 @@ class IngredientImageV2ControllerTest {
         UUID userId = UUID.randomUUID();
         when(users.resolve(authentication)).thenReturn(Optional.of(new AuthenticatedUser(userId, "user@example.test", java.util.Set.of("USER"), "test-jti")));
         IngredientImageV2Controller controller = new IngredientImageV2Controller(imports, subscriptions, users);
-        when(imports.analyzeUnifiedImage(Mockito.any())).thenReturn(new UnifiedImageAnalysisResponse(ImageType.FOOD_IMAGE,
-                BigDecimal.ONE, List.of(Mockito.mock(com.zpantry.pantryimport.api.PantryImportDtos.PantryImportPreviewItem.class)), List.of()));
+        when(imports.analyzeUnifiedImage(Mockito.eq(userId), Mockito.any(), Mockito.any())).thenReturn(new UnifiedImageAnalysisResponse(ImageType.FOOD_IMAGE,
+                BigDecimal.ONE, List.of(Mockito.mock(com.zpantry.pantryimport.api.PantryImportDtos.PantryImportPreviewItem.class)), List.of(), UUID.randomUUID(), BigDecimal.ONE, "GOOD", false, null));
 
-        controller.analyze(authentication, new MockMultipartFile("image", "food.png", "image/png", new byte[] {1}));
+        controller.analyze(authentication, new MockMultipartFile("image", "food.png", "image/png", new byte[] {1}), com.zpantry.pantryimport.api.PantryImportDtos.ExpectedImageType.AUTO);
 
         verify(subscriptions).reserve(userId, SubscriptionService.OCR);
         verify(subscriptions, never()).refund(userId, SubscriptionService.OCR);
@@ -46,11 +46,11 @@ class IngredientImageV2ControllerTest {
         Authentication authentication = Mockito.mock(Authentication.class);
         UUID userId = UUID.randomUUID();
         when(users.resolve(authentication)).thenReturn(Optional.of(new AuthenticatedUser(userId, "user@example.test", java.util.Set.of("USER"), "test-jti")));
-        when(imports.analyzeUnifiedImage(Mockito.any())).thenReturn(new UnifiedImageAnalysisResponse(ImageType.UNKNOWN,
-                BigDecimal.ZERO, List.of(), List.of("BLURRY")));
+        when(imports.analyzeUnifiedImage(Mockito.eq(userId), Mockito.any(), Mockito.any())).thenReturn(new UnifiedImageAnalysisResponse(ImageType.UNKNOWN,
+                BigDecimal.ZERO, List.of(), List.of("BLURRY"), UUID.randomUUID(), BigDecimal.ZERO, "LOW", true, "BLURRY"));
 
         new IngredientImageV2Controller(imports, subscriptions, users)
-                .analyze(authentication, new MockMultipartFile("image", "food.png", "image/png", new byte[] {1}));
+                .analyze(authentication, new MockMultipartFile("image", "food.png", "image/png", new byte[] {1}), com.zpantry.pantryimport.api.PantryImportDtos.ExpectedImageType.AUTO);
 
         verify(subscriptions).refund(userId, SubscriptionService.OCR);
     }

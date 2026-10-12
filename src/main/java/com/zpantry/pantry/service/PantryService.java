@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -104,6 +105,27 @@ public class PantryService {
     public void validateImportItem(UUID ingredientId, java.math.BigDecimal quantity, String unit) {
         String invalid = invalidItem(ingredientId, quantity, unit);
         if (invalid != null) throw new IllegalArgumentException(invalid);
+    }
+
+    /**
+     * Imports are additive.  Values only share a line when their units are equal; conversion is
+     * deliberately not attempted because the catalog has no safe conversion rule for every unit.
+     */
+    @Transactional
+    public PantryItemResponse addFromImport(UUID userId, UUID ingredientId, BigDecimal quantity, String unit) {
+        String invalid = invalidItem(ingredientId, quantity, unit);
+        if (invalid != null) throw new IllegalArgumentException(invalid);
+
+        var existing = repo.findAllByUserIdAndIngredientIdAndDeletedFalse(userId, ingredientId).stream()
+                .filter(item -> item.unit != null && item.unit.trim().equalsIgnoreCase(unit.trim()))
+                .findFirst();
+        var item = existing.orElseGet(() -> new PantryItemEntity(userId, ingredientId));
+        if (existing.isPresent()) {
+            item.quantity = item.quantity.add(quantity);
+        } else {
+            apply(item, ingredientId, quantity, unit.trim(), null, null, null);
+        }
+        return dto(repo.save(item));
     }
 
     private void apply(PantryItemEntity e, UUID i, java.math.BigDecimal q, String unit, Instant ex, String loc, String note) {

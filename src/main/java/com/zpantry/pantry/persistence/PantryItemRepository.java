@@ -18,6 +18,8 @@ public interface PantryItemRepository extends JpaRepository<PantryItemEntity, UU
 
     Optional<PantryItemEntity> findByUserIdAndIngredientIdAndDeletedFalse(UUID u, UUID i);
 
+    List<PantryItemEntity> findAllByUserIdAndIngredientIdAndDeletedFalse(UUID u, UUID i);
+
     Optional<PantryItemEntity> findByIdAndUserIdAndDeletedFalse(UUID id, UUID u);
 
     @Modifying
