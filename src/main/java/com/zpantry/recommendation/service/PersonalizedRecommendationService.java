@@ -99,7 +99,6 @@ public class PersonalizedRecommendationService {
 
     private static Set<FoodAllergen> allergens(String value) {
         if (value == null || value.isBlank()) return Set.of();
-        return Arrays.stream(value.split(",")).filter(item -> !item.isBlank()).map(FoodAllergen::valueOf)
-                .collect(java.util.stream.Collectors.toSet());
+        return FoodAllergen.parseStoredSet(value);
     }
 }
