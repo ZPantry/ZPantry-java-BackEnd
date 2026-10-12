@@ -30,9 +30,18 @@ public class IngredientImageV2Controller {
     @PostMapping(value = "/analyze-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public UnifiedImageAnalysisResponse analyze(Authentication authentication,
             @RequestPart("image") MultipartFile image) {
-        subscriptions.consume(users.resolve(authentication).orElseThrow().userId(), SubscriptionService.OCR);
         validate(image);
-        return imports.analyzeUnifiedImage(image);
+        var userId = users.resolve(authentication).orElseThrow().userId();
+        subscriptions.reserve(userId, SubscriptionService.OCR);
+        try {
+            var result = imports.analyzeUnifiedImage(image);
+            if (result.imageType() == com.zpantry.pantryimport.api.PantryImportDtos.ImageType.UNKNOWN
+                    || result.ingredients().isEmpty()) subscriptions.refund(userId, SubscriptionService.OCR);
+            return result;
+        } catch (RuntimeException exception) {
+            subscriptions.refund(userId, SubscriptionService.OCR);
+            throw exception;
+        }
     }
 
     private static void validate(MultipartFile image) {

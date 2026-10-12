@@ -20,6 +20,10 @@ public class SubscriptionService {
     public List<PlanResponse> plans() { return List.of(new PlanResponse("Z_FREE","Z-Free",0,0,"10 gợi ý/ngày · 3 lần OCR/tháng"), new PlanResponse("Z_PLUS","Z-Plus",49000,30,"Gợi ý không giới hạn · 5 lần OCR/ngày")); }
     public SubscriptionResponse current(UUID user) { var row = active(user); String plan = row == null ? "Z_FREE" : row.plan; return new SubscriptionResponse(plan, row == null ? "FREE" : row.status, row == null ? null : row.started, row == null ? null : row.expires, row != null && row.autoRenew, quotas(user, plan)); }
     @Transactional public void consume(UUID user, String feature) {
+        reserve(user, feature);
+    }
+    /** Reserves a quota slot. The caller must settle it with refund when no useful AI result exists. */
+    @Transactional public void reserve(UUID user, String feature) {
         String plan = active(user) == null ? "Z_FREE" : "Z_PLUS"; int limit = limit(plan, feature); if (limit < 0) return;
         LocalDate start = feature.equals(MEAL_SUGGESTION) || plan.equals("Z_PLUS") ? LocalDate.now(clock) : YearMonth.now(clock).atDay(1);
         String sql = "INSERT INTO subscription_usage(id,created_at,user_id,feature,period_start,used_count) VALUES (?,?,?,?,?,1) "
@@ -29,6 +33,13 @@ public class SubscriptionService {
         try { count = jdbc.queryForObject(sql, Integer.class, UUID.randomUUID(), timestampNow(), user, feature, start, limit); }
         catch (org.springframework.dao.EmptyResultDataAccessException ignored) { count = null; }
         if (count == null) throw new SubscriptionLimitExceededException(feature, limit);
+    }
+    /** Compensates exactly one failed/empty analysis reservation. Aggregate usage remains correct under concurrent calls. */
+    @Transactional public void refund(UUID user, String feature) {
+        String plan = active(user) == null ? "Z_FREE" : "Z_PLUS";
+        LocalDate start = feature.equals(MEAL_SUGGESTION) || plan.equals("Z_PLUS") ? LocalDate.now(clock) : YearMonth.now(clock).atDay(1);
+        jdbc.update("UPDATE subscription_usage SET used_count=used_count-1,updated_at=? WHERE user_id=? AND feature=? AND period_start=? AND used_count>0",
+                timestampNow(), user, feature, start);
     }
     @Transactional public CheckoutResponse checkout(UUID user, String provider) {
         String normalized = provider.toUpperCase(Locale.ROOT); if (!"PAYOS".equals(normalized)) throw new IllegalArgumentException("Only PayOS is currently available.");

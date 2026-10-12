@@ -207,8 +207,9 @@ IDs before it is shown. It is not implemented by the deterministic ranking endpo
 
 ## Image-analysis quota
 
-Before forwarding a food image, receipt image, or unified image to the AI service, Java atomically
-consumes the authenticated user's subscription OCR quota. `GET /api/me/subscription` is the source
+Before forwarding a food image, receipt image, or unified image to the AI service, Java reserves
+the authenticated user's subscription OCR quota. It refunds the reservation if the provider fails,
+the image is unknown, or the catalog-resolved result is empty. `GET /api/me/subscription` is the source
 for both the displayed and enforced allowance: Z-Free resets after three requests each month, while
 Z-Plus resets after five requests each day. A provider failure still consumes a request because the
 provider call was attempted. When exhausted, Java returns HTTP 429 without making the provider call.

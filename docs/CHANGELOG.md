@@ -1,5 +1,10 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-12 — Image-analysis quota compensation
+
+- Image routes now validate uploads before reserving an OCR quota slot. The slot is refunded when
+  the AI call fails, identifies an unknown image, or returns no catalog-resolved ingredients.
+
 ## 2026-10-12 — Production catalog allergen compatibility
 
 - Added the `MOLLUSCS` allergen category and backward-compatible parsing for imported catalog
