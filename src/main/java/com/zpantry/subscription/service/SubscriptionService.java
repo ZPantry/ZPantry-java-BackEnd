@@ -32,6 +32,7 @@ public class SubscriptionService {
     }
     @Transactional public CheckoutResponse checkout(UUID user, String provider) {
         String normalized = provider.toUpperCase(Locale.ROOT); if (!"PAYOS".equals(normalized)) throw new IllegalArgumentException("Only PayOS is currently available.");
+        if (active(user) != null) throw new ActiveSubscriptionException();
         UUID id=UUID.randomUUID(); long orderCode=System.currentTimeMillis(); String order="ZP-"+orderCode; Timestamp now=timestampNow(); jdbc.update("INSERT INTO payment_transactions(id,created_at,user_id,provider,merchant_order_id,amount_vnd,status) VALUES(?,?,?,?,?,?,?)",id,now,user,normalized,order,49000,"PENDING");
         try { String url=payos.create(orderCode,49000,"ZPantry ZPlus"); jdbc.update("UPDATE payment_transactions SET checkout_url=?,updated_at=? WHERE id=?",url,now,id); return new CheckoutResponse(id.toString(), normalized, "PENDING", url); } catch(RuntimeException failure){jdbc.update("UPDATE payment_transactions SET status='FAILED',failure_reason=?,updated_at=? WHERE id=?","PayOS link creation failed",now,id);throw failure;}
     }
@@ -44,5 +45,8 @@ public class SubscriptionService {
     private Timestamp timestampNow(){ return Timestamp.from(Instant.now(clock)); }
     private record Active(String plan,String status,Instant started,Instant expires,boolean autoRenew){}
     private record Payment(UUID id,UUID user,String status,long amount){}
+    public static final class ActiveSubscriptionException extends RuntimeException {
+        public ActiveSubscriptionException() { super("An active Z-Plus subscription already exists."); }
+    }
     public enum PaymentWebhookOutcome { PAID, FAILED, ALREADY_PROCESSED, IGNORED }
 }

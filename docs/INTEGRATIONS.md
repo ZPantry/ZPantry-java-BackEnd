@@ -205,12 +205,13 @@ the ranked recipe set. Its payload must be privacy-minimized and contain server-
 their ingredient facts and the permitted profile context; the response must be validated against those
 IDs before it is shown. It is not implemented by the deterministic ranking endpoint.
 
-## Image-analysis usage limit
+## Image-analysis quota
 
-Before forwarding a food image, receipt image or unified image to the AI service, Java atomically
-consumes one authenticated user's monthly allowance. The default is three requests per calendar month
-in the configured Vietnam time zone. The limit is configured with
-`ZPANTRY_AI_IMAGE_ANALYSIS_MONTHLY_LIMIT`; subscription work can assign a different allowance through
-the future entitlement boundary without changing the AI client. A provider failure still consumes a
-request because the provider call was attempted. When exhausted, Java returns HTTP 429 without making
-the provider call.
+Before forwarding a food image, receipt image, or unified image to the AI service, Java atomically
+consumes the authenticated user's subscription OCR quota. `GET /api/me/subscription` is the source
+for both the displayed and enforced allowance: Z-Free resets after three requests each month, while
+Z-Plus resets after five requests each day. A provider failure still consumes a request because the
+provider call was attempted. When exhausted, Java returns HTTP 429 without making the provider call.
+
+The historical V8 counter is no longer used by application code; it is retained only as an existing
+Java-owned database table and must not be treated as a second customer-facing quota.

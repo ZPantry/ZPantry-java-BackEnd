@@ -536,3 +536,13 @@ Status: OPEN; document the mobile-client adoption and evaluate OTP-purpose separ
 mixed-runtime production rollout. Reset clears persisted refresh state, but already-issued JWT
 access tokens remain valid until their normal expiry because they cannot be individually revoked
 without a shared revocation store.
+
+## R-039 — Historical Unified Image Usage Cannot Be Reclassified Per Day
+
+Before the quota-source consolidation, the unified image-analysis endpoint wrote only a monthly
+aggregate to `image_analysis_monthly_usage`. That data contains no per-request or per-day timestamp,
+so it cannot be faithfully carried into the Z Plus daily OCR allowance in `subscription_usage`.
+Historical aggregate rows are therefore retained for audit only; all new receipt, food-image, and
+unified-image calls consume the subscription-owned quota. If already-used Z Plus quota must be
+preserved at cutover, a product decision is needed because the historical record cannot identify
+which uses belong to the current day. Status: OPEN cutover limitation.

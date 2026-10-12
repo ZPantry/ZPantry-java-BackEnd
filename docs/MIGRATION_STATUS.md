@@ -24,7 +24,7 @@ remain NOT_STARTED.
 | Today Menu | Owner-scoped menu, scaled pantry availability, shopping-list handoff, completion, cooking/pantry logs implemented | IMPLEMENTED_NOT_VERIFIED |
 | Media | Cloudinary port/adapter and upload/delete routes implemented | IMPLEMENTED_NOT_VERIFIED |
 | Cooking / Pantry Usage Logs | Completion persists pantry-usage rows and cooking-log reads return them | IMPLEMENTED_NOT_VERIFIED |
-| AI Integration / Embedding Backfill | HTTP client and ingredient/recipe embedding persistence implemented; Gemini receipt/food-image extraction passes the canonical catalog-ID boundary; text import is local (no Ollama/text AI); image analysis has a configurable per-account monthly quota; backfill command absent | IMPLEMENTED_NOT_VERIFIED |
+| AI Integration / Embedding Backfill | HTTP client and ingredient/recipe embedding persistence implemented; Gemini receipt/food-image extraction passes the canonical catalog-ID boundary; text import is local (no Ollama/text AI); public image routes use the subscription OCR quota reported to the client; backfill command absent | IMPLEMENTED_NOT_VERIFIED |
 | Vector Search | No implementation; legacy service remains a stub | NOT_STARTED |
 | Docker / Deployment | Java 21 multi-stage backend Dockerfile and workspace Compose build wiring implemented; production deployment configuration remains environment-owned | IMPLEMENTED_NOT_VERIFIED |
 | Subscription / PayOS | PayOS checkout records, signed webhook completion/failure processing, idempotent subscription activation, and browser-to-mobile return pages implemented; live-provider parity remains outstanding | IMPLEMENTED_NOT_VERIFIED |

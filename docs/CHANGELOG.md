@@ -1,5 +1,16 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-12 — Active-subscription checkout protection
+
+- `POST /api/me/subscription/checkout` now rejects a new PayOS order with HTTP 409 while the user
+  has an active, unexpired Z-Plus subscription. This backs up the mobile Premium presentation with
+  an API-level rule.
+
+## 2026-10-10 — Unified subscription OCR usage
+
+- Changed V2 unified image analysis to consume the same subscription OCR quota as receipt and
+  food-image imports, eliminating the mobile-screen/backend counter mismatch.
+
 ## 2026-10-10 — PayOS signed webhook completion
 
 - Added the public `POST /api/payment/payos/webhook` callback, which accepts only PayOS payloads

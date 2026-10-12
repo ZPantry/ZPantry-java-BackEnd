@@ -752,13 +752,12 @@ uses deterministic canonical-name/alias matching. Its route and preview response
 Receipt and food-image endpoints continue to obtain only `ExtractedIngredient[]` from the external
 Gemini service before reusing this exact backend pipeline.
 
-### Monthly image-analysis allowance
+### Subscription-owned image-analysis allowance
 
-The Java extension applies one authenticated-account allowance to receipt analysis, food-image
-analysis and unified image analysis. The default is three requests per calendar month, resetting at
-the start of a new month in the configured application zone. Exhaustion returns HTTP 429 and does not
-call the AI provider. The current global default is configuration-owned; per-subscription allowances
-are a future entitlement enhancement.
+Receipt analysis, food-image analysis and unified image analysis consume the same server-owned OCR
+quota returned by `GET /api/me/subscription`: Z-Free has three requests per calendar month and
+Z-Plus has five per day. Exhaustion returns HTTP 429 and does not call the AI provider. This avoids
+displaying a mobile usage counter that differs from the route that processed an image.
 
 ### Pantry batch-upsert extension
 
@@ -899,6 +898,10 @@ successful callback, a matching pending transaction is marked `PAID` and activat
 days. A verified unsuccessful callback marks a matching pending transaction `FAILED`. Replays and
 terminal transactions are idempotently acknowledged. Invalid signatures receive HTTP 400 and never
 change a transaction or subscription.
+
+An authenticated user with an unexpired `Z_PLUS` subscription cannot create another checkout:
+`POST /api/me/subscription/checkout` returns HTTP 409. Clients determine premium presentation from
+`GET /api/me/subscription` only when `planCode` is `Z_PLUS` and `status` is `ACTIVE`.
 
 ### Frontend Action Required
 

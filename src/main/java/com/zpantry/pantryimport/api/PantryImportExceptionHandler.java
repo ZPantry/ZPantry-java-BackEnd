@@ -2,7 +2,6 @@ package com.zpantry.pantryimport.api;
 
 import com.zpantry.common.api.ApiResponse;
 import com.zpantry.pantry.api.NaturalLanguagePantryController;
-import com.zpantry.pantryimport.service.ImageAnalysisQuotaExceededException;
 import com.zpantry.subscription.api.SubscriptionController;
 import com.zpantry.recommendation.api.RecommendationController;
 import com.zpantry.subscription.service.SubscriptionLimitExceededException;
@@ -25,11 +24,6 @@ public class PantryImportExceptionHandler {
     @ExceptionHandler(IllegalStateException.class)
     ResponseEntity<ApiResponse<Void>> unavailable(IllegalStateException exception, HttpServletRequest request) {
         return response(HttpStatus.SERVICE_UNAVAILABLE, "Image analysis is currently unavailable.", request);
-    }
-
-    @ExceptionHandler(ImageAnalysisQuotaExceededException.class)
-    ResponseEntity<ApiResponse<Void>> quotaExceeded(ImageAnalysisQuotaExceededException exception, HttpServletRequest request) {
-        return response(HttpStatus.TOO_MANY_REQUESTS, "Monthly image analysis limit reached. Try again next month.", request);
     }
 
     @ExceptionHandler(SubscriptionLimitExceededException.class)
