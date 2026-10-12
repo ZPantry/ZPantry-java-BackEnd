@@ -546,3 +546,10 @@ Historical aggregate rows are therefore retained for audit only; all new receipt
 unified-image calls consume the subscription-owned quota. If already-used Z Plus quota must be
 preserved at cutover, a product decision is needed because the historical record cannot identify
 which uses belong to the current day. Status: OPEN cutover limitation.
+
+## R-040 — Production catalog allergen aliases
+
+The imported production catalog uses `MOLLUSCS`, plural `TREE_NUTS`, and some semicolon-delimited
+allergen lists. Java now supports `MOLLUSCS` and reads those historical forms as the canonical
+`TREE_NUT` and comma-separated representation. New catalog SQL writes the canonical form. Unknown
+allergen codes remain rejected rather than silently omitted, because ignoring an allergen is unsafe.

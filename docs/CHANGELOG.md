@@ -1,5 +1,11 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-12 — Production catalog allergen compatibility
+
+- Added the `MOLLUSCS` allergen category and backward-compatible parsing for imported catalog
+  values using `TREE_NUTS` or semicolon separators. This prevents ingredient and recipe reads from
+  failing after the production catalog import while retaining fail-closed behavior for unknown codes.
+
 ## 2026-10-12 — Active-subscription checkout protection
 
 - `POST /api/me/subscription/checkout` now rejects a new PayOS order with HTTP 409 while the user

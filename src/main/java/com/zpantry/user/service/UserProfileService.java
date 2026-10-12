@@ -57,7 +57,7 @@ public class UserProfileService {
 
     private static java.util.Set<FoodAllergen> parseAllergens(String value) {
         if (value == null || value.isBlank()) return java.util.Set.of();
-        return java.util.Arrays.stream(value.split(",")).map(FoodAllergen::valueOf).collect(java.util.stream.Collectors.toUnmodifiableSet());
+        return FoodAllergen.parseStoredSet(value);
     }
 
     @Transactional(readOnly = true)

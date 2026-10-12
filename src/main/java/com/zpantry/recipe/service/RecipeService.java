@@ -168,7 +168,7 @@ public class RecipeService {
 
     private RecipeResponse dto(RecipeEntity e) {
         var is = links.findAllByRecipeIdAndDeletedFalse(e.getId()).stream().map(x -> new RecipeIngredientResponse(x.ingredientId, ingredients.findById(x.ingredientId).map(y -> y.name).orElse(null), x.quantity, x.unit, x.required, x.note)).toList();
-        var allergens = e.allergens == null || e.allergens.isBlank() ? java.util.Set.<com.zpantry.user.domain.FoodAllergen>of() : java.util.Arrays.stream(e.allergens.split(",")).map(com.zpantry.user.domain.FoodAllergen::valueOf).collect(java.util.stream.Collectors.toUnmodifiableSet());
+        var allergens = com.zpantry.user.domain.FoodAllergen.parseStoredSet(e.allergens);
         return new RecipeResponse(e.getId(), e.name, e.description, e.cookingTimeMinutes, e.difficulty, e.servingSize, e.instructionText, e.imageUrl, e.sourceType, e.gradientFrom, e.gradientTo, is, allergens);
     }
 }
