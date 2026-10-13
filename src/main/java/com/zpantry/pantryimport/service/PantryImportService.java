@@ -45,8 +45,8 @@ public class PantryImportService {
                 if (x instanceof Map<?, ?> row && !Boolean.FALSE.equals(row.get("food"))) {
                     String raw = rawName(row);
                     if (raw == null) { unmatched++; continue; }
-                    var preview = pipeline.resolve(new ExtractedIngredient(raw, num(row.get("quantity")), text(row.get("unit")),
-                            num(row.get("price")), num(row.get("confidence"))));
+                    var preview = pipeline.resolve(new ExtractedIngredient(raw, text(row.get("canonicalHint")), num(row.get("quantity")), text(row.get("unit")),
+                            num(row.get("price")), num(row.get("confidence")), flags(row.get("flags"))));
                     if (preview.isPresent()) result.add(preview.get()); else unmatched++;
                 }
             var warnings = new ArrayList<String>();
@@ -77,7 +77,7 @@ public class PantryImportService {
             for (Object value : items) if (value instanceof Map<?, ?> row && !Boolean.FALSE.equals(row.get("food"))) {
                 String raw = rawName(row);
                 if (raw == null) { unmatched++; continue; }
-                var preview = pipeline.resolve(new ExtractedIngredient(raw, num(row.get("quantity")), text(row.get("unit")), null, num(row.get("confidence"))));
+                var preview = pipeline.resolve(new ExtractedIngredient(raw, text(row.get("canonicalHint")), num(row.get("quantity")), text(row.get("unit")), null, num(row.get("confidence")), flags(row.get("flags"))));
                 if (preview.isPresent()) result.add(preview.get()); else unmatched++;
             }
             var warnings = new ArrayList<String>();
@@ -135,6 +135,10 @@ public class PantryImportService {
         }
     }
     private static String text(Object value) { return value instanceof String valueText && !valueText.isBlank() ? valueText.trim() : null; }
+    private static List<String> flags(Object value) {
+        if (!(value instanceof List<?> values)) return List.of();
+        return values.stream().filter(String.class::isInstance).map(String.class::cast).toList();
+    }
 
     private static ImageType imageType(Object value) {
         if (!(value instanceof String text)) throw new IllegalStateException("AI returned invalid image type");

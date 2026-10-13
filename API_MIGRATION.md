@@ -942,3 +942,16 @@ authenticated user's allergy profile. `POST /api/me/today-menu/items` similarly 
 when any required catalog ingredient conflicts. The existing response envelope is retained with
 `success=false` and a Vietnamese explanation naming the conflicting ingredient and allergen; no
 Pantry item or Today Menu item is written.
+
+## [MIG-015] Preserve unmatched AI image detections for user review
+
+**Status:** IMPLEMENTED_NOT_VERIFIED
+
+**Breaking Change:** NO — existing fields and routes are retained.
+
+**Date:** 2026-10-13
+
+Image-analysis responses now retain a detected food when it has no unique catalog match. Such an item has
+`ingredientId=null`, `resolverStatus=UNRESOLVED` (or `AMBIGUOUS`), `reviewRequired=true`, and provider flags.
+The mobile client must require the user to select a catalog ingredient before confirmation; it must not submit a
+null `ingredientId`. This avoids silently hiding detected fish, meat, and other catalog gaps.

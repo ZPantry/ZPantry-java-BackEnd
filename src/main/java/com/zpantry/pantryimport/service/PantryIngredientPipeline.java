@@ -26,14 +26,22 @@ public class PantryIngredientPipeline {
     public Optional<PantryImportPreviewItem> resolve(ExtractedIngredient extracted) {
         if (extracted == null || extracted.rawName() == null || extracted.rawName().isBlank()) return Optional.empty();
         var resolved = matching.resolve(extracted.rawName());
+        if (!resolved.isResolved() && extracted.canonicalHint() != null && !extracted.canonicalHint().isBlank()) {
+            resolved = matching.resolve(extracted.canonicalHint());
+        }
         IngredientEntity ingredient = resolved.canonicalFood();
         if (!resolved.isResolved() || ingredient.getId() == null || ingredient.unit == null || ingredient.unit.isBlank()) {
-            return Optional.empty();
+            var flags = new java.util.ArrayList<>(extracted.flags() == null ? List.<String>of() : extracted.flags());
+            if (extracted.confidence() != null && extracted.confidence().compareTo(BigDecimal.valueOf(0.6)) < 0 && !flags.contains("LOW_CONFIDENCE")) flags.add("LOW_CONFIDENCE");
+            if (extracted.quantity() == null && !flags.contains("NO_QUANTITY")) flags.add("NO_QUANTITY");
+            return Optional.of(new PantryImportPreviewItem(extracted.rawName().trim(), resolved.normalizedInput(), null,
+                    extracted.canonicalHint(), extracted.quantity(), extracted.unit(), nonNegative(extracted.price()), extracted.confidence(),
+                    resolved.status(), null, true, extracted.unit(), List.copyOf(flags)));
         }
         var normalized = QuantityUnitNormalizer.normalize(extracted.quantity(), extracted.unit(), ingredient.unit);
         BigDecimal quantity = normalized.quantity() == null ? defaultQuantity(ingredient) : normalized.quantity();
         if (!positive(quantity)) return Optional.empty();
-        var flags = new java.util.ArrayList<String>();
+        var flags = new java.util.ArrayList<>(extracted.flags() == null ? List.<String>of() : extracted.flags());
         if (extracted.confidence() != null && extracted.confidence().compareTo(BigDecimal.valueOf(0.6)) < 0) flags.add("LOW_CONFIDENCE");
         if (extracted.quantity() == null) flags.add("NO_QUANTITY");
         if (normalized.reviewRequired()) flags.add("ANOMALY");

@@ -1,5 +1,10 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-13 — Preserve unmatched AI image detections
+
+- Pantry image import now keeps detected food that cannot be matched uniquely to the catalog, marking it for user selection instead of omitting it.
+- Provider validation flags are passed to the preview while confirmation still requires a canonical ingredient UUID.
+
 ## 2026-10-13 — Allergy-safe Pantry and Today Menu writes
 
 - Added a server-owned allergy check shared by Pantry create/update/batch/import and Today Menu creation.
