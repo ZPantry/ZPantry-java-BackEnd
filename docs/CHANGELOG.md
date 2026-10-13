@@ -1,5 +1,13 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-13 — Optional Today Menu completion photo
+
+- Removed the required completion-photo gate: a user can mark a meal complete and save a cooking log
+  without `imageFile`.
+- An optional completion-photo upload now fails soft: the meal and log are saved and a warning is
+  returned rather than blocking the whole completion operation.
+- Added focused unit coverage for completing without an image.
+
 ## 2026-10-13 — Preserve unmatched AI image detections
 
 - Pantry image import now keeps detected food that cannot be matched uniquely to the catalog, marking it for user selection instead of omitting it.

@@ -955,3 +955,22 @@ Image-analysis responses now retain a detected food when it has no unique catalo
 `ingredientId=null`, `resolverStatus=UNRESOLVED` (or `AMBIGUOUS`), `reviewRequired=true`, and provider flags.
 The mobile client must require the user to select a catalog ingredient before confirmation; it must not submit a
 null `ingredientId`. This avoids silently hiding detected fish, meat, and other catalog gaps.
+
+## [MIG-016] Optional completion photo for Today Menu cooking logs
+
+**Status:** IMPLEMENTED_NOT_VERIFIED
+
+**Breaking Change:** NO — `imageFile` remains accepted with the same multipart field name.
+
+**Date:** 2026-10-13
+
+`POST /api/me/today-menu/items/{itemId}/complete` no longer requires multipart `imageFile`.
+The client may send completion metadata only (`cookedAt`, `rating`, and `note`) and the server still
+marks the meal cooked, writes its cooking log, and processes available Pantry usage. If an optional
+photo is supplied but media storage fails, the same completion is saved without the photo and its
+response `warnings` includes the upload warning.
+
+### Frontend Action Required
+
+Keep `imageFile` optional. Do not disable “Hoàn thành và lưu nhật ký” when no photo is chosen, and
+show returned warnings after a successful completion.

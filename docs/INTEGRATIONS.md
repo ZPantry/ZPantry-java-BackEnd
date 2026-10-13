@@ -45,7 +45,8 @@ Legacy behavior includes:
 - delete by public ID;
 - media metadata persistence;
 - association with recipe and/or ingredient where applicable;
-- image upload during today-menu completion.
+- optional image upload during today-menu completion. A media failure must not prevent the meal
+  completion and cooking log from being saved.
 
 Java configuration must use environment variables or externalized configuration.
 

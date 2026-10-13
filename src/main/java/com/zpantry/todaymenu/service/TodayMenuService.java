@@ -125,18 +125,24 @@ public class TodayMenuService {
 
     @Transactional
     public ApiResponse<TodayMenuCompletionResponse> complete(UUID u, UUID id, CompleteTodayMenuItemRequest r) {
-        if (r.imageFile() == null || r.imageFile().isEmpty()) return fail("ImageFile is required.");
         var e = menus.findByIdAndUserIdAndDeletedFalse(id, u).orElse(null);
         if (e == null) return fail("Today menu item not found.");
         if ("Cooked".equals(e.status)) return fail("This meal has already been completed.");
         UUID recipeId = resolvedRecipeId(e);
         if (recipeId == null) return fail("This today menu item does not have a resolved recipe.");
         if (recipes.findByIdAndDeletedFalse(recipeId).isEmpty()) return fail("Recipe not found.");
-        var up = media.upload(r.imageFile(), "cooking");
+        List<String> warnings = new ArrayList<>();
+        if (r.imageFile() != null && !r.imageFile().isEmpty()) {
+            try {
+                var up = media.upload(r.imageFile(), "cooking");
+                e.imageUrl = up.secureUrl();
+                e.imagePublicId = up.publicId();
+            } catch (RuntimeException uploadFailure) {
+                warnings.add("Completion image could not be uploaded.");
+            }
+        }
         e.status = "Cooked";
         e.cookedAt = r.cookedAt() == null ? Instant.now() : r.cookedAt();
-        e.imageUrl = up.secureUrl();
-        e.imagePublicId = up.publicId();
         e.touch();
         var l = new CookingLogEntity(u, e);
         l.imageUrl = e.imageUrl;
@@ -145,7 +151,6 @@ public class TodayMenuService {
         l.note = r.note() == null ? e.note : r.note();
         l = logs.save(l);
         List<Object> consumed = new ArrayList<>(), updated = new ArrayList<>();
-        List<String> warnings = new ArrayList<>();
         var pantryRows = pantry.findAllByUserIdAndDeletedFalseOrderByExpiredAtAscCreatedAtAsc(u);
         var recipe = recipes.findByIdAndDeletedFalse(recipeId).orElseThrow();
         for (var needed : recipeIngredients.findAllByRecipeIdAndDeletedFalse(recipeId)) {
