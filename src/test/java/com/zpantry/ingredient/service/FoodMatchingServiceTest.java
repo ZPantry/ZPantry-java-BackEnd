@@ -19,7 +19,7 @@ class FoodMatchingServiceTest {
     private final FoodMatchingService service = new FoodMatchingService(ingredients, aliases);
 
     @Test
-    void resolvesExactAliasAndDoesNotUseFuzzyMatching() {
+    void resolvesExactAliasAndRejectsAnUnrelatedLabel() {
         IngredientEntity rice = new IngredientEntity("Rice");
         UUID riceId = UUID.randomUUID();
         IngredientAliasEntity alias = new IngredientAliasEntity(riceId, "White rice", "white rice");
@@ -35,5 +35,32 @@ class FoodMatchingServiceTest {
 
         when(aliases.findAllByDeletedFalse()).thenReturn(List.of());
         assertThat(service.resolve("riceish").isResolved()).isFalse();
+    }
+
+    @Test
+    void resolvesAHighConfidenceReorderedFoodLabel() {
+        IngredientEntity beefShank = new IngredientEntity("Thịt bò bắp");
+        when(ingredients.findAllByDeletedFalse(org.springframework.data.domain.Pageable.unpaged()))
+                .thenReturn(new PageImpl<>(List.of(beefShank)));
+        when(aliases.findAllByDeletedFalse()).thenReturn(List.of());
+
+        var resolved = service.resolve("bắp thịt bò");
+
+        assertThat(resolved.isResolved()).isTrue();
+        assertThat(resolved.canonicalFood()).isSameAs(beefShank);
+    }
+
+    @Test
+    void keepsACommonPrefixUnresolvedWhenItCouldMeanMultipleFoods() {
+        IngredientEntity beefShank = new IngredientEntity("Thịt bò bắp");
+        IngredientEntity beefTenderloin = new IngredientEntity("Thịt bò thăn");
+        when(ingredients.findAllByDeletedFalse(org.springframework.data.domain.Pageable.unpaged()))
+                .thenReturn(new PageImpl<>(List.of(beefShank, beefTenderloin)));
+        when(aliases.findAllByDeletedFalse()).thenReturn(List.of());
+
+        var resolved = service.resolve("thịt bò");
+
+        assertThat(resolved.isResolved()).isFalse();
+        assertThat(resolved.status()).isEqualTo(com.zpantry.pantryimport.api.PantryImportDtos.ResolverStatus.UNRESOLVED);
     }
 }

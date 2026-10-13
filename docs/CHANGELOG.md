@@ -486,3 +486,12 @@ Keep entries concise and focused on meaningful migration changes.
 - Added deterministic Python score components and retained the legacy recommendation route.
 - Removed a Java-only candidate sort field from the outbound payload after gateway verification proved
   strict Python validation correctly rejected it.
+
+# 2026-10-13 — Safer pantry image catalog matching
+
+- Preserved exact canonical-name, alias and phrase matching as the primary Pantry Import path.
+- Added a conservative fallback for minor spelling/order differences and descriptive food-label suffixes.
+  It only selects a catalog ingredient when one candidate clears the confidence threshold and is clearly
+  ahead of the next candidate; ambiguous foods remain unresolved for user selection.
+- Added unit tests covering reordered labels and a shared-prefix ambiguity case. No API contract,
+  database schema, or allergen safety rule changed.

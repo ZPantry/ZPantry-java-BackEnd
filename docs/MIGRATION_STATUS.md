@@ -274,3 +274,12 @@ score inputs as structured matched, missing and expiring-soon ingredient lists; 
 called. Unit tests cover the priority and missing-ingredient rules. AI conversational analysis remains
 a separate, unimplemented enhancement constrained to the returned recipe set. Full HTTP/database
 verification remains required, so Recommendation stays IMPLEMENTED_NOT_VERIFIED.
+
+## Pantry Import catalog-linking hardening — 2026-10-13
+
+Pantry Import now keeps exact catalog/alias matching first and can additionally resolve a food label
+with minor spelling, word-order, or descriptive-suffix variation when one catalog candidate is clearly
+dominant. It deliberately does not choose among near-tied candidates, preserving manual selection and
+allergen validation for ambiguous foods. The public Pantry Import request and response contracts and
+database schema are unchanged. Unit tests cover both a successful reordered-label match and a
+shared-prefix non-match; broader HTTP/database parity remains pending.
