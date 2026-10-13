@@ -7,6 +7,7 @@ import com.zpantry.ingredient.persistence.IngredientRepository;
 import com.zpantry.media.service.MediaStoragePort;
 import com.zpantry.pantry.persistence.PantryItemRepository;
 import com.zpantry.recipe.persistence.*;
+import com.zpantry.user.service.AllergenSafetyService;
 import com.zpantry.todaymenu.domain.*;
 import com.zpantry.todaymenu.persistence.*;
 
@@ -28,8 +29,9 @@ public class TodayMenuService {
     private final PantryItemRepository pantry;
     private final IngredientRepository ingredients;
     private final ShoppingListItemRepository shoppingList;
+    private final AllergenSafetyService allergenSafety;
 
-    public TodayMenuService(TodayMenuItemRepository m, CookingLogRepository l, PantryUsageLogRepository u, MediaStoragePort s, RecipeRepository recipes, RecipeIngredientRepository recipeIngredients, PantryItemRepository pantry, IngredientRepository ingredients, ShoppingListItemRepository shoppingList) {
+    public TodayMenuService(TodayMenuItemRepository m, CookingLogRepository l, PantryUsageLogRepository u, MediaStoragePort s, RecipeRepository recipes, RecipeIngredientRepository recipeIngredients, PantryItemRepository pantry, IngredientRepository ingredients, ShoppingListItemRepository shoppingList, AllergenSafetyService allergenSafety) {
         menus = m;
         logs = l;
         usage = u;
@@ -39,6 +41,7 @@ public class TodayMenuService {
         this.pantry = pantry;
         this.ingredients = ingredients;
         this.shoppingList = shoppingList;
+        this.allergenSafety = allergenSafety;
     }
 
     private static <T> ApiResponse<T> ok(T d, String m) {
@@ -96,6 +99,9 @@ public class TodayMenuService {
     @Transactional
     public ApiResponse<TodayMenuItemResponse> create(UUID u, CreateTodayMenuItemRequest r) {
         if (r.mealName() == null || r.mealName().isBlank()) return fail("Meal name is required.");
+        UUID recipeId = r.recipeId() == null ? r.mealId() : r.recipeId();
+        String allergyConflict = allergenSafety.recipeConflict(u, recipeId);
+        if (allergyConflict != null) return fail(allergyConflict);
         var e = new TodayMenuItemEntity(u);
         e.mealId = r.mealId();
         e.recipeId = r.recipeId();

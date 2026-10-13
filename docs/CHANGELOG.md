@@ -1,5 +1,12 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-13 — Allergy-safe Pantry and Today Menu writes
+
+- Added a server-owned allergy check shared by Pantry create/update/batch/import and Today Menu creation.
+- A conflicting catalog ingredient now prevents the write and returns a user-facing Vietnamese explanation;
+  client-side checks alone cannot bypass the protection.
+- Added focused unit coverage for blocking an allergenic ingredient and a recipe with an allergenic required ingredient.
+
 ## 2026-10-13 — Resilient Gemini image analysis
 
 - Added safe per-call Gemini telemetry, bounded transient retry, stable-model fallback, circuit breaking,

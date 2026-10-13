@@ -113,7 +113,7 @@ public class PantryImportService {
                     operationId, Instant.now(), userId, idempotencyKey.trim(), request.analysisId());
             if (inserted == 0) return;
         }
-        for (var item : request.items()) pantry.validateImportItem(item.ingredientId(), item.quantity(), item.unit());
+        for (var item : request.items()) pantry.validateImportItem(userId, item.ingredientId(), item.quantity(), item.unit());
         for (var item : request.items())
             pantry.addFromImport(userId, item.ingredientId(), item.quantity(), item.unit());
         if (operationId != null) jdbc.update("update pantry_import_idempotency set response_json = ? where id = ?", "{\"status\":\"CONFIRMED\"}", operationId);

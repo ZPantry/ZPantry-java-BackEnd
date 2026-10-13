@@ -927,3 +927,18 @@ Configure the mobile `zpantry` URL scheme to route `payment/success` and `paymen
 subscription screen, then reload the current subscription after the app returns. The server webhook
 remains the only trusted path that may activate Z-Plus. Register the public HTTPS webhook URL in
 the PayOS merchant dashboard before enabling checkout in an environment.
+
+## [MIG-014] Allergy-safe Pantry and Today Menu writes
+
+**Status:** IMPLEMENTED_NOT_VERIFIED
+
+**Breaking Change:** YES — requests that conflict with the authenticated user's saved allergies are rejected.
+
+**Date:** 2026-10-13
+
+`POST /api/me/pantry/items`, `POST /api/me/pantry/items/batch`, `PUT /api/me/pantry/items/{itemId}`
+and Pantry Import confirmation now reject an ingredient whose catalog allergen metadata overlaps the
+authenticated user's allergy profile. `POST /api/me/today-menu/items` similarly rejects a recipe
+when any required catalog ingredient conflicts. The existing response envelope is retained with
+`success=false` and a Vietnamese explanation naming the conflicting ingredient and allergen; no
+Pantry item or Today Menu item is written.

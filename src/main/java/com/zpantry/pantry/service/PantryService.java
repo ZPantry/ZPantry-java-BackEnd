@@ -5,6 +5,7 @@ import com.zpantry.common.api.PagedResponse;
 import com.zpantry.ingredient.persistence.IngredientRepository;
 import com.zpantry.pantry.domain.PantryItemEntity;
 import com.zpantry.pantry.persistence.PantryItemRepository;
+import com.zpantry.user.service.AllergenSafetyService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -24,11 +25,13 @@ public class PantryService {
     private final PantryItemRepository repo;
     private final IngredientRepository ingredients;
     private final ExpiredPantryCleanupService cleanup;
+    private final AllergenSafetyService allergenSafety;
 
-    public PantryService(PantryItemRepository r, IngredientRepository i, ExpiredPantryCleanupService cleanup) {
+    public PantryService(PantryItemRepository r, IngredientRepository i, ExpiredPantryCleanupService cleanup, AllergenSafetyService allergenSafety) {
         repo = r;
         ingredients = i;
         this.cleanup = cleanup;
+        this.allergenSafety = allergenSafety;
     }
 
     private static <T> ApiResponse<T> ok(T d, String m) {
@@ -52,6 +55,8 @@ public class PantryService {
     public ApiResponse<PantryItemResponse> upsert(UUID u, UpsertPantryItemRequest r) {
         String invalid = invalidItem(r.ingredientId(), r.quantity(), r.unit());
         if (invalid != null) return fail(invalid);
+        String allergyConflict = allergenSafety.ingredientConflict(u, List.of(r.ingredientId()));
+        if (allergyConflict != null) return fail(allergyConflict);
         var e = repo.findByUserIdAndIngredientIdAndDeletedFalse(u, r.ingredientId()).orElseGet(() -> new PantryItemEntity(u, r.ingredientId()));
         apply(e, r.ingredientId(), r.quantity(), r.unit(), r.expiredAt(), r.storageLocation(), r.note());
         return ok(dto(repo.save(e)), "Pantry item saved.");
@@ -66,6 +71,8 @@ public class PantryService {
             if (invalid != null) return fail(invalid);
             if (!ingredientIds.add(request.ingredientId())) return fail("Each ingredient can appear only once.");
         }
+        String allergyConflict = allergenSafety.ingredientConflict(userId, ingredientIds);
+        if (allergyConflict != null) return fail(allergyConflict);
 
         var saved = requests.stream().map(request -> {
             var item = repo.findByUserIdAndIngredientIdAndDeletedFalse(userId, request.ingredientId())
@@ -89,6 +96,8 @@ public class PantryService {
         UUID ingredientId = r.ingredientId() == null ? e.ingredientId : r.ingredientId();
         String invalid = invalidItem(ingredientId, r.quantity() == null ? e.quantity : r.quantity(), r.unit() == null ? e.unit : r.unit());
         if (invalid != null) return fail(invalid);
+        String allergyConflict = allergenSafety.ingredientConflict(u, List.of(ingredientId));
+        if (allergyConflict != null) return fail(allergyConflict);
         apply(e, r.ingredientId(), r.quantity(), r.unit(), r.expiredAt(), expiredAtProvided, r.storageLocation(), r.note());
         e.touch();
         return ok(dto(e), "Pantry item updated.");
@@ -102,9 +111,11 @@ public class PantryService {
         return ok(null, "Pantry item deleted.");
     }
 
-    public void validateImportItem(UUID ingredientId, java.math.BigDecimal quantity, String unit) {
+    public void validateImportItem(UUID userId, UUID ingredientId, java.math.BigDecimal quantity, String unit) {
         String invalid = invalidItem(ingredientId, quantity, unit);
         if (invalid != null) throw new IllegalArgumentException(invalid);
+        String allergyConflict = allergenSafety.ingredientConflict(userId, List.of(ingredientId));
+        if (allergyConflict != null) throw new IllegalArgumentException(allergyConflict);
     }
 
     /**
@@ -113,8 +124,7 @@ public class PantryService {
      */
     @Transactional
     public PantryItemResponse addFromImport(UUID userId, UUID ingredientId, BigDecimal quantity, String unit) {
-        String invalid = invalidItem(ingredientId, quantity, unit);
-        if (invalid != null) throw new IllegalArgumentException(invalid);
+        validateImportItem(userId, ingredientId, quantity, unit);
 
         var existing = repo.findAllByUserIdAndIngredientIdAndDeletedFalse(userId, ingredientId).stream()
                 .filter(item -> item.unit != null && item.unit.trim().equalsIgnoreCase(unit.trim()))

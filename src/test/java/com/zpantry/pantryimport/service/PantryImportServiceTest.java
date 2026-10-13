@@ -32,7 +32,7 @@ class PantryImportServiceTest {
 
         service.confirm(userId, request, "retry-key");
 
-        verify(pantry).validateImportItem(ingredientId, new BigDecimal("1.5"), "kg");
+        verify(pantry).validateImportItem(userId, ingredientId, new BigDecimal("1.5"), "kg");
         verify(pantry).addFromImport(userId, ingredientId, new BigDecimal("1.5"), "kg");
     }
 
@@ -46,9 +46,10 @@ class PantryImportServiceTest {
         var request = new ConfirmPantryImportRequest(null,
                 List.of(new ConfirmPantryImportItem(UUID.randomUUID(), BigDecimal.ONE, "g")));
 
-        service.confirm(UUID.randomUUID(), request, "retry-key");
+        UUID userId = UUID.randomUUID();
+        service.confirm(userId, request, "retry-key");
 
-        verify(pantry, never()).validateImportItem(any(), any(), any());
+        verify(pantry, never()).validateImportItem(any(), any(), any(), any());
         verify(pantry, never()).addFromImport(any(), any(), any(), any());
     }
 }
