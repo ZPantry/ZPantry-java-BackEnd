@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.dao.DataAccessException;
+import org.springframework.core.NestedExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,6 +87,9 @@ public class PantryImportService {
         } catch (com.zpantry.integration.ai.HttpAiClient.AiIntegrationException exception) {
             log.warn("Unified image analysis request failed: status={}", exception.status());
             throw new AiUnavailableException();
+        } catch (DataAccessException exception) {
+            logDatabaseFailure(exception);
+            throw new IllegalStateException("Image analysis is currently unavailable");
         } catch (Exception exception) {
             log.warn("Unified image analysis request failed: {}", exception.getMessage());
             throw new IllegalStateException("Image analysis is currently unavailable");
@@ -150,5 +155,25 @@ public class PantryImportService {
         jdbc.update("insert into pantry_import_analyses (id, created_at, user_id, image_type, status, expires_at) values (?, ?, ?, ?, ?, ?)",
                 response.analysisId(), now, userId, response.imageType().name(), "ANALYZED", now.plusSeconds(30 * 60));
         return response;
+    }
+
+    /** Logs only database identity and PostgreSQL error metadata, never a JDBC URL or user data. */
+    private void logDatabaseFailure(DataAccessException exception) {
+        Throwable root = NestedExceptionUtils.getMostSpecificCause(exception);
+        String sqlState = root instanceof java.sql.SQLException sql ? sql.getSQLState() : "unknown";
+        try {
+            var context = jdbc.queryForMap("select current_database() as database_name, current_schema() as schema_name, current_user as database_user");
+            log.warn("Pantry analysis persistence failed: sqlState={} root={} database={} schema={} user={}",
+                    sqlState, safeSummary(root.getMessage()), context.get("database_name"), context.get("schema_name"), context.get("database_user"));
+        } catch (Exception contextFailure) {
+            log.warn("Pantry analysis persistence failed: sqlState={} root={} (database context unavailable: {})",
+                    sqlState, safeSummary(root.getMessage()), contextFailure.getClass().getSimpleName());
+        }
+    }
+
+    private static String safeSummary(String value) {
+        if (value == null || value.isBlank()) return "<empty>";
+        String normalized = value.replaceAll("[\\r\\n]+", " ");
+        return normalized.substring(0, Math.min(300, normalized.length()));
     }
 }
