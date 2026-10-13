@@ -172,6 +172,11 @@ The independent AI service exposes `POST /ai/analyze-receipt` and
 local `.env`; these values must never be present in Java configuration, frontend code, logs, or Git.
 The Java backend calls the AI service through `AI_SERVICE_URL` using multipart image uploads.
 
+The AI service has bounded retries/fallback and may return a 503 body with `error.code` of
+`AI_UNAVAILABLE` or `AI_INVALID_OUTPUT` and `quota.charged=false`. Java reserves OCR quota before an
+analysis, then refunds it for provider failure, unknown images, or empty usable results. Set Java's
+outbound AI timeout above the AI service's bounded retry window but below the platform gateway timeout.
+
 ### Pantry AI catalog boundary
 
 `POST /api/me/pantry/parse`, `/api/me/pantry-import/receipt/analyze`, and

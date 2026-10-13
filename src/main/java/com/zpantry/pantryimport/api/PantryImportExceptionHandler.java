@@ -26,6 +26,13 @@ public class PantryImportExceptionHandler {
         return response(HttpStatus.SERVICE_UNAVAILABLE, "Image analysis is currently unavailable.", request);
     }
 
+    @ExceptionHandler(com.zpantry.pantryimport.service.PantryImportService.AiUnavailableException.class)
+    ResponseEntity<java.util.Map<String, Object>> aiUnavailable(com.zpantry.pantryimport.service.PantryImportService.AiUnavailableException exception) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(java.util.Map.of(
+                "error", java.util.Map.of("code", "AI_UNAVAILABLE", "message", "Hệ thống AI đang quá tải. Lượt của bạn không bị trừ.", "retryable", true),
+                "quota", java.util.Map.of("charged", false)));
+    }
+
     @ExceptionHandler(SubscriptionLimitExceededException.class)
     ResponseEntity<ApiResponse<Void>> subscriptionQuotaExceeded(SubscriptionLimitExceededException exception, HttpServletRequest request) {
         return response(HttpStatus.TOO_MANY_REQUESTS, "Usage quota reached. Upgrade to Z-Plus or wait for the next reset.", request);

@@ -11,10 +11,14 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 public class CloudinaryMediaStorageAdapter implements MediaStoragePort {
+    private static final Logger log = LoggerFactory.getLogger(CloudinaryMediaStorageAdapter.class);
     private final RestClient client;
     private final String cloud, key, secret;
 
@@ -42,7 +46,11 @@ public class CloudinaryMediaStorageAdapter implements MediaStoragePort {
             body.add("signature", sig);
             Map<?, ?> m = client.post().uri("/auto/upload").body(body).retrieve().body(Map.class);
             return new UploadResult((String) m.get("public_id"), (String) m.get("url"), (String) m.get("secure_url"), (String) m.get("resource_type"), (String) m.get("format"), (Integer) m.get("width"), (Integer) m.get("height"));
+        } catch (RestClientResponseException e) {
+            log.warn("Cloudinary upload failed: status={} response={}", e.getStatusCode().value(), safeSummary(e.getResponseBodyAsString()));
+            throw new IllegalStateException("Media upload failed", e);
         } catch (Exception e) {
+            log.warn("Cloudinary upload failed: type={} message={}", e.getClass().getSimpleName(), safeSummary(e.getMessage()));
             throw new IllegalStateException("Media upload failed", e);
         }
     }
@@ -54,8 +62,10 @@ public class CloudinaryMediaStorageAdapter implements MediaStoragePort {
     }
 
     private void configured() {
-        if (cloud.isBlank() || key.isBlank() || secret.isBlank())
+        if (cloud.isBlank() || key.isBlank() || secret.isBlank()) {
+            log.warn("Cloudinary upload rejected because required media configuration is absent");
             throw new IllegalStateException("Media storage is not configured");
+        }
     }
 
     private static String sha1(String s) {
@@ -64,5 +74,12 @@ public class CloudinaryMediaStorageAdapter implements MediaStoragePort {
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    private static String safeSummary(String value) {
+        if (value == null || value.isBlank()) return "<empty>";
+        // Cloudinary errors are diagnostic text; keep the log bounded and avoid accidental multiline output.
+        String normalized = value.replaceAll("[\\r\\n]+", " ");
+        return normalized.substring(0, Math.min(300, normalized.length()));
     }
 }

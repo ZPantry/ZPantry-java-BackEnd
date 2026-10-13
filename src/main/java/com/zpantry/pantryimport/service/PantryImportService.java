@@ -51,6 +51,9 @@ public class PantryImportService {
             if (result.isEmpty()) warnings.add("No catalog ingredients were detected.");
             else if (unmatched > 0) warnings.add("Some detected items were not found in the ingredient catalog and were omitted.");
             return new PantryImportPreviewResponse(type, List.copyOf(result), List.copyOf(warnings));
+        } catch (com.zpantry.integration.ai.HttpAiClient.AiIntegrationException e) {
+            log.warn("Image analysis request failed: status={}", e.status());
+            throw new AiUnavailableException();
         } catch (Exception e) {
             log.warn("Image analysis request failed: {}", e.getMessage());
             throw new IllegalStateException("Image analysis is currently unavailable");
@@ -79,11 +82,16 @@ public class PantryImportService {
             if (result.isEmpty()) warnings.add("No catalog ingredients were detected.");
             else if (unmatched > 0) warnings.add("Some detected items were not found in the ingredient catalog and were omitted.");
             return storeAnalysis(userId, response(imageType, map, List.copyOf(result), List.copyOf(warnings)));
+        } catch (com.zpantry.integration.ai.HttpAiClient.AiIntegrationException exception) {
+            log.warn("Unified image analysis request failed: status={}", exception.status());
+            throw new AiUnavailableException();
         } catch (Exception exception) {
             log.warn("Unified image analysis request failed: {}", exception.getMessage());
             throw new IllegalStateException("Image analysis is currently unavailable");
         }
     }
+
+    public static final class AiUnavailableException extends RuntimeException { public AiUnavailableException() { super("AI_UNAVAILABLE"); } }
 
     @Transactional
     public void confirm(UUID userId, ConfirmPantryImportRequest request, String idempotencyKey) {

@@ -92,7 +92,7 @@ public class HttpAiClient implements AiClient {
             int status = connection.getResponseCode();
             InputStream responseBody = status >= 200 && status < 300 ? connection.getInputStream() : connection.getErrorStream();
             String response = responseBody == null ? "" : new String(responseBody.readAllBytes(), StandardCharsets.UTF_8);
-            if (status < 200 || status >= 300) throw new AiIntegrationException("AI service responded with HTTP " + status, null);
+            if (status < 200 || status >= 300) throw new AiIntegrationException("AI service responded with HTTP " + status, status, response, null);
             return objectMapper.readValue(response, Map.class);
         } catch (JacksonException | IOException exception) {
             throw new AiIntegrationException("AI image analysis failed", exception);
@@ -137,8 +137,11 @@ public class HttpAiClient implements AiClient {
     }
 
     public static class AiIntegrationException extends RuntimeException {
-        public AiIntegrationException(String message, Throwable cause) {
-            super(message, cause);
-        }
+        private final int status;
+        private final String response;
+        public AiIntegrationException(String message, Throwable cause) { this(message, 0, "", cause); }
+        public AiIntegrationException(String message, int status, String response, Throwable cause) { super(message, cause); this.status = status; this.response = response; }
+        public int status() { return status; }
+        public String response() { return response; }
     }
 }

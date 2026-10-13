@@ -1,5 +1,13 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-13 — Resilient Gemini image analysis
+
+- Added safe per-call Gemini telemetry, bounded transient retry, stable-model fallback, circuit breaking,
+  concurrency limiting and short digest-keyed success caching in the AI service.
+- Preserved image routes and existing response fields while adding retryable `AI_UNAVAILABLE` and
+  `AI_INVALID_OUTPUT` error contracts with `quota.charged=false` for provider failures.
+- Added an environment-only Gemini connectivity check script and documented the new deployment knobs.
+
 ## 2026-10-12 — Idempotent unified image-import confirmation
 
 - Unified image analysis now records a 30-minute, owner-bound `analysisId`; confirmation can use
