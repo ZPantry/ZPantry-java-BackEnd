@@ -237,3 +237,18 @@ units remain separate rather than being guessed/converged by the server.
 The V11 migration must be applied to the Java-owned database before enabling this contract in a
 deployed backend. Runtime Flyway remains disabled for shared legacy databases; do not rely on an
 application restart to create these tables.
+
+## Render liveness and AI heartbeat
+
+The backend exposes public `GET /health`, which returns a shallow healthy response without database
+or provider work. The AI service exposes the equivalent `GET /ai/health` endpoint.
+
+For a sleeping Render web-service plan, configure an external uptime monitor to call the backend
+`/health` endpoint every ten minutes. Set `ZPANTRY_KEEPALIVE_ENABLED=true` on the deployed backend;
+while the backend remains active, it calls `AI_SERVICE_URL/ai/health` every ten minutes (customize
+with `ZPANTRY_KEEPALIVE_INTERVAL_MS`). The backend must have the full public AI service URL in
+`AI_SERVICE_URL` because free Render web services do not accept private-network traffic.
+
+The AI heartbeat is a liveness GET only: it sends no image, makes no Gemini request, and does not
+consume OCR quota. Keep the setting disabled in local development. A local scheduler cannot wake a
+backend that Render has already stopped, which is why the external backend monitor is required.

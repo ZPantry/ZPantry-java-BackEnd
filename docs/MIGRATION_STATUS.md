@@ -1,6 +1,6 @@
 # ZPantry Java Migration Status
 
-Last update: 2026-10-12 — Unified image analysis has confirmation idempotency; database deployment remains required
+Last update: 2026-10-17 — Backend liveness endpoint and optional AI heartbeat added; external monitor configuration remains required
 
 ## Current conclusion
 
@@ -26,7 +26,7 @@ remain NOT_STARTED.
 | Cooking / Pantry Usage Logs | Completion persists pantry-usage rows and cooking-log reads return them | IMPLEMENTED_NOT_VERIFIED |
 | AI Integration / Embedding Backfill | HTTP client and ingredient/recipe embedding persistence implemented; Gemini receipt/food-image extraction passes the canonical catalog-ID boundary; text import is local (no Ollama/text AI); public image routes use the subscription OCR quota reported to the client; backfill command absent | IMPLEMENTED_NOT_VERIFIED |
 | Vector Search | No implementation; legacy service remains a stub | NOT_STARTED |
-| Docker / Deployment | Java 21 multi-stage backend Dockerfile and workspace Compose build wiring implemented; production deployment configuration remains environment-owned | IMPLEMENTED_NOT_VERIFIED |
+| Docker / Deployment | Java 21 multi-stage backend Dockerfile and workspace Compose build wiring implemented; public backend liveness and optional AI heartbeat are available, but production monitor/Render configuration remains environment-owned | IMPLEMENTED_NOT_VERIFIED |
 | Subscription / PayOS | PayOS checkout records, signed webhook completion/failure processing, idempotent subscription activation, and browser-to-mobile return pages implemented; live-provider parity remains outstanding | IMPLEMENTED_NOT_VERIFIED |
 
 ## Foundation inventory

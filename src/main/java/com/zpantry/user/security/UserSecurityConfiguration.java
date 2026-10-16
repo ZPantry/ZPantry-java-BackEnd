@@ -33,6 +33,7 @@ public class UserSecurityConfiguration {
         http.cors(org.springframework.security.config.Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/health").permitAll()
                         .requestMatchers("/api/Auth/register", "/api/Auth/verify-otp", "/api/Auth/login", "/api/Auth/refresh-token", "/api/payment/payos/webhook").permitAll()
                         .requestMatchers("/api/Auth/logout", "/api/me/**", "/api/recommendations/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v2/ingredients/analyze-image").authenticated()
@@ -56,6 +57,7 @@ public class UserSecurityConfiguration {
         http.cors(org.springframework.security.config.Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/health").permitAll()
                         .requestMatchers("/api/Auth/register", "/api/Auth/verify-otp", "/api/Auth/login", "/api/Auth/refresh-token", "/api/payment/payos/webhook").permitAll()
                         .requestMatchers("/api/Auth/logout", "/api/me/**", "/api/recommendations/**").denyAll()
                         .requestMatchers(HttpMethod.POST, "/api/v2/ingredients/analyze-image").denyAll()

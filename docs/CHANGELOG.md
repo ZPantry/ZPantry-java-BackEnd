@@ -1,5 +1,12 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-17 — Render liveness support
+
+- Added public shallow `GET /health` to the backend for deployment health checks and external uptime monitors.
+- Added an environment-gated backend-to-AI `GET /ai/health` heartbeat, disabled by default and with no Gemini or quota usage.
+- Moved scheduling enablement out of the application entry point into dedicated configuration.
+- Documented the required external monitor because an in-process heartbeat cannot wake a slept backend.
+
 ## 2026-10-13 — Optional Today Menu completion photo
 
 - Removed the required completion-photo gate: a user can mark a meal complete and save a cooking log

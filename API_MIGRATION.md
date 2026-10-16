@@ -974,3 +974,22 @@ response `warnings` includes the upload warning.
 
 Keep `imageFile` optional. Do not disable “Hoàn thành và lưu nhật ký” when no photo is chosen, and
 show returned warnings after a successful completion.
+
+## [MIG-017] Public backend liveness endpoint and optional AI heartbeat
+
+**Status:** IMPLEMENTED_NOT_VERIFIED
+
+**Breaking Change:** NO
+
+**Date:** 2026-10-17
+
+`GET /health` is a public shallow liveness endpoint. It returns the normal response envelope with
+`data.status="healthy"` and deliberately does not contact PostgreSQL, Cloudinary, Gemini, or the AI
+service. It is intended for the Render health check or an external uptime monitor.
+
+When `ZPANTRY_KEEPALIVE_ENABLED=true`, a live backend requests `GET /ai/health` from the configured
+AI service after an initial delay and then at `ZPANTRY_KEEPALIVE_INTERVAL_MS` (ten minutes by default).
+The heartbeat never invokes an AI model or consumes a customer quota. It is disabled by default.
+
+An external monitor must still request the backend's public `/health`: an in-process scheduler cannot
+run after a free web service has been spun down.
