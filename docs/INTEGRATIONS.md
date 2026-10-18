@@ -252,8 +252,8 @@ The backend exposes public `GET /health`, which returns a shallow healthy respon
 or provider work. The AI service exposes the equivalent `GET /ai/health` endpoint.
 
 For a sleeping Render web-service plan, configure an external uptime monitor to call the backend
-`/health` endpoint every ten minutes. Set `ZPANTRY_KEEPALIVE_ENABLED=true` on the deployed backend;
-while the backend remains active, it calls `AI_SERVICE_URL/ai/health` every ten minutes (customize
+`/health` endpoint every three minutes. Set `ZPANTRY_KEEPALIVE_ENABLED=true` on the deployed backend;
+while the backend remains active, it calls `AI_SERVICE_URL/ai/health` every three minutes (customize
 with `ZPANTRY_KEEPALIVE_INTERVAL_MS`). The backend must have the full public AI service URL in
 `AI_SERVICE_URL` because free Render web services do not accept private-network traffic.
 

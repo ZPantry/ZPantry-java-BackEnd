@@ -20,7 +20,7 @@ class AiServiceKeepAliveScheduler {
         this.probe = probe;
     }
 
-    @Scheduled(fixedDelayString = "${zpantry.keepalive.interval-ms:600000}", initialDelayString = "${zpantry.keepalive.initial-delay-ms:60000}")
+    @Scheduled(fixedDelayString = "${zpantry.keepalive.interval-ms:180000}", initialDelayString = "${zpantry.keepalive.initial-delay-ms:60000}")
     void pingAiService() {
         try {
             probe.probe();

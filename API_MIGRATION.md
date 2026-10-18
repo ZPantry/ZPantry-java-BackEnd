@@ -1005,7 +1005,7 @@ show returned warnings after a successful completion.
 service. It is intended for the Render health check or an external uptime monitor.
 
 When `ZPANTRY_KEEPALIVE_ENABLED=true`, a live backend requests `GET /ai/health` from the configured
-AI service after an initial delay and then at `ZPANTRY_KEEPALIVE_INTERVAL_MS` (ten minutes by default).
+AI service after an initial delay and then at `ZPANTRY_KEEPALIVE_INTERVAL_MS` (three minutes by default).
 The heartbeat never invokes an AI model or consumes a customer quota. It is disabled by default.
 
 An external monitor must still request the backend's public `/health`: an in-process scheduler cannot

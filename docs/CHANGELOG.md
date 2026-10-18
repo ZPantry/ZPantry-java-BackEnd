@@ -1,5 +1,9 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-18 — Three-minute AI liveness heartbeat
+
+- Reduced the default deployed backend-to-AI health interval from ten minutes to three minutes.
+
 ## 2026-10-18 — Atomic ingredient alias batch API
 
 - Added `POST /api/ingredients/{ingredientId}/aliases/batch` for creating up to 100 aliases atomically.
