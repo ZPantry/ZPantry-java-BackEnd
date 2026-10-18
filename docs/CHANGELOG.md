@@ -1,5 +1,12 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-19 — PostgreSQL-safe Pantry Import confirmation timestamps
+
+- Fixed Pantry Import confirmation and unified-analysis persistence to bind JDBC timestamps as
+  `java.sql.Timestamp`, rather than an untyped `Instant` that PostgreSQL JDBC rejects.
+- Added a PostgreSQL integration regression test that verifies a confirmation with an
+  `Idempotency-Key` succeeds once and cannot add the same item twice on retry.
+
 ## 2026-10-18 — Three-minute AI liveness heartbeat
 
 - Reduced the default deployed backend-to-AI health interval from ten minutes to three minutes.

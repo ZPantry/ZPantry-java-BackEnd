@@ -6,6 +6,7 @@ import com.zpantry.pantryimport.api.PantryImportDtos.*;
 import com.zpantry.pantryimport.domain.ExtractedIngredient;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
 
@@ -104,7 +105,7 @@ public class PantryImportService {
     public void confirm(UUID userId, ConfirmPantryImportRequest request, String idempotencyKey) {
         if (request.analysisId() != null && jdbc.queryForObject(
                 "select count(*) from pantry_import_analyses where id = ? and user_id = ? and expires_at > ?",
-                Integer.class, request.analysisId(), userId, Instant.now()) == 0) {
+                Integer.class, request.analysisId(), userId, Timestamp.from(Instant.now())) == 0) {
             throw new IllegalArgumentException("Image analysis is expired or does not belong to this user.");
         }
         UUID operationId = null;
@@ -112,7 +113,7 @@ public class PantryImportService {
             if (idempotencyKey.length() > 100) throw new IllegalArgumentException("Idempotency-Key must not exceed 100 characters.");
             operationId = UUID.randomUUID();
             int inserted = jdbc.update("insert into pantry_import_idempotency (id, created_at, user_id, idempotency_key, analysis_id) values (?, ?, ?, ?, ?) on conflict (user_id, idempotency_key) do nothing",
-                    operationId, Instant.now(), userId, idempotencyKey.trim(), request.analysisId());
+                    operationId, Timestamp.from(Instant.now()), userId, idempotencyKey.trim(), request.analysisId());
             if (inserted == 0) return;
         }
         for (var item : request.items()) pantry.validateImportItem(userId, item.ingredientId(), item.quantity(), item.unit());
@@ -159,7 +160,8 @@ public class PantryImportService {
     private UnifiedImageAnalysisResponse storeAnalysis(UUID userId, UnifiedImageAnalysisResponse response) {
         Instant now = Instant.now();
         jdbc.update("insert into pantry_import_analyses (id, created_at, user_id, image_type, status, expires_at) values (?, ?, ?, ?, ?, ?)",
-                response.analysisId(), now, userId, response.imageType().name(), "ANALYZED", now.plusSeconds(30 * 60));
+                response.analysisId(), Timestamp.from(now), userId, response.imageType().name(), "ANALYZED",
+                Timestamp.from(now.plusSeconds(30 * 60)));
         return response;
     }
 

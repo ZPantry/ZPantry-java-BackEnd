@@ -2,6 +2,9 @@ package com.zpantry.pantryimport.service;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,6 +14,7 @@ import com.zpantry.pantry.service.PantryService;
 import com.zpantry.pantryimport.api.PantryImportDtos.ConfirmPantryImportItem;
 import com.zpantry.pantryimport.api.PantryImportDtos.ConfirmPantryImportRequest;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -34,6 +38,7 @@ class PantryImportServiceTest {
 
         verify(pantry).validateImportItem(userId, ingredientId, new BigDecimal("1.5"), "kg");
         verify(pantry).addFromImport(userId, ingredientId, new BigDecimal("1.5"), "kg");
+        verify(jdbc).update(anyString(), any(UUID.class), argThat(Timestamp.class::isInstance), eq(userId), eq("retry-key"), isNull());
     }
 
     @Test

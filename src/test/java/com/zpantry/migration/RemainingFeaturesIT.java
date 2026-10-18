@@ -9,6 +9,8 @@ import com.zpantry.integration.ai.AiClient;
 import com.zpantry.media.service.MediaStoragePort;
 import com.zpantry.pantry.service.PantryService;
 import com.zpantry.pantryimport.api.PantryImportDtos.SourceType;
+import com.zpantry.pantryimport.api.PantryImportDtos.ConfirmPantryImportItem;
+import com.zpantry.pantryimport.api.PantryImportDtos.ConfirmPantryImportRequest;
 import com.zpantry.pantryimport.service.PantryImportService;
 import com.zpantry.pantryimport.service.PantryIngredientPipeline;
 import com.zpantry.pantry.service.PantryTextExtractionService;
@@ -172,6 +174,22 @@ class RemainingFeaturesIT {
             assertThat(item.unit()).isEqualTo("g");
             assertThat(item.quantity()).isPositive();
         });
+    }
+
+    @Test
+    void pantryImportConfirmationBindsTimestampsForPostgresAndRemainsIdempotent() {
+        var ingredient = ingredients.create(new CreateIngredientRequest(
+                "Timestamp import " + UUID.randomUUID(), "grain", "g", null, null, null, null, null, null, null)).data();
+        UUID userId = UUID.randomUUID();
+        String idempotencyKey = "import-" + UUID.randomUUID();
+        var request = new ConfirmPantryImportRequest(null,
+                List.of(new ConfirmPantryImportItem(ingredient.id(), new BigDecimal("125"), "g")));
+
+        pantryImport.confirm(userId, request, idempotencyKey);
+        pantryImport.confirm(userId, request, idempotencyKey);
+
+        assertThat(pantry.list(userId, 1, 10).data()).singleElement().satisfies(item ->
+                assertThat(item.quantity()).isEqualByComparingTo("125"));
     }
 
     @Test
