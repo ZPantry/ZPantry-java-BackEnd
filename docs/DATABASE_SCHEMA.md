@@ -146,6 +146,12 @@ stores the authenticated owner, detected image type, status and a 30-minute expi
 `analysisId`; it deliberately stores no image bytes. `pantry_import_idempotency` has a unique
 `(user_id, idempotency_key)` pair so a retry of the same import confirmation cannot add quantities
 twice. These tables are additive and have no foreign keys because the inspected legacy schema does
+
+### Unmatched ingredient maintenance log (V12)
+
+`V12__add_unmatched_ingredient_log.sql` adds the Java-owned `unmatched_ingredient_log` table.
+It aggregates eligible unresolved image labels, their safe candidate summary and review status for
+catalog maintenance. It never stores image bytes and is not exposed as a client API.
 not establish a compatible FK baseline.
 
 ---

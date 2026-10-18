@@ -188,6 +188,14 @@ therefore come from PostgreSQL, never from Gemini. Suggested quantities are used
 when positive; otherwise the persisted `defaultQuantity` is returned. AI detections that cannot be
 resolved unambiguously are omitted and reported only as a preview warning for image flows.
 
+Ambiguous and unresolved image detections are retained for explicit user review, with up to three
+server-derived catalog candidates. They cannot be confirmed until a canonical catalog UUID is chosen.
+Eligible unmatched labels are recorded asynchronously for catalog maintenance without storing images.
+
+The AI service orientation-corrects and downscales images over `GEMINI_MAX_IMAGE_EDGE` (1536 by
+default) before hash-based caching and Gemini upload. This lowers latency and provider payload size;
+the original upload is neither changed in Pantry nor stored by this operation.
+
 Text parsing is local and deterministic: it segments explicit comma/newline/conjunction-separated
 items and then matches canonical food names or maintained aliases. It makes no AI-service, Ollama,
 or provider-key call. A text item that does not map uniquely to the active catalog is not returned.

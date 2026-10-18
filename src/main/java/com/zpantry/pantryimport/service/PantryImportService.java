@@ -25,12 +25,14 @@ public class PantryImportService {
     private final PantryIngredientPipeline pipeline;
     private final PantryService pantry;
     private final JdbcTemplate jdbc;
+    private final UnmatchedIngredientLogger unmatched;
 
-    public PantryImportService(AiClient a, PantryIngredientPipeline pipeline, PantryService p, JdbcTemplate jdbc) {
+    public PantryImportService(AiClient a, PantryIngredientPipeline pipeline, PantryService p, JdbcTemplate jdbc, UnmatchedIngredientLogger unmatched) {
         ai = a;
         this.pipeline = pipeline;
         pantry = p;
         this.jdbc = jdbc;
+        this.unmatched = unmatched;
     }
 
     public PantryImportPreviewResponse analyze(SourceType type, MultipartFile image) {
@@ -40,18 +42,18 @@ public class PantryImportService {
             if (!(data instanceof Map<?, ?> map) || !(map.get("items") instanceof List<?> items))
                 throw new IllegalStateException("AI returned incomplete analysis");
             var result = new ArrayList<PantryImportPreviewItem>();
-            int unmatched = 0;
+            int unmatchedCount = 0;
             for (Object x : items)
                 if (x instanceof Map<?, ?> row && !Boolean.FALSE.equals(row.get("food"))) {
                     String raw = rawName(row);
-                    if (raw == null) { unmatched++; continue; }
+                    if (raw == null) { unmatchedCount++; continue; }
                     var preview = pipeline.resolve(new ExtractedIngredient(raw, text(row.get("canonicalHint")), num(row.get("quantity")), text(row.get("unit")),
                             num(row.get("price")), num(row.get("confidence")), flags(row.get("flags"))));
-                    if (preview.isPresent()) result.add(preview.get()); else unmatched++;
+                    if (preview.isPresent()) { result.add(preview.get()); unmatched.record(preview.get()); } else unmatchedCount++;
                 }
             var warnings = new ArrayList<String>();
             if (result.isEmpty()) warnings.add("No catalog ingredients were detected.");
-            else if (unmatched > 0) warnings.add("Some detected items were not found in the ingredient catalog and were omitted.");
+            else if (unmatchedCount > 0) warnings.add("Some detected items need a catalog selection before they can be imported.");
             return new PantryImportPreviewResponse(type, List.copyOf(result), List.copyOf(warnings));
         } catch (com.zpantry.integration.ai.HttpAiClient.AiIntegrationException e) {
             log.warn("Image analysis request failed: status={}", e.status());
@@ -73,16 +75,16 @@ public class PantryImportService {
             Object source = map.get("ingredients");
             if (!(source instanceof List<?> items)) throw new IllegalStateException("AI returned incomplete analysis");
             var result = new ArrayList<PantryImportPreviewItem>();
-            int unmatched = 0;
+            int unmatchedCount = 0;
             for (Object value : items) if (value instanceof Map<?, ?> row && !Boolean.FALSE.equals(row.get("food"))) {
                 String raw = rawName(row);
-                if (raw == null) { unmatched++; continue; }
+                if (raw == null) { unmatchedCount++; continue; }
                 var preview = pipeline.resolve(new ExtractedIngredient(raw, text(row.get("canonicalHint")), num(row.get("quantity")), text(row.get("unit")), null, num(row.get("confidence")), flags(row.get("flags"))));
-                if (preview.isPresent()) result.add(preview.get()); else unmatched++;
+                if (preview.isPresent()) { result.add(preview.get()); unmatched.record(preview.get()); } else unmatchedCount++;
             }
             var warnings = new ArrayList<String>();
             if (result.isEmpty()) warnings.add("No catalog ingredients were detected.");
-            else if (unmatched > 0) warnings.add("Some detected items were not found in the ingredient catalog and were omitted.");
+            else if (unmatchedCount > 0) warnings.add("Some detected items need a catalog selection before they can be imported.");
             return storeAnalysis(userId, response(imageType, map, List.copyOf(result), List.copyOf(warnings)));
         } catch (com.zpantry.integration.ai.HttpAiClient.AiIntegrationException exception) {
             log.warn("Unified image analysis request failed: status={}", exception.status());

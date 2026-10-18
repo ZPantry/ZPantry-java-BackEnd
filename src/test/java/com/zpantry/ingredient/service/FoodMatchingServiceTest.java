@@ -62,5 +62,19 @@ class FoodMatchingServiceTest {
 
         assertThat(resolved.isResolved()).isFalse();
         assertThat(resolved.status()).isEqualTo(com.zpantry.pantryimport.api.PantryImportDtos.ResolverStatus.UNRESOLVED);
+        assertThat(resolved.candidates()).hasSize(2);
+    }
+
+    @Test
+    void resolvesAProductLabelAfterRemovingTrailingDescriptors() {
+        IngredientEntity cherryTomato = new IngredientEntity("Cà chua bi");
+        when(ingredients.findAllByDeletedFalse(org.springframework.data.domain.Pageable.unpaged()))
+                .thenReturn(new PageImpl<>(List.of(cherryTomato)));
+        when(aliases.findAllByDeletedFalse()).thenReturn(List.of());
+
+        var resolved = service.resolve("cà chua bi đỏ");
+
+        assertThat(resolved.isResolved()).isTrue();
+        assertThat(resolved.canonicalFood()).isSameAs(cherryTomato);
     }
 }

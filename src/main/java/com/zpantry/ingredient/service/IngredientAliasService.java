@@ -16,10 +16,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class IngredientAliasService {
     private final IngredientRepository ingredients;
     private final IngredientAliasRepository aliases;
+    private final FoodMatchingService matching;
 
-    public IngredientAliasService(IngredientRepository ingredients, IngredientAliasRepository aliases) {
+    public IngredientAliasService(IngredientRepository ingredients, IngredientAliasRepository aliases, FoodMatchingService matching) {
         this.ingredients = ingredients;
         this.aliases = aliases;
+        this.matching = matching;
     }
 
     public ApiResponse<List<IngredientAliasResponse>> list(UUID ingredientId) {
@@ -37,6 +39,7 @@ public class IngredientAliasService {
             return fail("Food alias already exists or conflicts with a canonical food.");
         }
         IngredientAliasEntity saved = aliases.save(new IngredientAliasEntity(ingredientId, aliasName, normalized));
+        matching.invalidateCatalog();
         return ok(dto(saved), "Food alias created.");
     }
 
@@ -45,6 +48,7 @@ public class IngredientAliasService {
         var alias = aliases.findById(aliasId).filter(item -> !item.isDeleted() && ingredientId.equals(item.ingredientId)).orElse(null);
         if (alias == null) return fail("Food alias not found.");
         alias.softDelete();
+        matching.invalidateCatalog();
         return ok(null, "Food alias deleted.");
     }
 

@@ -35,8 +35,11 @@ public final class PantryImportDtos {
                                           String canonicalIngredientName, BigDecimal quantity, String unit,
                                           BigDecimal price, BigDecimal confidence, ResolverStatus resolverStatus,
                                           IngredientResponse ingredient, boolean reviewRequired, String sourceUnit,
-                                          List<String> flags) {
+                                          List<String> flags, List<IngredientCandidate> candidates) {
     }
+
+    /** Safe catalog choices returned only when automatic matching is not unique. */
+    public record IngredientCandidate(UUID ingredientId, String name, String unit, BigDecimal matchScore) { }
 
     public record ConfirmPantryImportRequest(UUID analysisId,
                                              @NotEmpty List<@Valid ConfirmPantryImportItem> items) {

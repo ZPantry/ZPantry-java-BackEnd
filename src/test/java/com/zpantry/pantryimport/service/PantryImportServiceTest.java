@@ -24,7 +24,7 @@ class PantryImportServiceTest {
         JdbcTemplate jdbc = Mockito.mock(JdbcTemplate.class);
         when(jdbc.update(anyString(), any(), any(), any(), any(), any())).thenReturn(1);
         PantryImportService service = new PantryImportService(Mockito.mock(AiClient.class),
-                Mockito.mock(PantryIngredientPipeline.class), pantry, jdbc);
+                Mockito.mock(PantryIngredientPipeline.class), pantry, jdbc, Mockito.mock(UnmatchedIngredientLogger.class));
         UUID userId = UUID.randomUUID();
         UUID ingredientId = UUID.randomUUID();
         var request = new ConfirmPantryImportRequest(null,
@@ -42,7 +42,7 @@ class PantryImportServiceTest {
         JdbcTemplate jdbc = Mockito.mock(JdbcTemplate.class);
         when(jdbc.update(anyString(), any(), any(), any(), any(), any())).thenReturn(0);
         PantryImportService service = new PantryImportService(Mockito.mock(AiClient.class),
-                Mockito.mock(PantryIngredientPipeline.class), pantry, jdbc);
+                Mockito.mock(PantryIngredientPipeline.class), pantry, jdbc, Mockito.mock(UnmatchedIngredientLogger.class));
         var request = new ConfirmPantryImportRequest(null,
                 List.of(new ConfirmPantryImportItem(UUID.randomUUID(), BigDecimal.ONE, "g")));
 

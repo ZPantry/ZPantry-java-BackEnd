@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 public class FoodMatchingService {
     private final IngredientRepository ingredients;
     private final IngredientAliasRepository aliases;
+    private volatile CatalogSnapshot snapshot;
 
     public FoodMatchingService(IngredientRepository ingredients, IngredientAliasRepository aliases) {
         this.ingredients = ingredients;
@@ -33,22 +34,24 @@ public class FoodMatchingService {
 
     public ResolvedIngredient resolve(String rawName) {
         String normalized = FoodNameNormalizer.normalize(rawName);
-        if (normalized.isBlank()) return ResolvedIngredient.unresolved(normalized, ResolverStatus.UNRESOLVED);
+        if (normalized.isBlank()) return ResolvedIngredient.unresolved(normalized, ResolverStatus.UNRESOLVED, List.of());
 
-        List<IngredientEntity> foods = ingredients.findAllByDeletedFalse(Pageable.unpaged()).getContent();
+        CatalogSnapshot catalog = catalog();
+        List<IngredientEntity> foods = catalog.foods();
+        List<IngredientAliasEntity> aliasRows = catalog.aliases();
         var canonical = foods.stream().filter(food -> normalized.equals(FoodNameNormalizer.normalize(food.normalizedName))).toList();
         if (canonical.size() == 1) return ResolvedIngredient.resolved(normalized, canonical.getFirst(), canonical.getFirst().normalizedName);
-        if (canonical.size() > 1) return ResolvedIngredient.unresolved(normalized, ResolverStatus.AMBIGUOUS);
+        if (canonical.size() > 1) return unresolved(normalized, ResolverStatus.AMBIGUOUS, canonical);
 
-        var exactAliases = activeAliasFoods(aliases.findAllByDeletedFalse().stream()
+        var exactAliases = activeAliasFoods(aliasRows.stream()
                 .filter(alias -> normalized.equals(FoodNameNormalizer.normalize(alias.normalizedAliasName))).toList());
         if (exactAliases.size() == 1) return ResolvedIngredient.resolved(normalized, exactAliases.values().iterator().next(), normalized);
-        if (exactAliases.size() > 1) return ResolvedIngredient.unresolved(normalized, ResolverStatus.AMBIGUOUS);
+        if (exactAliases.size() > 1) return unresolved(normalized, ResolverStatus.AMBIGUOUS, List.copyOf(exactAliases.values()));
 
         Map<UUID, Match> phraseMatches = new LinkedHashMap<>();
         foods.stream().filter(food -> contained(normalized, FoodNameNormalizer.normalize(food.normalizedName)))
                 .forEach(food -> phraseMatches.put(food.getId(), new Match(food, food.normalizedName)));
-        for (IngredientAliasEntity alias : aliases.findAllByDeletedFalse()) {
+        for (IngredientAliasEntity alias : aliasRows) {
             if (!contained(normalized, FoodNameNormalizer.normalize(alias.normalizedAliasName))) continue;
             ingredients.findByIdAndDeletedFalse(alias.ingredientId)
                     .ifPresent(food -> phraseMatches.put(food.getId(), new Match(food, alias.normalizedAliasName)));
@@ -57,12 +60,64 @@ public class FoodMatchingService {
             Match match = phraseMatches.values().iterator().next();
             return ResolvedIngredient.resolved(normalized, match.food(), match.name());
         }
+        if (!phraseMatches.isEmpty()) return unresolved(normalized, ResolverStatus.AMBIGUOUS,
+                phraseMatches.values().stream().map(Match::food).toList());
+
+        for (String shortened : shortenedNames(normalized)) {
+            Match reduced = uniquePhraseMatch(shortened, foods, aliasRows);
+            if (reduced != null) return ResolvedIngredient.resolved(normalized, reduced.food(), reduced.name());
+        }
         if (phraseMatches.isEmpty()) {
-            Match fuzzy = uniqueHighConfidenceMatch(normalized, foods, aliases.findAllByDeletedFalse());
+            Match fuzzy = uniqueHighConfidenceMatch(normalized, foods, aliasRows);
             if (fuzzy != null) return ResolvedIngredient.resolved(normalized, fuzzy.food(), fuzzy.name());
         }
-        return ResolvedIngredient.unresolved(normalized,
-                phraseMatches.isEmpty() ? ResolverStatus.UNRESOLVED : ResolverStatus.AMBIGUOUS);
+        return ResolvedIngredient.unresolved(normalized, ResolverStatus.UNRESOLVED, closest(normalized, foods, aliasRows));
+    }
+
+    /** Called after catalog or alias mutation; the next request reloads active rows. */
+    public void invalidateCatalog() { snapshot = null; }
+
+    private CatalogSnapshot catalog() {
+        CatalogSnapshot current = snapshot;
+        if (current != null) return current;
+        synchronized (this) {
+            if (snapshot == null) snapshot = new CatalogSnapshot(
+                    List.copyOf(ingredients.findAllByDeletedFalse(Pageable.unpaged()).getContent()),
+                    List.copyOf(aliases.findAllByDeletedFalse()));
+            return snapshot;
+        }
+    }
+
+    private ResolvedIngredient unresolved(String input, ResolverStatus status, List<IngredientEntity> foods) {
+        return ResolvedIngredient.unresolved(input, status, foods.stream()
+                .map(food -> new ResolvedIngredient.Candidate(food, similarity(input, FoodNameNormalizer.normalize(food.normalizedName))))
+                .sorted(Comparator.comparing(ResolvedIngredient.Candidate::score).reversed()).limit(3).toList());
+    }
+
+    private static List<String> shortenedNames(String normalized) {
+        String[] tokens = normalized.split(" ");
+        if (tokens.length < 3) return List.of();
+        var values = new java.util.ArrayList<String>();
+        for (int end = tokens.length - 1; end >= 2; end--) values.add(String.join(" ", java.util.Arrays.copyOf(tokens, end)));
+        return values;
+    }
+
+    private Match uniquePhraseMatch(String input, List<IngredientEntity> foods, List<IngredientAliasEntity> aliasRows) {
+        Map<UUID, Match> matches = new LinkedHashMap<>();
+        foods.stream().filter(food -> contained(input, FoodNameNormalizer.normalize(food.normalizedName)))
+                .forEach(food -> matches.put(food.getId(), new Match(food, food.normalizedName)));
+        for (IngredientAliasEntity alias : aliasRows) if (contained(input, FoodNameNormalizer.normalize(alias.normalizedAliasName)))
+            ingredients.findByIdAndDeletedFalse(alias.ingredientId).ifPresent(food -> matches.put(food.getId(), new Match(food, alias.normalizedAliasName)));
+        return matches.size() == 1 ? matches.values().iterator().next() : null;
+    }
+
+    private List<ResolvedIngredient.Candidate> closest(String input, List<IngredientEntity> foods, List<IngredientAliasEntity> aliasRows) {
+        Map<IngredientEntity, ScoredMatch> candidates = new LinkedHashMap<>();
+        for (IngredientEntity food : foods) addCandidate(candidates, food, food.normalizedName, input);
+        for (IngredientAliasEntity alias : aliasRows) ingredients.findByIdAndDeletedFalse(alias.ingredientId)
+                .ifPresent(food -> addCandidate(candidates, food, alias.normalizedAliasName, input));
+        return candidates.values().stream().sorted(Comparator.comparing(ScoredMatch::score).reversed()).limit(3)
+                .map(value -> new ResolvedIngredient.Candidate(value.food(), value.score())).toList();
     }
 
     private Map<UUID, IngredientEntity> activeAliasFoods(Collection<IngredientAliasEntity> rows) {
@@ -147,4 +202,6 @@ public class FoodMatchingService {
 
     private record ScoredMatch(IngredientEntity food, String name, double score) {
     }
+
+    private record CatalogSnapshot(List<IngredientEntity> foods, List<IngredientAliasEntity> aliases) { }
 }

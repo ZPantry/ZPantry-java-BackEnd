@@ -1,6 +1,6 @@
 # ZPantry Java Migration Status
 
-Last update: 2026-10-17 — Backend liveness endpoint and optional AI heartbeat added; external monitor configuration remains required
+Last update: 2026-10-18 — Pantry image matching now returns safe candidate choices and records unresolved catalog gaps asynchronously
 
 ## Current conclusion
 

@@ -303,7 +303,7 @@ the following pipeline:
 ```text
 text local extraction OR Gemini image extraction
         -> ExtractedIngredient[]
-        -> FoodMatchingService (canonical exact -> alias exact -> unique phrase match)
+        -> FoodMatchingService (cached catalog: canonical exact -> alias exact -> unique token phrase -> safe trailing reduction -> unique fuzzy)
         -> ResolvedIngredient
         -> PantryIngredientPipeline preview
         -> explicit user confirmation

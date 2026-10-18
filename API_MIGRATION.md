@@ -956,6 +956,15 @@ Image-analysis responses now retain a detected food when it has no unique catalo
 The mobile client must require the user to select a catalog ingredient before confirmation; it must not submit a
 null `ingredientId`. This avoids silently hiding detected fish, meat, and other catalog gaps.
 
+### Matching candidates and feedback log
+
+For a non-unique or unresolved image item, `PantryImportPreviewItem` additionally returns up to
+three additive `candidates` (`ingredientId`, `name`, `unit`, `matchScore`). The client must show
+these only as suggested catalog choices and still submit its selected canonical UUID to confirmation.
+Matching attempts canonical/alias exact names, token-bound phrase matches, safe trailing-descriptor
+reduction, then only a uniquely dominant fuzzy match. The backend records eligible unresolved image
+detections in its internal unmatched log for catalog maintenance; this is not exposed to clients.
+
 ## [MIG-016] Optional completion photo for Today Menu cooking logs
 
 **Status:** IMPLEMENTED_NOT_VERIFIED

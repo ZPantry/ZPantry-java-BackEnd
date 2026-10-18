@@ -30,12 +30,14 @@ public class IngredientService {
     private final IngredientAliasRepository aliases;
     private final AiClient ai;
     private final MediaStoragePort media;
+    private final FoodMatchingService matching;
 
-    public IngredientService(IngredientRepository r, IngredientAliasRepository aliases, AiClient a, MediaStoragePort m) {
+    public IngredientService(IngredientRepository r, IngredientAliasRepository aliases, AiClient a, MediaStoragePort m, FoodMatchingService matching) {
         repo = r;
         this.aliases = aliases;
         ai = a;
         media = m;
+        this.matching = matching;
     }
 
     private static <T> ApiResponse<T> ok(T d, String m) {
@@ -63,6 +65,7 @@ public class IngredientService {
         IngredientEntity e = new IngredientEntity(r.name());
         apply(e, r);
         e = repo.save(e);
+        matching.invalidateCatalog();
         embed(e);
         return ok(dto(e), "Ingredient created.");
     }
@@ -89,6 +92,7 @@ public class IngredientService {
             embed(ingredient);
             return dto(ingredient);
         }).toList();
+        matching.invalidateCatalog();
         return ok(created, "Ingredients created.");
     }
 
@@ -119,6 +123,7 @@ public class IngredientService {
         apply(e, new CreateIngredientRequest(e.name, r.category(), r.unit(), r.caloriesPerUnit(), r.proteinPerUnit(), r.fatPerUnit(), r.carbPerUnit(), r.imageUrl(), r.gradientFrom(), r.gradientTo(), r.allergens()));
         e.touch();
         embed(e);
+        matching.invalidateCatalog();
         return ok(dto(e), "Ingredient updated.");
     }
 
@@ -139,6 +144,7 @@ public class IngredientService {
         var e = repo.findByIdAndDeletedFalse(id).orElse(null);
         if (e == null) return fail("Ingredient not found.");
         e.softDelete();
+        matching.invalidateCatalog();
         return ok(null, "Ingredient deleted.");
     }
 

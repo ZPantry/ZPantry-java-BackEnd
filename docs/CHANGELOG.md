@@ -1,5 +1,11 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-18 — Catalog candidates for AI ingredient import
+
+- Image import retains ambiguous or unresolved detections and now supplies up to three safe catalog candidates for explicit user confirmation.
+- Added a best-effort, asynchronous unmatched-ingredient maintenance log; logging failure never delays image analysis.
+- Cached active catalog/alias rows for matching, invalidating after catalog mutation; added bounded image downscaling before Gemini upload.
+
 ## 2026-10-17 — Render liveness support
 
 - Added public shallow `GET /health` to the backend for deployment health checks and external uptime monitors.

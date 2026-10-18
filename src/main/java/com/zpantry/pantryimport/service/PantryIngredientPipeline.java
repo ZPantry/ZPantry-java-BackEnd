@@ -36,7 +36,7 @@ public class PantryIngredientPipeline {
             if (extracted.quantity() == null && !flags.contains("NO_QUANTITY")) flags.add("NO_QUANTITY");
             return Optional.of(new PantryImportPreviewItem(extracted.rawName().trim(), resolved.normalizedInput(), null,
                     extracted.canonicalHint(), extracted.quantity(), extracted.unit(), nonNegative(extracted.price()), extracted.confidence(),
-                    resolved.status(), null, true, extracted.unit(), List.copyOf(flags)));
+                    resolved.status(), null, true, extracted.unit(), List.copyOf(flags), candidates(resolved)));
         }
         var normalized = QuantityUnitNormalizer.normalize(extracted.quantity(), extracted.unit(), ingredient.unit);
         BigDecimal quantity = normalized.quantity() == null ? defaultQuantity(ingredient) : normalized.quantity();
@@ -47,7 +47,13 @@ public class PantryIngredientPipeline {
         if (normalized.reviewRequired()) flags.add("ANOMALY");
         return Optional.of(new PantryImportPreviewItem(extracted.rawName().trim(), resolved.normalizedInput(), ingredient.getId(),
                 ingredient.name, quantity, ingredient.unit, nonNegative(extracted.price()), extracted.confidence(),
-                resolved.status(), ingredientResponse(ingredient), normalized.reviewRequired(), extracted.unit(), List.copyOf(flags)));
+                resolved.status(), ingredientResponse(ingredient), normalized.reviewRequired(), extracted.unit(), List.copyOf(flags), List.of()));
+    }
+
+    private static List<com.zpantry.pantryimport.api.PantryImportDtos.IngredientCandidate> candidates(com.zpantry.ingredient.service.ResolvedIngredient resolved) {
+        return resolved.candidates().stream().map(candidate -> new com.zpantry.pantryimport.api.PantryImportDtos.IngredientCandidate(
+                candidate.ingredient().getId(), candidate.ingredient().name, candidate.ingredient().unit,
+                BigDecimal.valueOf(candidate.score()))).toList();
     }
 
     private static BigDecimal defaultQuantity(IngredientEntity ingredient) {
