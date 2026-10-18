@@ -1,5 +1,9 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-18 — Atomic ingredient alias batch API
+
+- Added `POST /api/ingredients/{ingredientId}/aliases/batch` for creating up to 100 aliases atomically.
+
 ## 2026-10-18 — Catalog candidates for AI ingredient import
 
 - Image import retains ambiguous or unresolved detections and now supplies up to three safe catalog candidates for explicit user confirmation.

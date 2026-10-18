@@ -68,6 +68,12 @@ public class IngredientController {
         return aliases.create(id, request);
     }
 
+    @PostMapping("/api/ingredients/{id}/aliases/batch")
+    public ApiResponse<java.util.List<IngredientAliasResponse>> createAliases(@PathVariable UUID id,
+            @Valid @RequestBody CreateIngredientAliasesRequest request) {
+        return aliases.createBatch(id, request.aliases());
+    }
+
     @DeleteMapping("/api/ingredients/{id}/aliases/{aliasId}")
     public ApiResponse<Object> deleteAlias(@PathVariable UUID id, @PathVariable UUID aliasId) {
         return aliases.delete(id, aliasId);

@@ -965,6 +965,13 @@ Matching attempts canonical/alias exact names, token-bound phrase matches, safe 
 reduction, then only a uniquely dominant fuzzy match. The backend records eligible unresolved image
 detections in its internal unmatched log for catalog maintenance; this is not exposed to clients.
 
+### Batch alias creation
+
+`POST /api/ingredients/{ingredientId}/aliases/batch` is an additive catalog-administration endpoint.
+It accepts `{ "aliases": [{ "aliasName": "..." }] }` with 1–100 aliases. The endpoint validates
+the full batch before writing; a duplicate inside the request, an existing alias, or a collision with
+a canonical ingredient rejects the complete batch without a partial write.
+
 ## [MIG-016] Optional completion photo for Today Menu cooking logs
 
 **Status:** IMPLEMENTED_NOT_VERIFIED

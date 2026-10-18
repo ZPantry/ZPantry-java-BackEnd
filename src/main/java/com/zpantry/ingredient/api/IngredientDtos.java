@@ -61,4 +61,8 @@ public final class IngredientDtos {
     public record CreateIngredientAliasRequest(
             @NotBlank @Size(max = 200) String aliasName) {
     }
+
+    public record CreateIngredientAliasesRequest(
+            @NotEmpty @Size(max = 100) java.util.List<@jakarta.validation.Valid CreateIngredientAliasRequest> aliases) {
+    }
 }

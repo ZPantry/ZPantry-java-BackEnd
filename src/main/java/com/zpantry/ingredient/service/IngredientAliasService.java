@@ -8,6 +8,7 @@ import com.zpantry.ingredient.persistence.IngredientAliasRepository;
 import com.zpantry.ingredient.persistence.IngredientRepository;
 import java.time.Instant;
 import java.util.List;
+import java.util.HashSet;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,27 @@ public class IngredientAliasService {
         IngredientAliasEntity saved = aliases.save(new IngredientAliasEntity(ingredientId, aliasName, normalized));
         matching.invalidateCatalog();
         return ok(dto(saved), "Food alias created.");
+    }
+
+    /** Validates the complete payload before saving so a failed batch produces no partial aliases. */
+    @Transactional
+    public ApiResponse<List<IngredientAliasResponse>> createBatch(UUID ingredientId, List<CreateIngredientAliasRequest> requests) {
+        if (ingredients.findByIdAndDeletedFalse(ingredientId).isEmpty()) return fail("Ingredient not found.");
+        var normalizedNames = new HashSet<String>();
+        var entities = new java.util.ArrayList<IngredientAliasEntity>();
+        for (CreateIngredientAliasRequest request : requests) {
+            String aliasName = request.aliasName().trim();
+            String normalized = FoodNameNormalizer.normalize(aliasName);
+            if (!normalizedNames.add(normalized)
+                    || ingredients.findByNormalizedNameAndDeletedFalse(normalized).isPresent()
+                    || aliases.existsByNormalizedAliasNameAndDeletedFalse(normalized)) {
+                return fail("Food alias already exists or conflicts with a canonical food: " + aliasName);
+            }
+            entities.add(new IngredientAliasEntity(ingredientId, aliasName, normalized));
+        }
+        var saved = aliases.saveAll(entities);
+        matching.invalidateCatalog();
+        return ok(saved.stream().map(this::dto).toList(), "Food aliases created.");
     }
 
     @Transactional
