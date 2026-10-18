@@ -3,6 +3,7 @@
 ## 2026-10-18 — Atomic ingredient alias batch API
 
 - Added `POST /api/ingredients/{ingredientId}/aliases/batch` for creating up to 100 aliases atomically.
+- Batch requests now idempotently skip aliases that already exist or are duplicated in the payload.
 
 ## 2026-10-18 — Catalog candidates for AI ingredient import
 

@@ -44,25 +44,24 @@ public class IngredientAliasService {
         return ok(dto(saved), "Food alias created.");
     }
 
-    /** Validates the complete payload before saving so a failed batch produces no partial aliases. */
+    /** Existing aliases are idempotently skipped; canonical-name collisions remain invalid. */
     @Transactional
     public ApiResponse<List<IngredientAliasResponse>> createBatch(UUID ingredientId, List<CreateIngredientAliasRequest> requests) {
         if (ingredients.findByIdAndDeletedFalse(ingredientId).isEmpty()) return fail("Ingredient not found.");
         var normalizedNames = new HashSet<String>();
         var entities = new java.util.ArrayList<IngredientAliasEntity>();
+        int skipped = 0;
         for (CreateIngredientAliasRequest request : requests) {
             String aliasName = request.aliasName().trim();
             String normalized = FoodNameNormalizer.normalize(aliasName);
-            if (!normalizedNames.add(normalized)
-                    || ingredients.findByNormalizedNameAndDeletedFalse(normalized).isPresent()
-                    || aliases.existsByNormalizedAliasNameAndDeletedFalse(normalized)) {
-                return fail("Food alias already exists or conflicts with a canonical food: " + aliasName);
-            }
+            if (!normalizedNames.add(normalized) || aliases.existsByNormalizedAliasNameAndDeletedFalse(normalized)) { skipped++; continue; }
+            if (ingredients.findByNormalizedNameAndDeletedFalse(normalized).isPresent())
+                return fail("Food alias conflicts with a canonical food: " + aliasName);
             entities.add(new IngredientAliasEntity(ingredientId, aliasName, normalized));
         }
         var saved = aliases.saveAll(entities);
-        matching.invalidateCatalog();
-        return ok(saved.stream().map(this::dto).toList(), "Food aliases created.");
+        if (!saved.isEmpty()) matching.invalidateCatalog();
+        return ok(saved.stream().map(this::dto).toList(), "Food aliases created: " + saved.size() + "; existing aliases skipped: " + skipped + ".");
     }
 
     @Transactional
