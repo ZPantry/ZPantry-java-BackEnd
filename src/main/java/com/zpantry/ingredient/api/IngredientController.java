@@ -26,6 +26,11 @@ public class IngredientController {
         return s.list(pageIndex, pageSize, search);
     }
 
+    @GetMapping("/api/ingredients/{id}")
+    public ApiResponse<IngredientResponse> get(@PathVariable UUID id) {
+        return s.get(id);
+    }
+
     @PostMapping("/api/ingredients")
     public ApiResponse<IngredientResponse> create(@Valid @RequestBody CreateIngredientRequest r) {
         return s.create(r);

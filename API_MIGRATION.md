@@ -1010,3 +1010,26 @@ The heartbeat never invokes an AI model or consumes a customer quota. It is disa
 
 An external monitor must still request the backend's public `/health`: an in-process scheduler cannot
 run after a free web service has been spun down.
+
+## [MIG-018] Admin monitoring and ingredient detail
+
+**Status:** IMPLEMENTED_NOT_VERIFIED
+
+**Breaking Change:** NO — additive endpoints.
+
+**Date:** 2026-10-19
+
+`GET /api/admin/monitoring/services` requires `ADMIN` or `SUPER_ADMIN`. It reports whether
+PostgreSQL answers `SELECT 1` and whether the configured AI service answers its shallow health
+probe. Each entry includes `name`, `available`, `latencyMs`, and `checkedAt`. Failed probes are
+reported as unavailable without exposing connection details. Public `GET /health` remains a
+shallow backend liveness check.
+
+`GET /api/admin/monitoring/revenue` has the same authorization. It returns `allTimeVnd`,
+`monthVnd`, `todayVnd`, `paidTransactions`, and up to ten `recentPayments`. Only rows with
+`status='PAID'` contribute; day and month boundaries use `Asia/Ho_Chi_Minh`, and the recent
+list uses `paid_at`. Pending and failed orders contribute zero revenue.
+
+`GET /api/ingredients/{id}` returns the existing `IngredientResponse` envelope for an active
+catalog ingredient. As with existing catalog reads, it is public. A missing or soft-deleted
+ingredient returns the existing `success=false` envelope with `Ingredient not found.`

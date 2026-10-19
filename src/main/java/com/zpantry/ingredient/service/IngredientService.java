@@ -57,6 +57,13 @@ public class IngredientService {
         return PagedResponse.successPage(data, pi, ps, (int) p.getTotalElements(), "", "", Instant.now());
     }
 
+    @Transactional(readOnly = true)
+    public ApiResponse<IngredientResponse> get(java.util.UUID id) {
+        return repo.findByIdAndDeletedFalse(id)
+                .map(ingredient -> ok(dto(ingredient), ""))
+                .orElseGet(() -> fail("Ingredient not found."));
+    }
+
     @Transactional
     public ApiResponse<IngredientResponse> create(CreateIngredientRequest r) {
         if (!hasRequiredNameAndUnit(r)) return fail("Ingredient name and unit are required.");

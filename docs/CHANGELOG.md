@@ -1,5 +1,12 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-10-19 — Admin monitoring and ingredient detail
+
+- Added admin-only service availability and paid-revenue endpoints for the Frontend dashboard.
+- Added an ingredient detail read using the existing catalog response shape and soft-delete rule.
+- Added PostgreSQL integration coverage for paid-only revenue, authorization, and ingredient detail;
+  execution remains unverified on this machine because Docker is unavailable.
+
 ## 2026-10-19 — PostgreSQL-safe Pantry Import confirmation timestamps
 
 - Fixed Pantry Import confirmation and unified-analysis persistence to bind JDBC timestamps as

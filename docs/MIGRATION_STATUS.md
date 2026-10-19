@@ -1,6 +1,6 @@
 # ZPantry Java Migration Status
 
-Last update: 2026-10-18 — Pantry image matching now returns safe candidate choices and records unresolved catalog gaps asynchronously
+Last update: 2026-10-19 — Admin monitoring reports service availability and paid revenue; ingredient detail read added
 
 ## Current conclusion
 
@@ -28,6 +28,11 @@ remain NOT_STARTED.
 | Vector Search | No implementation; legacy service remains a stub | NOT_STARTED |
 | Docker / Deployment | Java 21 multi-stage backend Dockerfile and workspace Compose build wiring implemented; public backend liveness and optional AI heartbeat are available, but production monitor/Render configuration remains environment-owned | IMPLEMENTED_NOT_VERIFIED |
 | Subscription / PayOS | PayOS checkout records, signed webhook completion/failure processing, idempotent subscription activation, and browser-to-mobile return pages implemented; live-provider parity remains outstanding | IMPLEMENTED_NOT_VERIFIED |
+
+Admin monitoring now reads PostgreSQL and the configured AI health probe behind `/api/admin/**`
+authorization. Revenue aggregates only verified `PAID` transactions in Vietnam business time.
+The additive ingredient detail endpoint reads active catalog rows. Java compilation and unit tests
+passed; new Testcontainers integration coverage could not run here because Docker was unavailable.
 
 ## Foundation inventory
 
