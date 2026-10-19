@@ -6,11 +6,14 @@ import com.zpantry.common.api.*;
 import com.zpantry.todaymenu.service.TodayMenuService;
 import com.zpantry.user.security.AuthenticatedUserResolver;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -60,8 +63,12 @@ public class TodayMenuController {
     }
 
     @PostMapping(path = "/api/me/today-menu/items/{itemId}/complete", consumes = "multipart/form-data")
-    public ApiResponse<TodayMenuCompletionResponse> complete(Authentication a, @PathVariable UUID itemId, @ModelAttribute CompleteTodayMenuItemRequest r) {
-        return s.complete(id(a), itemId, r);
+    public ApiResponse<TodayMenuCompletionResponse> complete(Authentication a, @PathVariable UUID itemId,
+                                                               @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+                                                               @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant cookedAt,
+                                                               @RequestParam(required = false) Integer rating,
+                                                               @RequestParam(required = false) String note) {
+        return s.complete(id(a), itemId, new CompleteTodayMenuItemRequest(imageFile, cookedAt, rating, note));
     }
 
     @GetMapping("/api/me/cooking-logs")
