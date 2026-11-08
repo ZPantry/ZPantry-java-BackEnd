@@ -29,8 +29,8 @@ public class AdminAnalyticsController {
     public ApiResponse<Map<String, Object>> overview(@RequestParam(defaultValue = "30") int days) {
         int safeDays = Math.max(1, Math.min(days, 365));
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("totalUsers", scalar("SELECT count(*) FROM users WHERE deleted=false"));
-        result.put("newUsers", scalar("SELECT count(*) FROM users WHERE deleted=false AND created_at >= now() - (? * interval '1 day')", safeDays));
+        result.put("totalUsers", scalar("SELECT count(*) FROM users WHERE is_deleted=false"));
+        result.put("newUsers", scalar("SELECT count(*) FROM users WHERE is_deleted=false AND created_at >= now() - (? * interval '1 day')", safeDays));
         result.put("dau", scalar("SELECT count(DISTINCT user_id) FROM analytics_events WHERE created_at >= date_trunc('day', now())"));
         result.put("mau", scalar("SELECT count(DISTINCT user_id) FROM analytics_events WHERE created_at >= now() - interval '30 day'"));
         result.put("paidRevenueVnd", scalar("SELECT coalesce(sum(amount_vnd),0) FROM payment_transactions WHERE status='PAID'"));
