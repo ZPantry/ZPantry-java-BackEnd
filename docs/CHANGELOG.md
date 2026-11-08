@@ -1,5 +1,11 @@
 # ZPantry Java Migration Documentation Changelog
 
+## 2026-11-08 — Product analytics baseline and Z-Free recipe limit
+
+- Added additive V13 tables for bounded product events and one persisted AI-recognition feedback per user/analysis.
+- Added JWT-owned client telemetry endpoints and ADMIN/SUPER_ADMIN-only reporting endpoints based on stored data, including CSV revenue export.
+- Changed Z-Free meal suggestions to two successful results per Vietnam-local day. The database conditional UPSERT remains the concurrency guard; Z-Plus remains unlimited.
+
 ## 2026-10-19 — PostgreSQL-safe Pantry Import confirmation timestamps
 
 - Fixed Pantry Import confirmation and unified-analysis persistence to bind JDBC timestamps as

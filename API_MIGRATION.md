@@ -1010,3 +1010,20 @@ The heartbeat never invokes an AI model or consumes a customer quota. It is disa
 
 An external monitor must still request the backend's public `/health`: an in-process scheduler cannot
 run after a free web service has been spun down.
+
+## [MIG-018] Product analytics and admin reporting
+
+**Status:** IMPLEMENTED_NOT_VERIFIED
+
+**Breaking Change:** NO
+
+**Date:** 2026-11-08
+
+Authenticated clients can submit only the enumerated, bounded product events through
+`POST /api/me/analytics/events`; the server derives the user identity from the JWT. Image-recognition
+feedback is stored once per user and analysis through
+`POST /api/me/analytics/ai-recognition/{analysisId}/feedback`. Both paths are under `/api/me/**`.
+
+`/api/admin/analytics/**` is restricted by the existing security policy to `ADMIN` and `SUPER_ADMIN`.
+It exposes aggregates from stored users, payment transactions and telemetry, plus CSV revenue export.
+Metrics intentionally begin at zero on an existing installation: no historical events are inferred.

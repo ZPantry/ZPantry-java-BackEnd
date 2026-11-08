@@ -41,7 +41,8 @@ public class RecommendationController {
     @PostMapping("/v2/meals")
     public ApiResponse<PersonalizedRecommendationResponse> personalized(Authentication a, @RequestBody(required = false) PersonalizedRecommendationRequest request) {
         var result = personalized.recommend(id(a), request);
-        subscriptions.consume(id(a), SubscriptionService.MEAL_SUGGESTION);
+        // A quota is consumed only after a usable response has been produced.
+        if (!result.recommendations().isEmpty()) subscriptions.consume(id(a), SubscriptionService.MEAL_SUGGESTION);
         return new ApiResponse<>(true, "Personalized meal recommendations generated.", result, null, "", java.time.Instant.now());
     }
 

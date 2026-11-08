@@ -28,6 +28,7 @@ remain NOT_STARTED.
 | Vector Search | No implementation; legacy service remains a stub | NOT_STARTED |
 | Docker / Deployment | Java 21 multi-stage backend Dockerfile and workspace Compose build wiring implemented; public backend liveness and optional AI heartbeat are available, but production monitor/Render configuration remains environment-owned | IMPLEMENTED_NOT_VERIFIED |
 | Subscription / PayOS | PayOS checkout records, signed webhook completion/failure processing, idempotent subscription activation, and browser-to-mobile return pages implemented; live-provider parity remains outstanding | IMPLEMENTED_NOT_VERIFIED |
+| Product Analytics / Admin Reporting | Additive telemetry and image-recognition feedback persistence; backend-enforced admin aggregates and CSV revenue export; mobile screen-view events and web dashboard use these APIs. Historical sessions are not fabricated. | IMPLEMENTED_NOT_VERIFIED |
 
 ## Foundation inventory
 
