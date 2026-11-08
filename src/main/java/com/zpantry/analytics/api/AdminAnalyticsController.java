@@ -56,6 +56,12 @@ public class AdminAnalyticsController {
         return ok(rows("SELECT feedback,count(*) AS count FROM ai_recognition_feedbacks GROUP BY feedback ORDER BY feedback"));
     }
 
+    /** Includes legacy star ratings: 4-5 are positive, 1-2 negative, and 3 neutral. */
+    @GetMapping("/recipe-feedback")
+    public ApiResponse<List<Map<String, Object>>> recipeFeedback() {
+        return ok(rows("SELECT CASE WHEN upper(coalesce(feedback_type,''))='LIKE' OR (upper(coalesce(feedback_type,''))='RATING' AND rating >= 4) THEN 'LIKE' WHEN upper(coalesce(feedback_type,''))='DISLIKE' OR (upper(coalesce(feedback_type,''))='RATING' AND rating <= 2) THEN 'DISLIKE' ELSE 'NEUTRAL' END AS feedback,count(*) AS count FROM recommendation_feedbacks WHERE is_deleted=false GROUP BY feedback ORDER BY feedback"));
+    }
+
     @GetMapping("/revenue")
     public ApiResponse<List<Map<String, Object>>> revenue(@RequestParam(defaultValue = "30") int days) {
         int safeDays = Math.max(1, Math.min(days, 365));
